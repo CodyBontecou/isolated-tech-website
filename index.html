@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISOLATED.TECH — We build software.</title>
+  <meta name="description" content="Isolated Tech is a software studio building brutalist websites and iOS apps. We ship fast, we ship raw.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NOISE OVERLAY -->
+  <div class="noise"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav__logo">ISOLATED<span class="dot">.</span>TECH</div>
+    <div class="nav__links">
+      <a href="#work">WORK</a>
+      <a href="#about">ABOUT</a>
+      <a href="#contact">CONTACT</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__image-wrap">
+      <img src="assets/photos/_MG_2813.jpg" alt="Isolated Tech team" class="hero__image">
+      <div class="hero__image-overlay"></div>
+    </div>
+    <div class="hero__content">
+      <div class="hero__label">SOFTWARE STUDIO — EST. 2024</div>
+      <h1 class="hero__title">
+        <span class="hero__title-line">WE BUILD</span>
+        <span class="hero__title-line">SOFTWARE<span class="dot">.</span></span>
+      </h1>
+      <p class="hero__sub">Websites. iOS apps. No fluff. No frameworks-of-the-week.<br>Just raw, functional software that ships.</p>
+      <div class="hero__cta">
+        <a href="#work" class="btn btn--primary">SEE THE WORK ↓</a>
+        <a href="#contact" class="btn btn--ghost">GET IN TOUCH</a>
+      </div>
+    </div>
+    <div class="hero__scroll-indicator">
+      <span>SCROLL</span>
+      <div class="hero__scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee">
+    <div class="marquee__track">
+      <span>WEBSITES &nbsp;•&nbsp; iOS APPS &nbsp;•&nbsp; BRUTALIST DESIGN &nbsp;•&nbsp; SWIFT &nbsp;•&nbsp; FULL-STACK &nbsp;•&nbsp; ON-DEVICE &nbsp;•&nbsp; PRIVACY-FIRST &nbsp;•&nbsp; SHIP FAST &nbsp;•&nbsp;</span>
+      <span>WEBSITES &nbsp;•&nbsp; iOS APPS &nbsp;•&nbsp; BRUTALIST DESIGN &nbsp;•&nbsp; SWIFT &nbsp;•&nbsp; FULL-STACK &nbsp;•&nbsp; ON-DEVICE &nbsp;•&nbsp; PRIVACY-FIRST &nbsp;•&nbsp; SHIP FAST &nbsp;•&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- WORK -->
+  <section class="work" id="work">
+    <div class="section-header">
+      <span class="section-header__index">01</span>
+      <span class="section-header__label">/ WORK</span>
+    </div>
+    <h2 class="section-title">SELECTED<br>PROJECTS<span class="dot">.</span></h2>
+
+    <div class="projects" id="projects-grid">
+      <!-- Projects are injected by JS, but here are the static fallbacks -->
+    </div>
+
+    <div class="work__discovery" id="discovery-status">
+      <span class="work__discovery-dot"></span>
+      <span class="work__discovery-text">Scanning *.isolated.tech subdomains…</span>
+    </div>
+  </section>
+
+  <!-- SHOWCASE: Full-viewport scroll-driven project browser (desktop) -->
+  <div class="showcase" id="showcase">
+    <div class="showcase__sticky">
+      <div class="showcase__iframe-col">
+        <iframe id="showcase-iframe" class="showcase__iframe" src="about:blank" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" allowfullscreen></iframe>
+        <div class="showcase__iframe-loader" id="showcase-loader">
+          <span class="showcase__loader-text">LOADING</span>
+        </div>
+      </div>
+      <div class="showcase__info-col">
+        <div class="showcase__info-content" id="showcase-content">
+          <span class="showcase__counter" id="showcase-counter">01 / 05</span>
+          <div class="showcase__badges" id="showcase-badges"></div>
+          <h3 class="showcase__name" id="showcase-name"></h3>
+          <p class="showcase__tagline" id="showcase-tagline"></p>
+          <p class="showcase__desc" id="showcase-desc"></p>
+          <a id="showcase-link" class="showcase__link" target="_blank" rel="noopener">
+            <span id="showcase-link-text"></span>
+            <span class="showcase__link-arrow">↗</span>
+          </a>
+        </div>
+        <div class="showcase__footer">
+          <div class="showcase__pips" id="showcase-pips"></div>
+          <div class="showcase__scroll-cue">
+            <span>SCROLL</span>
+            <div class="showcase__scroll-cue-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat__number" data-count="5">0</span>
+      <span class="stat__label">PRODUCTS SHIPPED</span>
+    </div>
+    <div class="stat">
+      <span class="stat__number" data-count="4">0</span>
+      <span class="stat__label">iOS APPS LIVE</span>
+    </div>
+    <div class="stat">
+      <span class="stat__number" data-count="5">0</span>
+      <span class="stat__label">WEBSITES DEPLOYED</span>
+    </div>
+    <div class="stat">
+      <span class="stat__number">∞</span>
+      <span class="stat__label">MONOSPACE FONTS USED</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="section-header">
+      <span class="section-header__index">02</span>
+      <span class="section-header__label">/ ABOUT</span>
+    </div>
+    <div class="about__grid">
+      <div class="about__text">
+        <h2 class="section-title">THE<br>STUDIO<span class="dot">.</span></h2>
+        <p class="about__description">
+          We're a small, intentional studio that believes software should be direct — not decorated. Every product we ship reflects a commitment to clarity, performance, and honest design.
+        </p>
+        <p class="about__description">
+          Our work spans iOS native apps and web platforms. We favor on-device processing, privacy-first architecture, and interfaces that get out of the way. No bloat. No trends. Just tools that work.
+        </p>
+        <div class="about__capabilities">
+          <div class="capability">
+            <span class="capability__marker">■</span>
+            <span>iOS / Swift / SwiftUI</span>
+          </div>
+          <div class="capability">
+            <span class="capability__marker">■</span>
+            <span>WEB / FULL-STACK</span>
+          </div>
+          <div class="capability">
+            <span class="capability__marker">■</span>
+            <span>UI/UX DESIGN</span>
+          </div>
+          <div class="capability">
+            <span class="capability__marker">■</span>
+            <span>BRUTALIST BRANDING</span>
+          </div>
+        </div>
+      </div>
+      <div class="about__images">
+        <div class="about__image-stack">
+          <img src="assets/photos/_MG_2793.jpg" alt="Team close-up" class="about__image about__image--front">
+          <img src="assets/photos/_MG_2727.jpg" alt="Team silhouette" class="about__image about__image--back">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <div class="section-header">
+      <span class="section-header__index">03</span>
+      <span class="section-header__label">/ CONTACT</span>
+    </div>
+    <div class="contact__grid">
+      <div class="contact__left">
+        <h2 class="section-title">LET'S<br>TALK<span class="dot">.</span></h2>
+        <p class="contact__description">Have a project in mind? Need an iOS app? Want a website that doesn't look like everything else? Reach out.</p>
+
+      </div>
+      <div class="contact__right">
+        <div class="contact__socials">
+          <a href="https://instagram.com/isolated.tech" target="_blank" rel="noopener" class="social-link">
+            <span class="social-link__platform">INSTAGRAM</span>
+            <span class="social-link__handle">@isolated.tech</span>
+            <span class="social-link__arrow">↗</span>
+          </a>
+          <a href="https://tiktok.com/@isolated.tech" target="_blank" rel="noopener" class="social-link">
+            <span class="social-link__platform">TIKTOK</span>
+            <span class="social-link__handle">@isolated.tech</span>
+            <span class="social-link__arrow">↗</span>
+          </a>
+          <a href="https://youtube.com/@codybontecou" target="_blank" rel="noopener" class="social-link">
+            <span class="social-link__platform">YOUTUBE</span>
+            <span class="social-link__handle">@codybontecou</span>
+            <span class="social-link__arrow">↗</span>
+          </a>
+          <a href="mailto:cody@isolated.tech" class="social-link">
+            <span class="social-link__platform">EMAIL</span>
+            <span class="social-link__handle">cody@isolated.tech</span>
+            <span class="social-link__arrow">↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer__left">
+      <span>© 2026 ISOLATED.TECH</span>
+    </div>
+    <div class="footer__right">
+    </div>
+  </footer>
+
+  <script src="projects.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
