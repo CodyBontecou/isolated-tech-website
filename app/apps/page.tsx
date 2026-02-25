@@ -173,6 +173,8 @@ export default async function AppsPage() {
           <a href="https://tiktok.com/@isolated.tech" target="_blank" rel="noopener">
             TIKTOK
           </a>
+          <Link href="/privacy">PRIVACY</Link>
+          <Link href="/terms">TERMS</Link>
           <a href="mailto:cody@isolated.tech">
             CONTACT
           </a>
