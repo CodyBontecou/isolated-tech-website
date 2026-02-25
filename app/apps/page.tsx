@@ -19,60 +19,31 @@ interface App {
   platforms: string;
   min_price_cents: number;
   suggested_price_cents: number | null;
+  is_featured: number;
 }
 
-// For now, use static data until we wire up D1 access in server components
-// TODO: Fetch from D1 when env bindings are available in RSC
-const APPS: App[] = [
-  {
-    id: "app_voxboard_001",
-    slug: "voxboard",
-    name: "Voxboard",
-    tagline: "Your voice. Your keyboard.",
-    description:
-      "On-device voice transcription that works in any text field. Private. No cloud. No network required.",
-    icon_url: "/apps/voxboard/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 500,
-  },
-  {
-    id: "app_syncmd_001",
-    slug: "syncmd",
-    name: "sync.md",
-    tagline: "Git on your iPhone.",
-    description:
-      "Real Git on your iPhone. Clone, pull, commit & push any repo. No terminal, no keys layer, no lock-in.",
-    icon_url: "/apps/syncmd/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 800,
-  },
-  {
-    id: "app_healthmd_001",
-    slug: "healthmd",
-    name: "health.md",
-    tagline: "Apple Health → Markdown",
-    description:
-      "Export your Apple Health data directly to Markdown files in your iOS file system. On-device. Private. Automated.",
-    icon_url: "/apps/healthmd/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 500,
-  },
-  {
-    id: "app_imghost_001",
-    slug: "imghost",
-    name: "imghost",
-    tagline: "Upload. Share. Done.",
-    description:
-      "Brutal image hosting for iOS. No fluff, no friction. Share images and get instant, direct links.",
-    icon_url: "/apps/imghost/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 0,
-  },
-];
+async function getApps(): Promise<App[]> {
+  const env = getEnv();
+  if (!env?.DB) return [];
+
+  const result = await env.DB.prepare(
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents,
+            COALESCE(is_featured, 0) as is_featured
+     FROM apps 
+     WHERE is_published = 1
+     ORDER BY is_featured DESC, created_at DESC`
+  ).all<App>();
+
+  return result.results || [];
+}
+
+function getPlatforms(platformsJson: string): string[] {
+  try {
+    return JSON.parse(platformsJson);
+  } catch {
+    return platformsJson.split(",").map((p) => p.trim().replace(/"/g, ""));
+  }
+}
 
 function formatPrice(minCents: number, suggestedCents: number | null): string {
   if (minCents === 0 && (!suggestedCents || suggestedCents === 0)) {
@@ -81,58 +52,50 @@ function formatPrice(minCents: number, suggestedCents: number | null): string {
   if (minCents === 0) {
     return "Name your price";
   }
-  return `From $${(minCents / 100).toFixed(2)}`;
+  return `$${(minCents / 100).toFixed(2)}`;
 }
 
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return [];
-  }
+function PlatformBadge({ platform }: { platform: string }) {
+  return (
+    <span className="store-badge">
+      {platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform.toUpperCase()}
+    </span>
+  );
 }
 
-function AppCard({ app }: { app: App }) {
+function AppCard({ app, index }: { app: App; index: number }) {
   const platforms = getPlatforms(app.platforms);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
   const price = formatPrice(app.min_price_cents, app.suggested_price_cents);
 
   return (
-    <Link href={`/apps/${app.slug}`} className="app-card">
-      <div className="app-card__header">
-        <div className="app-card__icon">
-          {app.icon_url ? (
-            <img src={app.icon_url} alt={`${app.name} icon`} />
-          ) : (
-            app.name[0].toUpperCase()
-          )}
-        </div>
-        <div className="app-card__info">
-          <h3 className="app-card__name">{app.name}</h3>
-          {app.tagline && <p className="app-card__tagline">{app.tagline}</p>}
-        </div>
+    <Link
+      href={`/apps/${app.slug}`}
+      className="store-card"
+      style={{ animationDelay: `${index * 0.05}s` }}
+    >
+      <div className="store-card__icon">
+        {app.icon_url ? (
+          <img src={app.icon_url} alt={`${app.name} icon`} />
+        ) : (
+          <span>{app.name[0].toUpperCase()}</span>
+        )}
       </div>
-
-      <div className="app-card__badges">
-        {platforms.map((p) => (
-          <span
-            key={p}
-            className={`badge ${p === "ios" ? "badge--ios" : "badge--web"}`}
-          >
-            {p === "ios" ? "iOS" : p.toUpperCase()}
-          </span>
-        ))}
+      <div className="store-card__content">
+        <div className="store-card__badges">
+          {platforms.map((p) => (
+            <PlatformBadge key={p} platform={p} />
+          ))}
+          {app.is_featured === 1 && <span className="store-badge store-badge--featured">★</span>}
+        </div>
+        <h2 className="store-card__name">{app.name}</h2>
+        {app.tagline && <p className="store-card__tagline">{app.tagline}</p>}
       </div>
-
-      {app.description && (
-        <p className="app-card__description">{app.description}</p>
-      )}
-
-      <div className="app-card__footer">
-        <span className={`app-card__price ${isFree ? "app-card__price--free" : "app-card__price--paid"}`}>
+      <div className="store-card__footer">
+        <span className={`store-card__price ${isFree ? "store-card__price--free" : ""}`}>
           {price}
         </span>
-        <span className="app-card__arrow">↗</span>
+        <span className="store-card__arrow">→</span>
       </div>
     </Link>
   );
@@ -140,7 +103,10 @@ function AppCard({ app }: { app: App }) {
 
 export default async function AppsPage() {
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const [user, apps] = await Promise.all([
+    env ? getCurrentUser(env) : null,
+    getApps(),
+  ]);
 
   return (
     <>
@@ -150,7 +116,6 @@ export default async function AppsPage() {
         </Link>
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
-          <Link href="/#about">ABOUT</Link>
           {user ? (
             <>
               <Link href="/dashboard">DASHBOARD</Link>
@@ -162,36 +127,59 @@ export default async function AppsPage() {
         </div>
       </nav>
 
-      <header className="store-header">
-        <h1 className="store-header__title">
-          Apps<span className="dot">.</span>
-        </h1>
-        <p className="store-header__subtitle">
-          iOS apps built with privacy in mind. On-device processing, no cloud
-          dependencies, brutalist design. Pay what you want.
-        </p>
-      </header>
-
-      {APPS.length === 0 ? (
-        <div className="empty-state">
-          <h2 className="empty-state__title">No apps yet</h2>
-          <p className="empty-state__text">
-            Check back soon for new releases.
+      <section className="store-hero store-hero--empty" style={{ minHeight: "40vh" }}>
+        <div className="store-hero__content">
+          <div className="store-hero__label">ALL APPS</div>
+          <h1 className="store-hero__title" style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)" }}>
+            Apps<span className="dot">.</span>
+          </h1>
+          <p className="store-hero__subtitle">
+            Privacy-first iOS and macOS apps. On-device processing, no cloud dependencies.
           </p>
         </div>
-      ) : (
-        <div className="app-grid">
-          {APPS.map((app) => (
-            <AppCard key={app.id} app={app} />
-          ))}
-        </div>
-      )}
+        <div className="store-hero__grid" />
+      </section>
 
-      <footer className="footer">
-        <div className="footer__left">
-          <span>© 2026 ISOLATED.TECH</span>
+      <section className="store-section" id="apps">
+        <div className="store-section__header">
+          <h2 className="store-section__title">BROWSE</h2>
+          <span className="store-section__count">{apps.length} apps</span>
         </div>
-        <div className="footer__right" />
+
+        {apps.length === 0 ? (
+          <div className="store-empty">
+            <p>No apps available yet. Check back soon.</p>
+          </div>
+        ) : (
+          <div className="store-grid">
+            {apps.map((app, i) => (
+              <AppCard key={app.id} app={app} index={i} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <footer className="store-footer">
+        <div className="store-footer__brand">
+          <span className="store-footer__logo">
+            ISOLATED<span className="dot">.</span>TECH
+          </span>
+          <span className="store-footer__tagline">Software that ships.</span>
+        </div>
+        <div className="store-footer__links">
+          <a href="https://instagram.com/isolated.tech" target="_blank" rel="noopener">
+            INSTAGRAM
+          </a>
+          <a href="https://tiktok.com/@isolated.tech" target="_blank" rel="noopener">
+            TIKTOK
+          </a>
+          <a href="mailto:cody@isolated.tech">
+            CONTACT
+          </a>
+        </div>
+        <div className="store-footer__copy">
+          © 2026 ISOLATED.TECH
+        </div>
       </footer>
     </>
   );

@@ -101,6 +101,8 @@ export async function PUT(
       min_price_cents,
       suggested_price_cents,
       is_published,
+      is_featured,
+      featured_order,
       page_config,
     } = body;
 
@@ -172,6 +174,16 @@ export async function PUT(
     if (is_published !== undefined) {
       updates.push("is_published = ?");
       values.push(is_published ? 1 : 0);
+    }
+
+    if (is_featured !== undefined) {
+      updates.push("is_featured = ?");
+      values.push(is_featured ? 1 : 0);
+    }
+
+    if (featured_order !== undefined) {
+      updates.push("featured_order = ?");
+      values.push(featured_order);
     }
 
     if (page_config !== undefined) {

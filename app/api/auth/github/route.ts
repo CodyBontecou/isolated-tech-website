@@ -17,8 +17,9 @@ export async function GET(request: NextRequest) {
   try {
     const env = getEnv();
 
-    const url = new URL(request.url);
-    const baseUrl = `${url.protocol}//${url.host}`;
+    // Use canonical production origin to avoid host mismatches between
+    // apex/www/workers.dev during OAuth callback.
+    const baseUrl = "https://isolated.tech";
 
     const github = createGitHubClient(env, baseUrl);
 

@@ -16,6 +16,8 @@ interface AppFormProps {
     min_price_cents: number;
     suggested_price_cents: number;
     is_published: boolean;
+    is_featured: boolean;
+    featured_order: number;
     page_config: Record<string, unknown> | null;
   };
 }
@@ -52,6 +54,12 @@ export function AppForm({ existingApp }: AppFormProps) {
   );
   const [isPublished, setIsPublished] = useState(
     existingApp?.is_published ?? false
+  );
+  const [isFeatured, setIsFeatured] = useState(
+    existingApp?.is_featured ?? false
+  );
+  const [featuredOrder, setFeaturedOrder] = useState(
+    existingApp?.featured_order?.toString() ?? "0"
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,6 +130,8 @@ export function AppForm({ existingApp }: AppFormProps) {
             ? Math.round(parseFloat(suggestedPrice) * 100)
             : 0,
           is_published: isPublished,
+          is_featured: isFeatured,
+          featured_order: parseInt(featuredOrder || "0", 10),
         }),
       });
 
@@ -338,7 +348,7 @@ export function AppForm({ existingApp }: AppFormProps) {
       </div>
 
       {/* Published */}
-      <div style={{ marginBottom: "2rem" }}>
+      <div style={{ marginBottom: "1.5rem" }}>
         <label
           style={{
             display: "flex",
@@ -367,6 +377,62 @@ export function AppForm({ existingApp }: AppFormProps) {
         >
           Unpublished apps are hidden from the store
         </p>
+      </div>
+
+      {/* Featured */}
+      <div style={{ marginBottom: "2rem" }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            cursor: "crosshair",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={isFeatured}
+            onChange={(e) => setIsFeatured(e.target.checked)}
+            style={{ width: "1.25rem", height: "1.25rem" }}
+          />
+          <span className="settings-label" style={{ marginBottom: 0 }}>
+            FEATURED ON HOMEPAGE
+          </span>
+        </label>
+        <p
+          style={{
+            fontSize: "0.7rem",
+            color: "var(--gray)",
+            marginTop: "0.25rem",
+            marginLeft: "2rem",
+          }}
+        >
+          Show this app prominently on the landing page
+        </p>
+        
+        {isFeatured && (
+          <div style={{ marginTop: "1rem", marginLeft: "2rem" }}>
+            <label className="settings-label">FEATURED ORDER</label>
+            <input
+              type="number"
+              className="settings-input"
+              value={featuredOrder}
+              onChange={(e) => setFeaturedOrder(e.target.value)}
+              placeholder="0"
+              min="0"
+              style={{ width: "100px" }}
+            />
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              Lower numbers appear first (0 = hero spotlight)
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Submit */}

@@ -18,6 +18,12 @@ export default {
   ): Promise<Response> {
     const url = new URL(request.url);
 
+    // Canonicalize host: always use apex domain.
+    if (url.hostname === "www.isolated.tech") {
+      url.hostname = "isolated.tech";
+      return Response.redirect(url.toString(), 308);
+    }
+
     // Block protocol-relative URL open redirect attacks (//evil.com/).
     if (url.pathname.startsWith("//")) {
       return new Response("404 Not Found", { status: 404 });

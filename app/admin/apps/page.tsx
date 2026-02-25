@@ -16,6 +16,8 @@ interface App {
   min_price_cents: number;
   suggested_price_cents: number | null;
   is_published: number;
+  is_featured: number;
+  featured_order: number;
   created_at: string;
   version_count: number;
   purchase_count: number;
@@ -33,6 +35,8 @@ async function getApps(): Promise<App[]> {
     min_price_cents: number;
     suggested_price_cents: number | null;
     is_published: number;
+    is_featured: number;
+    featured_order: number;
     created_at: string;
   }>(
     `SELECT 
@@ -44,9 +48,11 @@ async function getApps(): Promise<App[]> {
        min_price_cents,
        suggested_price_cents,
        is_published,
+       COALESCE(is_featured, 0) as is_featured,
+       COALESCE(featured_order, 0) as featured_order,
        created_at
      FROM apps
-     ORDER BY created_at DESC`,
+     ORDER BY is_featured DESC, featured_order ASC, created_at DESC`,
     [],
     env
   );
@@ -179,6 +185,7 @@ export default async function AdminAppsPage() {
                 <th>VERSIONS</th>
                 <th>PURCHASES</th>
                 <th>STATUS</th>
+                <th>FEATURED</th>
                 <th>ACTIONS</th>
               </tr>
             </thead>
@@ -220,6 +227,17 @@ export default async function AdminAppsPage() {
                     ) : (
                       <span style={{ color: "var(--gray)", fontSize: "0.7rem" }}>
                         DRAFT
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    {app.is_featured ? (
+                      <span style={{ color: "#fbbf24", fontSize: "0.7rem" }}>
+                        ★ {app.featured_order === 0 ? "HERO" : `#${app.featured_order}`}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--gray)", fontSize: "0.7rem" }}>
+                        —
                       </span>
                     )}
                   </td>

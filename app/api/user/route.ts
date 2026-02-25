@@ -16,7 +16,6 @@ import {
 export async function DELETE(request: NextRequest) {
   try {
     const env = getEnv();
-    const url = new URL(request.url);
 
     if (!env?.DB || !env?.AUTH_KV) {
       return NextResponse.json(
@@ -81,7 +80,7 @@ export async function DELETE(request: NextRequest) {
 
     // Clear session cookie
     const response = NextResponse.json({ success: true });
-    response.headers.set("Set-Cookie", createBlankSessionCookie(url.hostname));
+    response.headers.set("Set-Cookie", createBlankSessionCookie());
 
     return response;
   } catch (error) {

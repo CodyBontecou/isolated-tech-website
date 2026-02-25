@@ -242,15 +242,8 @@ export async function invalidateAllUserSessions(
  */
 export const SESSION_COOKIE_NAME = "session";
 
-export function createSessionCookie(sessionId: string, expiresAt: Date, hostname?: string): string {
-  const isProduction = true; // Always use secure cookies
+export function createSessionCookie(sessionId: string, expiresAt: Date): string {
   const maxAge = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
-
-  // Set domain for production to work across www and apex domain
-  let domain = "";
-  if (hostname && (hostname === "isolated.tech" || hostname.endsWith(".isolated.tech"))) {
-    domain = "Domain=.isolated.tech";
-  }
 
   return [
     `${SESSION_COOKIE_NAME}=${sessionId}`,
@@ -258,20 +251,11 @@ export function createSessionCookie(sessionId: string, expiresAt: Date, hostname
     `HttpOnly`,
     `SameSite=Lax`,
     `Max-Age=${maxAge}`,
-    isProduction ? `Secure` : "",
-    domain,
-  ]
-    .filter(Boolean)
-    .join("; ");
+    `Secure`,
+  ].join("; ");
 }
 
-export function createBlankSessionCookie(hostname?: string): string {
-  // Set domain for production to work across www and apex domain
-  let domain = "";
-  if (hostname && (hostname === "isolated.tech" || hostname.endsWith(".isolated.tech"))) {
-    domain = "Domain=.isolated.tech";
-  }
-
+export function createBlankSessionCookie(): string {
   return [
     `${SESSION_COOKIE_NAME}=`,
     `Path=/`,
@@ -279,10 +263,7 @@ export function createBlankSessionCookie(hostname?: string): string {
     `SameSite=Lax`,
     `Max-Age=0`,
     `Secure`,
-    domain,
-  ]
-    .filter(Boolean)
-    .join("; ");
+  ].join("; ");
 }
 
 /**

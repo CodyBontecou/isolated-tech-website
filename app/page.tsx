@@ -1,242 +1,280 @@
-import { PROJECTS } from "@/lib/projects";
-import { Showcase } from "@/components/showcase";
-import { StatsBar } from "@/components/stats-bar";
-import { ProjectCards } from "@/components/project-cards";
-import { ScrollRevealInit } from "@/components/scroll-reveal";
+import Link from "next/link";
+import { getEnv } from "@/lib/cloudflare-context";
+import { getCurrentUser } from "@/lib/auth";
 
-export default function HomePage() {
-  const iosApps = PROJECTS.filter((p) => p.platforms.includes("ios")).length;
-  const websites = PROJECTS.filter((p) => p.platforms.includes("web")).length;
+interface App {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  icon_url: string | null;
+  platforms: string;
+  min_price_cents: number;
+  suggested_price_cents: number | null;
+  is_featured: number;
+  featured_order: number;
+}
+
+async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
+  const env = getEnv();
+  if (!env?.DB) {
+    return { featured: null, apps: [] };
+  }
+
+  // Get featured app (lowest featured_order where is_featured = 1)
+  const featured = await env.DB.prepare(
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order
+     FROM apps 
+     WHERE is_published = 1 AND is_featured = 1
+     ORDER BY featured_order ASC
+     LIMIT 1`
+  ).first<App>();
+
+  // Get all published apps (excluding hero featured app)
+  const result = await env.DB.prepare(
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order
+     FROM apps 
+     WHERE is_published = 1 ${featured ? "AND id != ?" : ""}
+     ORDER BY is_featured DESC, featured_order ASC, created_at DESC`
+  )
+    .bind(...(featured ? [featured.id] : []))
+    .all<App>();
+
+  return {
+    featured: featured || null,
+    apps: result.results || [],
+  };
+}
+
+function getPlatforms(platformsJson: string): string[] {
+  try {
+    return JSON.parse(platformsJson);
+  } catch {
+    return platformsJson.split(",").map((p) => p.trim().replace(/"/g, ""));
+  }
+}
+
+function formatPrice(minCents: number, suggestedCents: number | null): string {
+  if (minCents === 0 && (!suggestedCents || suggestedCents === 0)) {
+    return "Free";
+  }
+  if (minCents === 0) {
+    return "Name your price";
+  }
+  return `$${(minCents / 100).toFixed(2)}`;
+}
+
+function PlatformBadge({ platform }: { platform: string }) {
+  return (
+    <span className="store-badge">
+      {platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform.toUpperCase()}
+    </span>
+  );
+}
+
+function HeroApp({ app }: { app: App }) {
+  const platforms = getPlatforms(app.platforms);
+  const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
+
+  return (
+    <section className="store-hero">
+      <div className="store-hero__content">
+        <div className="store-hero__label">FEATURED</div>
+        <div className="store-hero__app">
+          <div className="store-hero__icon">
+            {app.icon_url ? (
+              <img src={app.icon_url} alt={`${app.name} icon`} />
+            ) : (
+              <span>{app.name[0].toUpperCase()}</span>
+            )}
+          </div>
+          <div className="store-hero__info">
+            <div className="store-hero__badges">
+              {platforms.map((p) => (
+                <PlatformBadge key={p} platform={p} />
+              ))}
+            </div>
+            <h1 className="store-hero__name">{app.name}</h1>
+            {app.tagline && <p className="store-hero__tagline">{app.tagline}</p>}
+            {app.description && (
+              <p className="store-hero__desc">
+                {app.description
+                  .replace(/##?\s+/g, "")
+                  .replace(/\*\*(.+?)\*\*/g, "$1")
+                  .replace(/\*(.+?)\*/g, "$1")
+                  .replace(/^-\s+/gm, "• ")
+                  .slice(0, 200)}
+                {app.description.length > 200 ? "..." : ""}
+              </p>
+            )}
+            <div className="store-hero__actions">
+              <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--primary">
+                {isFree ? "GET — FREE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`}
+              </Link>
+              <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--ghost">
+                LEARN MORE
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="store-hero__grid" />
+    </section>
+  );
+}
+
+function AppCard({ app, index }: { app: App; index: number }) {
+  const platforms = getPlatforms(app.platforms);
+  const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
+  const price = formatPrice(app.min_price_cents, app.suggested_price_cents);
+
+  return (
+    <Link
+      href={`/apps/${app.slug}`}
+      className="store-card"
+      style={{ animationDelay: `${index * 0.05}s` }}
+    >
+      <div className="store-card__icon">
+        {app.icon_url ? (
+          <img src={app.icon_url} alt={`${app.name} icon`} />
+        ) : (
+          <span>{app.name[0].toUpperCase()}</span>
+        )}
+      </div>
+      <div className="store-card__content">
+        <div className="store-card__badges">
+          {platforms.map((p) => (
+            <PlatformBadge key={p} platform={p} />
+          ))}
+          {app.is_featured === 1 && <span className="store-badge store-badge--featured">★</span>}
+        </div>
+        <h2 className="store-card__name">{app.name}</h2>
+        {app.tagline && <p className="store-card__tagline">{app.tagline}</p>}
+      </div>
+      <div className="store-card__footer">
+        <span className={`store-card__price ${isFree ? "store-card__price--free" : ""}`}>
+          {price}
+        </span>
+        <span className="store-card__arrow">→</span>
+      </div>
+    </Link>
+  );
+}
+
+export default async function HomePage() {
+  const env = getEnv();
+  const [user, { featured, apps }] = await Promise.all([
+    env ? getCurrentUser(env) : null,
+    getApps(),
+  ]);
+
+  const totalApps = (featured ? 1 : 0) + apps.length;
 
   return (
     <>
-      <ScrollRevealInit />
-
       {/* NAV */}
       <nav className="nav">
-        <div className="nav__logo">
+        <Link href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </div>
+        </Link>
         <div className="nav__links">
-          <a href="#work">WORK</a>
-          <a href="#about">ABOUT</a>
-          <a href="#contact">CONTACT</a>
+          <a href="#apps">APPS</a>
+          {user ? (
+            <>
+              <Link href="/dashboard">DASHBOARD</Link>
+              <Link href="/api/auth/logout">SIGN OUT</Link>
+            </>
+          ) : (
+            <Link href="/auth/login">SIGN IN</Link>
+          )}
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="hero">
-        <div className="hero__image-wrap">
-          <img
-            src="/assets/photos/_MG_2813.jpg"
-            alt="Isolated Tech team"
-            className="hero__image"
-          />
-          <div className="hero__image-overlay" />
-        </div>
-        <div className="hero__content">
-          <div className="hero__label">SOFTWARE STUDIO — EST. 2024</div>
-          <h1 className="hero__title">
-            <span className="hero__title-line">WE BUILD</span>
-            <span className="hero__title-line">
-              SOFTWARE<span className="dot">.</span>
-            </span>
-          </h1>
-          <p className="hero__sub">
-            Websites. iOS apps. No fluff. No frameworks-of-the-week.
-            <br />
-            Just raw, functional software that ships.
-          </p>
-          <div className="hero__cta">
-            <a href="#work" className="btn btn--primary">
-              SEE THE WORK ↓
-            </a>
-            <a href="#contact" className="btn btn--ghost">
-              GET IN TOUCH
-            </a>
+      {featured ? (
+        <HeroApp app={featured} />
+      ) : (
+        <section className="store-hero store-hero--empty">
+          <div className="store-hero__content">
+            <div className="store-hero__label">APP STORE</div>
+            <h1 className="store-hero__title">
+              SOFTWARE<br />
+              THAT SHIPS<span className="dot">.</span>
+            </h1>
+            <p className="store-hero__subtitle">
+              Privacy-first iOS and macOS apps. On-device processing. No cloud dependencies.
+            </p>
           </div>
-        </div>
-        <div className="hero__scroll-indicator">
-          <span>SCROLL</span>
-          <div className="hero__scroll-line" />
-        </div>
-      </section>
+          <div className="store-hero__grid" />
+        </section>
+      )}
 
-      {/* MARQUEE */}
-      <div className="marquee">
-        <div className="marquee__track">
-          <span>
-            WEBSITES &nbsp;•&nbsp; iOS APPS &nbsp;•&nbsp; BRUTALIST DESIGN
-            &nbsp;•&nbsp; SWIFT &nbsp;•&nbsp; FULL-STACK &nbsp;•&nbsp; ON-DEVICE
-            &nbsp;•&nbsp; PRIVACY-FIRST &nbsp;•&nbsp; SHIP FAST &nbsp;•&nbsp;
-          </span>
-          <span>
-            WEBSITES &nbsp;•&nbsp; iOS APPS &nbsp;•&nbsp; BRUTALIST DESIGN
-            &nbsp;•&nbsp; SWIFT &nbsp;•&nbsp; FULL-STACK &nbsp;•&nbsp; ON-DEVICE
-            &nbsp;•&nbsp; PRIVACY-FIRST &nbsp;•&nbsp; SHIP FAST &nbsp;•&nbsp;
-          </span>
+      {/* STATS BAR */}
+      <div className="store-stats">
+        <div className="store-stats__item">
+          <span className="store-stats__number">{totalApps}</span>
+          <span className="store-stats__label">APPS</span>
+        </div>
+        <div className="store-stats__divider" />
+        <div className="store-stats__item">
+          <span className="store-stats__number">●</span>
+          <span className="store-stats__label">PRIVACY-FIRST</span>
+        </div>
+        <div className="store-stats__divider" />
+        <div className="store-stats__item">
+          <span className="store-stats__number">●</span>
+          <span className="store-stats__label">ON-DEVICE</span>
+        </div>
+        <div className="store-stats__divider" />
+        <div className="store-stats__item">
+          <span className="store-stats__number">●</span>
+          <span className="store-stats__label">NO SUBSCRIPTIONS</span>
         </div>
       </div>
 
-      {/* WORK */}
-      <section className="work" id="work">
-        <div className="section-header">
-          <span className="section-header__index">01</span>
-          <span className="section-header__label">/ WORK</span>
+      {/* APPS GRID */}
+      <section className="store-section" id="apps">
+        <div className="store-section__header">
+          <h2 className="store-section__title">ALL APPS</h2>
+          <span className="store-section__count">{apps.length} available</span>
         </div>
-        <h2 className="section-title">
-          SELECTED
-          <br />
-          PROJECTS<span className="dot">.</span>
-        </h2>
 
-        {/* Mobile: project cards grid */}
-        <ProjectCards projects={PROJECTS} />
-
-        <div className="work__discovery">
-          <span className="work__discovery-dot work__discovery-dot--live" />
-          <span className="work__discovery-text">
-            {PROJECTS.length} projects loaded
-          </span>
-        </div>
-      </section>
-
-      {/* SHOWCASE: Full-viewport scroll-driven project browser (desktop) */}
-      <Showcase projects={PROJECTS} />
-
-      {/* STATS BAR */}
-      <StatsBar
-        totalProducts={PROJECTS.length}
-        iosApps={iosApps}
-        websites={websites}
-      />
-
-      {/* ABOUT */}
-      <section className="about" id="about">
-        <div className="section-header">
-          <span className="section-header__index">02</span>
-          <span className="section-header__label">/ ABOUT</span>
-        </div>
-        <div className="about__grid">
-          <div className="about__text">
-            <h2 className="section-title">
-              THE
-              <br />
-              STUDIO<span className="dot">.</span>
-            </h2>
-            <p className="about__description">
-              We&apos;re a small, intentional studio that believes software
-              should be direct — not decorated. Every product we ship reflects a
-              commitment to clarity, performance, and honest design.
-            </p>
-            <p className="about__description">
-              Our work spans iOS native apps and web platforms. We favor
-              on-device processing, privacy-first architecture, and interfaces
-              that get out of the way. No bloat. No trends. Just tools that
-              work.
-            </p>
-            <div className="about__capabilities">
-              <div className="capability">
-                <span className="capability__marker">■</span>
-                <span>iOS / Swift / SwiftUI</span>
-              </div>
-              <div className="capability">
-                <span className="capability__marker">■</span>
-                <span>WEB / FULL-STACK</span>
-              </div>
-              <div className="capability">
-                <span className="capability__marker">■</span>
-                <span>UI/UX DESIGN</span>
-              </div>
-              <div className="capability">
-                <span className="capability__marker">■</span>
-                <span>BRUTALIST BRANDING</span>
-              </div>
-            </div>
+        {apps.length === 0 ? (
+          <div className="store-empty">
+            <p>No apps available yet. Check back soon.</p>
           </div>
-          <div className="about__images">
-            <div className="about__image-stack">
-              <img
-                src="/assets/photos/_MG_2793.jpg"
-                alt="Team close-up"
-                className="about__image about__image--front"
-              />
-              <img
-                src="/assets/photos/_MG_2727.jpg"
-                alt="Team silhouette"
-                className="about__image about__image--back"
-              />
-            </div>
+        ) : (
+          <div className="store-grid">
+            {apps.map((app, i) => (
+              <AppCard key={app.id} app={app} index={i} />
+            ))}
           </div>
-        </div>
-      </section>
-
-      {/* CONTACT */}
-      <section className="contact" id="contact">
-        <div className="section-header">
-          <span className="section-header__index">03</span>
-          <span className="section-header__label">/ CONTACT</span>
-        </div>
-        <div className="contact__grid">
-          <div className="contact__left">
-            <h2 className="section-title">
-              LET&apos;S
-              <br />
-              TALK<span className="dot">.</span>
-            </h2>
-            <p className="contact__description">
-              Have a project in mind? Need an iOS app? Want a website that
-              doesn&apos;t look like everything else? Reach out.
-            </p>
-          </div>
-          <div className="contact__right">
-            <div className="contact__socials">
-              <a
-                href="https://instagram.com/isolated.tech"
-                target="_blank"
-                rel="noopener"
-                className="social-link"
-              >
-                <span className="social-link__platform">INSTAGRAM</span>
-                <span className="social-link__handle">@isolated.tech</span>
-                <span className="social-link__arrow">↗</span>
-              </a>
-              <a
-                href="https://tiktok.com/@isolated.tech"
-                target="_blank"
-                rel="noopener"
-                className="social-link"
-              >
-                <span className="social-link__platform">TIKTOK</span>
-                <span className="social-link__handle">@isolated.tech</span>
-                <span className="social-link__arrow">↗</span>
-              </a>
-              <a
-                href="https://youtube.com/@codybontecou"
-                target="_blank"
-                rel="noopener"
-                className="social-link"
-              >
-                <span className="social-link__platform">YOUTUBE</span>
-                <span className="social-link__handle">@codybontecou</span>
-                <span className="social-link__arrow">↗</span>
-              </a>
-              <a href="mailto:cody@isolated.tech" className="social-link">
-                <span className="social-link__platform">EMAIL</span>
-                <span className="social-link__handle">cody@isolated.tech</span>
-                <span className="social-link__arrow">↗</span>
-              </a>
-            </div>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* FOOTER */}
-      <footer className="footer">
-        <div className="footer__left">
-          <span>© 2026 ISOLATED.TECH</span>
+      <footer className="store-footer">
+        <div className="store-footer__brand">
+          <span className="store-footer__logo">
+            ISOLATED<span className="dot">.</span>TECH
+          </span>
+          <span className="store-footer__tagline">Software that ships.</span>
         </div>
-        <div className="footer__right" />
+        <div className="store-footer__links">
+          <a href="https://instagram.com/isolated.tech" target="_blank" rel="noopener">
+            INSTAGRAM
+          </a>
+          <a href="https://tiktok.com/@isolated.tech" target="_blank" rel="noopener">
+            TIKTOK
+          </a>
+          <a href="mailto:cody@isolated.tech">
+            CONTACT
+          </a>
+        </div>
+        <div className="store-footer__copy">
+          © 2026 ISOLATED.TECH
+        </div>
       </footer>
     </>
   );

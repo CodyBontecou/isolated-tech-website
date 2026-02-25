@@ -5,10 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import {
-  completeMagicLinkAuth,
-  createSessionCookie,
-} from "@/lib/auth";
+import { completeMagicLinkAuth } from "@/lib/auth";
 import { getEnv } from "@/lib/cloudflare-context";
 
 export async function GET(request: NextRequest) {
@@ -41,18 +38,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { session, user } = result;
+    const { session } = result;
 
     // Create response with redirect to dashboard
     const response = NextResponse.redirect(
       new URL("/dashboard", request.url)
     );
 
-    // Set session cookie
-    response.headers.set(
-      "Set-Cookie",
-      createSessionCookie(session.id, session.expiresAt)
-    );
+    // Set session cookie using Next.js cookies API
+    const url = new URL(request.url);
+    const maxAge = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
+    const isIsolatedTech = url.hostname === "isolated.tech" || url.hostname.endsWith(".isolated.tech");
+    
+    response.cookies.set({
+      name: "session",
+      value: session.id,
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge,
+      path: "/",
+      ...(isIsolatedTech && { domain: ".isolated.tech" }),
+    });
 
     return response;
   } catch (error) {

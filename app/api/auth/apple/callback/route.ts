@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { createAppleClient, verifyOAuthState, linkOAuthAccount, getUserByOAuth } from "@/lib/auth/oauth";
-import { createSession, createSessionCookie } from "@/lib/auth/session";
+import { createSession } from "@/lib/auth/session";
 import { createUser, getUserByEmail } from "@/lib/auth/user";
 import { decodeIdToken } from "arctic";
 
@@ -138,10 +138,23 @@ export async function POST(request: NextRequest) {
 
     // Create session
     const session = await createSession(userId, env);
-    const cookie = createSessionCookie(session.id, session.expiresAt, url.hostname);
-
+    
     const response = NextResponse.redirect(new URL("/dashboard", request.url));
-    response.headers.set("Set-Cookie", cookie);
+    
+    // Set session cookie using Next.js cookies API
+    const maxAge = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
+    const isIsolatedTech = url.hostname === "isolated.tech" || url.hostname.endsWith(".isolated.tech");
+    
+    response.cookies.set({
+      name: "session",
+      value: session.id,
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge,
+      path: "/",
+      ...(isIsolatedTech && { domain: ".isolated.tech" }),
+    });
 
     return response;
   } catch (error) {

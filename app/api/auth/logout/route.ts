@@ -15,8 +15,6 @@ import { getEnv } from "@/lib/cloudflare-context";
 export async function POST(request: NextRequest) {
   try {
     const env = getEnv();
-    const url = new URL(request.url);
-
     if (!env?.AUTH_KV || !env?.DB) {
       console.error("Missing Cloudflare bindings");
       return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -33,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     // Clear session cookie
     const response = NextResponse.json({ success: true });
-    response.headers.set("Set-Cookie", createBlankSessionCookie(url.hostname));
+    response.headers.set("Set-Cookie", createBlankSessionCookie());
 
     return response;
   } catch (error) {
@@ -44,14 +42,12 @@ export async function POST(request: NextRequest) {
 
 // Also support GET for simple logout links
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  
   try {
     const env = getEnv();
 
     if (!env?.AUTH_KV || !env?.DB) {
       const response = NextResponse.redirect(new URL("/", request.url));
-      response.headers.set("Set-Cookie", createBlankSessionCookie(url.hostname));
+      response.headers.set("Set-Cookie", createBlankSessionCookie());
       return response;
     }
 
@@ -65,13 +61,13 @@ export async function GET(request: NextRequest) {
 
     // Redirect to home with cleared cookie
     const response = NextResponse.redirect(new URL("/", request.url));
-    response.headers.set("Set-Cookie", createBlankSessionCookie(url.hostname));
+    response.headers.set("Set-Cookie", createBlankSessionCookie());
 
     return response;
   } catch (error) {
     console.error("Logout error:", error);
     const response = NextResponse.redirect(new URL("/", request.url));
-    response.headers.set("Set-Cookie", createBlankSessionCookie(url.hostname));
+    response.headers.set("Set-Cookie", createBlankSessionCookie());
     return response;
   }
 }

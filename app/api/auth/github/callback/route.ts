@@ -13,7 +13,7 @@ import {
   linkOAuthAccount,
   getUserByOAuth,
 } from "@/lib/auth/oauth";
-import { createSession, createSessionCookie } from "@/lib/auth/session";
+import { createSession } from "@/lib/auth/session";
 import { createUser, getUserByEmail } from "@/lib/auth/user";
 
 interface GitHubUser {
@@ -166,13 +166,27 @@ export async function GET(request: NextRequest) {
 
     // Create session
     const session = await createSession(userId, env);
-    const cookie = createSessionCookie(session.id, session.expiresAt, url.hostname);
-
-    // Redirect to dashboard
-    const response = NextResponse.redirect(new URL("/dashboard", request.url));
-    response.headers.set("Set-Cookie", cookie);
-
-    return response;
+    
+    // Build Set-Cookie header manually (vinext compatibility)
+    const maxAge = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
+    const cookieHeader = [
+      `session=${session.id}`,
+      `Path=/`,
+      `HttpOnly`,
+      `Secure`,
+      `SameSite=Lax`,
+      `Max-Age=${maxAge}`,
+    ].join("; ");
+    
+    // Create redirect response with cookie
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "https://isolated.tech/dashboard",
+        "Set-Cookie": cookieHeader,
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    });
   } catch (error) {
     console.error("GitHub OAuth callback error:", error);
     return NextResponse.redirect(

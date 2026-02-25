@@ -84,6 +84,8 @@ export async function POST(request: NextRequest) {
       min_price_cents,
       suggested_price_cents,
       is_published,
+      is_featured,
+      featured_order,
       page_config,
     } = body;
 
@@ -135,8 +137,8 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     await env.DB.prepare(
-      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, custom_page_config, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, is_featured, featured_order, custom_page_config, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         appId,
@@ -150,6 +152,8 @@ export async function POST(request: NextRequest) {
         min_price_cents || 0,
         suggested_price_cents || 0,
         is_published ? 1 : 0,
+        is_featured ? 1 : 0,
+        featured_order || 0,
         page_config ? JSON.stringify(page_config) : null,
         now,
         now
