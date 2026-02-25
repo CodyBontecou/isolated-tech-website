@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { createAppleClient, generateState, storeOAuthState } from "@/lib/auth/oauth";
+import { sanitizeRedirectPath } from "@/lib/auth/redirect";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,12 +32,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const redirectTo = sanitizeRedirectPath(
+      request.nextUrl.searchParams.get("redirect")
+    );
+
     // Generate and store state
     const state = generateState();
-    await storeOAuthState(state, "apple", env);
+    await storeOAuthState(state, "apple", env, {
+      redirectTo,
+    });
 
     // Create authorization URL
+    // Apple requires response_mode=form_post when requesting name/email scopes.
     const authUrl = apple.createAuthorizationURL(state, ["email", "name"]);
+    authUrl.searchParams.set("response_mode", "form_post");
 
     return NextResponse.redirect(authUrl.toString());
   } catch (error) {

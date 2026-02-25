@@ -3,152 +3,43 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getEnv } from "@/lib/cloudflare-context";
+import { queries, queryOne } from "@/lib/db";
 
-interface Version {
+interface App {
   id: string;
+  slug: string;
+  name: string;
+  platforms: string;
+}
+
+interface AppUpdate {
+  id: string;
+  app_id: string;
+  platform: string;
   version: string;
-  build_number: number;
+  build_number: number | null;
   release_notes: string | null;
-  min_os_version: string;
+  released_at: string;
   created_at: string;
 }
 
-// Mock data - will be replaced with D1 queries
-const APPS: Record<
-  string,
-  { name: string; slug: string; versions: Version[] }
-> = {
-  voxboard: {
-    name: "Voxboard",
-    slug: "voxboard",
-    versions: [
-      {
-        id: "v3",
-        version: "1.2.0",
-        build_number: 42,
-        release_notes: `### New Features
-- Added support for multiple audio input devices
-- New floating window mode for quick dictation
-- Keyboard shortcuts now fully customizable
+async function getApp(slug: string): Promise<App | null> {
+  const env = getEnv();
+  if (!env?.DB) return null;
 
-### Improvements
-- 30% faster transcription startup time
-- Better handling of background noise
-- Improved memory usage on longer sessions
-
-### Bug Fixes
-- Fixed crash when switching audio devices during transcription
-- Fixed issue where some special characters weren't being typed correctly
-- Fixed window position not being remembered after restart`,
-        min_os_version: "14.0",
-        created_at: "2026-02-20T12:00:00Z",
-      },
-      {
-        id: "v2",
-        version: "1.1.0",
-        build_number: 30,
-        release_notes: `### New Features
-- Real-time transcription preview
-- Added support for Apple Dictation fallback
-- New menu bar mode
-
-### Improvements
-- Better accuracy for technical terms
-- Reduced CPU usage during idle
-
-### Bug Fixes
-- Fixed occasional duplicate text insertion
-- Fixed compatibility with Sonoma`,
-        min_os_version: "13.0",
-        created_at: "2026-01-15T10:00:00Z",
-      },
-      {
-        id: "v1",
-        version: "1.0.0",
-        build_number: 1,
-        release_notes: `### Initial Release
-- Local voice transcription powered by Whisper
-- Works with any text field on macOS
-- Privacy-focused: all processing happens on-device
-- Supports multiple languages`,
-        min_os_version: "13.0",
-        created_at: "2026-01-01T00:00:00Z",
-      },
-    ],
-  },
-  syncmd: {
-    name: "sync.md",
-    slug: "syncmd",
-    versions: [
-      {
-        id: "v2",
-        version: "2.0.0",
-        build_number: 20,
-        release_notes: `### Major Update
-- Complete UI redesign
-- Added iOS companion app
-- iCloud sync support
-
-### Bug Fixes
-- Fixed git merge conflicts on shared repos`,
-        min_os_version: "14.0",
-        created_at: "2026-02-10T09:00:00Z",
-      },
-      {
-        id: "v1",
-        version: "1.0.0",
-        build_number: 1,
-        release_notes: `### Initial Release
-- Git-backed markdown note-taking
-- Automatic commits and pushes
-- Syntax highlighting`,
-        min_os_version: "13.0",
-        created_at: "2026-01-15T00:00:00Z",
-      },
-    ],
-  },
-  healthmd: {
-    name: "health.md",
-    slug: "healthmd",
-    versions: [
-      {
-        id: "v1",
-        version: "1.0.0",
-        build_number: 1,
-        release_notes: `### Initial Release
-- Export Apple Health data to markdown
-- Daily, weekly, and monthly summaries
-- Charts and visualizations`,
-        min_os_version: "17.0",
-        created_at: "2026-02-01T00:00:00Z",
-      },
-    ],
-  },
-  imghost: {
-    name: "imghost",
-    slug: "imghost",
-    versions: [
-      {
-        id: "v1",
-        version: "1.0.0",
-        build_number: 1,
-        release_notes: `### Initial Release
-- Instant image hosting from menu bar
-- Drag and drop support
-- Auto-copy URL to clipboard`,
-        min_os_version: "13.0",
-        created_at: "2026-02-10T00:00:00Z",
-      },
-    ],
-  },
-};
+  return queryOne<App>(
+    `SELECT id, slug, name, platforms FROM apps WHERE slug = ? AND is_published = 1`,
+    [slug],
+    env
+  );
+}
 
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const app = APPS[params.slug];
+  const app = await getApp(params.slug);
   if (!app) return { title: "Not Found" };
 
   return {
@@ -166,22 +57,29 @@ function formatDate(dateStr: string): string {
 }
 
 function renderMarkdown(text: string): string {
-  // Simple markdown rendering
   return text
     .split("\n")
     .map((line) => {
       if (line.startsWith("### ")) {
-        return `<h4 style="font-size: 0.85rem; font-weight: 700; margin: 1.25rem 0 0.5rem; color: var(--white);">${line.slice(4)}</h4>`;
+        return `<h4 class="changelog__heading">${line.slice(4)}</h4>`;
       }
       if (line.startsWith("- ")) {
-        return `<li style="font-size: 0.85rem; color: #aaa; margin-left: 1rem; margin-bottom: 0.25rem;">${line.slice(2)}</li>`;
+        return `<li class="changelog__item">${line.slice(2)}</li>`;
       }
       if (line.trim() === "") {
         return "";
       }
-      return `<p style="font-size: 0.85rem; color: #aaa;">${line}</p>`;
+      return `<p class="changelog__text">${line}</p>`;
     })
     .join("\n");
+}
+
+function getPlatforms(platformsJson: string): string[] {
+  try {
+    return JSON.parse(platformsJson);
+  } catch {
+    return [];
+  }
 }
 
 export default async function ChangelogPage({
@@ -189,14 +87,32 @@ export default async function ChangelogPage({
 }: {
   params: { slug: string };
 }) {
-  const app = APPS[params.slug];
+  const app = await getApp(params.slug);
 
   if (!app) {
     notFound();
   }
 
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const [user, updates] = await Promise.all([
+    env ? getCurrentUser(env) : null,
+    queries.getAppUpdates(app.id, env || undefined),
+  ]);
+
+  const platforms = getPlatforms(app.platforms);
+  const hasBothPlatforms = platforms.includes("macos") && platforms.includes("ios");
+
+  // Group updates by platform if the app supports both
+  const macosUpdates = updates.filter((u: AppUpdate) => u.platform === "macos");
+  const iosUpdates = updates.filter((u: AppUpdate) => u.platform === "ios");
+
+  // All versions for quick nav (deduplicated by version string)
+  const allVersions = updates.reduce<{ version: string; platform: string }[]>((acc, u: AppUpdate) => {
+    if (!acc.some((v) => v.version === u.version && v.platform === u.platform)) {
+      acc.push({ version: u.version, platform: u.platform });
+    }
+    return acc;
+  }, []);
 
   return (
     <>
@@ -231,112 +147,61 @@ export default async function ChangelogPage({
           </p>
         </header>
 
-        {/* Quick nav */}
-        <div
-          style={{
-            marginBottom: "2rem",
-            padding: "1rem",
-            background: "var(--gray-dark)",
-            border: "var(--border)",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "0.65rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              color: "var(--gray)",
-            }}
-          >
-            VERSIONS
-          </span>
-          <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
-            {app.versions.map((v) => (
-              <a
-                key={v.id}
-                href={`#${v.version}`}
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                }}
-              >
-                {v.version}
-              </a>
-            ))}
+        {updates.length === 0 ? (
+          <div className="changelog-empty">
+            <p className="changelog-empty__text">No releases yet.</p>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Quick nav */}
+            <div className="changelog-nav">
+              <span className="changelog-nav__label">VERSIONS</span>
+              <div className="changelog-nav__list">
+                {allVersions.map((v) => (
+                  <a
+                    key={`${v.platform}-${v.version}`}
+                    href={`#${v.platform}-${v.version}`}
+                    className="changelog-nav__link"
+                  >
+                    {v.version}
+                    {hasBothPlatforms && (
+                      <span className="changelog-nav__platform">
+                        {v.platform === "ios" ? "iOS" : "macOS"}
+                      </span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
 
-        {/* Versions */}
-        <div style={{ maxWidth: "700px" }}>
-          {app.versions.map((version, idx) => (
-            <article
-              key={version.id}
-              id={version.version}
-              style={{
-                marginBottom: "2.5rem",
-                paddingBottom: "2.5rem",
-                borderBottom: idx < app.versions.length - 1 ? "var(--border)" : "none",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  justifyContent: "space-between",
-                  marginBottom: "1rem",
-                }}
-              >
-                <h2
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "1.25rem",
-                    fontWeight: 700,
-                  }}
-                >
-                  {version.version}
-                  {idx === 0 && (
-                    <span
-                      style={{
-                        marginLeft: "0.75rem",
-                        fontSize: "0.6rem",
-                        color: "#4ade80",
-                        fontWeight: 700,
-                        verticalAlign: "middle",
-                      }}
-                    >
-                      LATEST
-                    </span>
+            {/* Versions */}
+            <div className="changelog-versions">
+              {hasBothPlatforms ? (
+                <>
+                  {macosUpdates.length > 0 && (
+                    <VersionSection
+                      label="macOS"
+                      updates={macosUpdates}
+                      showPlatform={false}
+                    />
                   )}
-                </h2>
-                <span style={{ color: "var(--gray)", fontSize: "0.8rem" }}>
-                  {formatDate(version.created_at)}
-                </span>
-              </div>
-
-              <div
-                style={{
-                  fontSize: "0.7rem",
-                  color: "var(--gray)",
-                  marginBottom: "1rem",
-                  display: "flex",
-                  gap: "1rem",
-                }}
-              >
-                <span>Build {version.build_number}</span>
-                <span>macOS {version.min_os_version}+</span>
-              </div>
-
-              {version.release_notes && (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: renderMarkdown(version.release_notes),
-                  }}
+                  {iosUpdates.length > 0 && (
+                    <VersionSection
+                      label="iOS"
+                      updates={iosUpdates}
+                      showPlatform={false}
+                    />
+                  )}
+                </>
+              ) : (
+                <VersionSection
+                  updates={updates}
+                  showPlatform={false}
                 />
               )}
-            </article>
-          ))}
-        </div>
+            </div>
+          </>
+        )}
       </main>
 
       <footer className="footer">
@@ -346,5 +211,59 @@ export default async function ChangelogPage({
         <div className="footer__right" />
       </footer>
     </>
+  );
+}
+
+function VersionSection({
+  label,
+  updates,
+  showPlatform,
+}: {
+  label?: string;
+  updates: AppUpdate[];
+  showPlatform: boolean;
+}) {
+  return (
+    <section className="changelog-section">
+      {label && (
+        <h2 className="changelog-section__label">{label}</h2>
+      )}
+
+      {updates.map((update, idx) => (
+        <article
+          key={update.id}
+          id={`${update.platform}-${update.version}`}
+          className={`changelog-entry ${idx < updates.length - 1 ? "changelog-entry--bordered" : ""}`}
+        >
+          <div className="changelog-entry__header">
+            <h3 className="changelog-entry__version">
+              {update.version}
+              {idx === 0 && (
+                <span className="changelog-entry__latest">LATEST</span>
+              )}
+            </h3>
+            <span className="changelog-entry__date">
+              {formatDate(update.released_at)}
+            </span>
+          </div>
+
+          <div className="changelog-entry__meta">
+            {update.build_number && <span>Build {update.build_number}</span>}
+            {showPlatform && (
+              <span>{update.platform === "ios" ? "iOS" : "macOS"}</span>
+            )}
+          </div>
+
+          {update.release_notes && (
+            <div
+              className="changelog-entry__notes"
+              dangerouslySetInnerHTML={{
+                __html: renderMarkdown(update.release_notes),
+              }}
+            />
+          )}
+        </article>
+      ))}
+    </section>
   );
 }

@@ -19,6 +19,7 @@ interface Purchase {
   version: string;
   version_id: string;
   has_review: boolean;
+  distribution_type: string;
 }
 
 function formatDate(dateStr: string): string {
@@ -65,7 +66,9 @@ function PurchasedAppCard({
           href={`/api/download/${purchase.app_id}/${purchase.version_id}`}
           className="purchased-card__btn"
         >
-          ↓ DOWNLOAD v{purchase.version}
+          {purchase.distribution_type === "source_code"
+            ? `↓ DOWNLOAD SOURCE v${purchase.version}`
+            : `↓ DOWNLOAD v${purchase.version}`}
         </a>
 
         {purchase.has_review ? (
@@ -152,6 +155,7 @@ export default async function DashboardPage({
           a.name as app_name,
           a.slug as app_slug,
           a.icon_url as app_icon_url,
+          COALESCE(a.distribution_type, 'binary') as distribution_type,
           p.created_at as purchased_at,
           p.amount_cents,
           v.version,
@@ -169,6 +173,7 @@ export default async function DashboardPage({
         app_name: string;
         app_slug: string;
         app_icon_url: string | null;
+        distribution_type: string;
         purchased_at: string;
         amount_cents: number;
         version: string;

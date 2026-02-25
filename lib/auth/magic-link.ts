@@ -12,6 +12,7 @@
 import type { Env } from "@/lib/env";
 import { createUser, getUserByEmail } from "./user";
 import { createSession, type Session, type User } from "./session";
+import { sanitizeRedirectPath } from "./redirect";
 
 const MAGIC_LINK_TTL_SECONDS = 15 * 60; // 15 minutes
 const MAGIC_LINK_PREFIX = "magic_link:";
@@ -19,6 +20,12 @@ const MAGIC_LINK_PREFIX = "magic_link:";
 interface MagicLinkData {
   email: string;
   createdAt: string;
+  redirectTo?: string;
+}
+
+interface VerifiedMagicLinkData {
+  email: string;
+  redirectTo: string;
 }
 
 /**
@@ -36,12 +43,16 @@ function generateToken(): string {
  */
 export async function createMagicLinkToken(
   email: string,
-  env: Env
+  env: Env,
+  options?: { redirectTo?: string }
 ): Promise<string> {
   const token = generateToken();
   const data: MagicLinkData = {
     email: email.toLowerCase().trim(),
     createdAt: new Date().toISOString(),
+    ...(options?.redirectTo
+      ? { redirectTo: sanitizeRedirectPath(options.redirectTo) }
+      : {}),
   };
 
   await env.AUTH_KV.put(`${MAGIC_LINK_PREFIX}${token}`, JSON.stringify(data), {
@@ -52,12 +63,12 @@ export async function createMagicLinkToken(
 }
 
 /**
- * Verify a magic link token and return the email
+ * Verify a magic link token and return auth context
  */
 export async function verifyMagicLinkToken(
   token: string,
   env: Env
-): Promise<string | null> {
+): Promise<VerifiedMagicLinkData | null> {
   const key = `${MAGIC_LINK_PREFIX}${token}`;
   const value = await env.AUTH_KV.get(key);
 
@@ -68,8 +79,11 @@ export async function verifyMagicLinkToken(
   // Delete token (one-time use)
   await env.AUTH_KV.delete(key);
 
-  const data: MagicLinkData = JSON.parse(value);
-  return data.email;
+  const data = JSON.parse(value) as MagicLinkData;
+  return {
+    email: data.email,
+    redirectTo: sanitizeRedirectPath(data.redirectTo),
+  };
 }
 
 /**
@@ -79,24 +93,24 @@ export async function verifyMagicLinkToken(
 export async function completeMagicLinkAuth(
   token: string,
   env: Env
-): Promise<{ session: Session; user: User } | null> {
-  const email = await verifyMagicLinkToken(token, env);
+): Promise<{ session: Session; user: User; redirectTo: string } | null> {
+  const verifiedData = await verifyMagicLinkToken(token, env);
 
-  if (!email) {
+  if (!verifiedData) {
     return null;
   }
 
   // Get or create user
-  let user = await getUserByEmail(email, env);
+  let user = await getUserByEmail(verifiedData.email, env);
 
   if (!user) {
-    user = await createUser({ email }, env);
+    user = await createUser({ email: verifiedData.email }, env);
   }
 
   // Create session
   const session = await createSession(user.id, env);
 
-  return { session, user };
+  return { session, user, redirectTo: verifiedData.redirectTo };
 }
 
 /**

@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 interface PurchaseCardProps {
   appId: string;
+  appSlug: string;
   appName: string;
   minPriceCents: number;
   suggestedPriceCents: number | null;
   isFree: boolean;
   isAuthenticated?: boolean;
+  iosAppStoreUrl?: string | null;
+  iosAppStoreLabel?: string;
+  distributionType?: string;
 }
 
 interface DiscountResult {
@@ -23,12 +27,17 @@ interface DiscountResult {
 
 export function PurchaseCard({
   appId,
+  appSlug,
   appName,
   minPriceCents,
   suggestedPriceCents,
   isFree,
   isAuthenticated = false,
+  iosAppStoreUrl = null,
+  iosAppStoreLabel = "VIEW ON APP STORE",
+  distributionType = "binary",
 }: PurchaseCardProps) {
+  const isSourceCode = distributionType === "source_code";
   const [price, setPrice] = useState(
     suggestedPriceCents ? (suggestedPriceCents / 100).toFixed(2) : "0.00"
   );
@@ -37,6 +46,7 @@ export function PurchaseCard({
   const [showDiscount, setShowDiscount] = useState(false);
   const [discountResult, setDiscountResult] = useState<DiscountResult | null>(null);
   const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
+  const hasResumedPostAuthAction = useRef(false);
 
   const priceInCents = Math.round(parseFloat(price || "0") * 100);
   const isValidPrice = priceInCents >= minPriceCents;
@@ -46,6 +56,67 @@ export function PurchaseCard({
   const finalPriceCents = discountResult?.valid && discountResult.finalPriceCents !== undefined
     ? discountResult.finalPriceCents
     : priceInCents;
+
+  const startCheckout = useCallback(
+    async (checkoutPriceCents: number, checkoutDiscountCode?: string) => {
+      setIsLoading(true);
+
+      try {
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appId,
+            priceCents: checkoutPriceCents,
+            discountCode: checkoutDiscountCode,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Handle auth redirect and preserve attempted action
+          if (res.status === 401) {
+            const resumeParams = new URLSearchParams({
+              postAuthAction: "checkout",
+              appId,
+              priceCents: checkoutPriceCents.toString(),
+            });
+
+            if (checkoutDiscountCode) {
+              resumeParams.set("discountCode", checkoutDiscountCode);
+            }
+
+            const redirectPath = `/apps/${appSlug}?${resumeParams.toString()}`;
+            window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
+            return;
+          }
+
+          alert(data.error || "Failed to create checkout session");
+          return;
+        }
+
+        // Handle free purchase
+        if (data.free && data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+          return;
+        }
+
+        // Redirect to Stripe
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert("Failed to create checkout session");
+        }
+      } catch (error) {
+        console.error("Checkout error:", error);
+        alert("Something went wrong. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [appId, appSlug]
+  );
 
   const validateDiscount = useCallback(async () => {
     if (!discountCode.trim()) {
@@ -86,57 +157,58 @@ export function PurchaseCard({
   const handlePurchase = async () => {
     if (!isValidPrice && !isFree) return;
 
-    setIsLoading(true);
-
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          appId,
-          priceCents: finalPriceCents,
-          discountCode: discountResult?.valid ? discountCode : undefined,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        // Handle auth redirect
-        if (res.status === 401) {
-          window.location.href = `/auth/login?redirect=/apps/${appId}`;
-          return;
-        }
-        alert(data.error || "Failed to create checkout session");
-        return;
-      }
-
-      // Handle free purchase
-      if (data.free && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-        return;
-      }
-
-      // Redirect to Stripe
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert("Failed to create checkout session");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    await startCheckout(
+      finalPriceCents,
+      discountResult?.valid ? discountCode : undefined
+    );
   };
+
+  useEffect(() => {
+    if (hasResumedPostAuthAction.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const postAuthAction = params.get("postAuthAction");
+    const actionAppId = params.get("appId");
+
+    if (postAuthAction !== "checkout" || actionAppId !== appId) {
+      return;
+    }
+
+    hasResumedPostAuthAction.current = true;
+
+    const rawPriceCents = params.get("priceCents");
+    const parsedPriceCents = rawPriceCents ? Number.parseInt(rawPriceCents, 10) : finalPriceCents;
+    const checkoutPriceCents = Number.isFinite(parsedPriceCents) && parsedPriceCents >= 0
+      ? parsedPriceCents
+      : finalPriceCents;
+
+    const resumeDiscountCode = params.get("discountCode") || undefined;
+
+    setPrice((checkoutPriceCents / 100).toFixed(2));
+    if (resumeDiscountCode) {
+      setShowDiscount(true);
+      setDiscountCode(resumeDiscountCode.toUpperCase());
+    }
+
+    ["postAuthAction", "appId", "priceCents", "discountCode"].forEach((key) => {
+      params.delete(key);
+    });
+
+    const remainingQuery = params.toString();
+    const cleanUrl = `${window.location.pathname}${remainingQuery ? `?${remainingQuery}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", cleanUrl);
+
+    void startCheckout(checkoutPriceCents, resumeDiscountCode);
+  }, [appId, finalPriceCents, startCheckout]);
 
   if (isFree) {
     return (
       <div className="purchase-card">
-        <div className="purchase-card__price-label">PRICE</div>
+        <div className="purchase-card__price-label">
+          {isSourceCode ? "DISTRIBUTION" : "PRICE"}
+        </div>
         <div className="purchase-card__price" style={{ color: "#4ade80" }}>
-          Free
+          {isSourceCode ? "Source Code — Free" : "Free"}
         </div>
 
         <button
@@ -144,11 +216,24 @@ export function PurchaseCard({
           onClick={handlePurchase}
           disabled={isLoading}
         >
-          {isLoading ? "LOADING..." : "GET FREE"}
+          {isLoading ? "LOADING..." : isSourceCode ? "↓ GET SOURCE CODE" : "GET FREE"}
         </button>
 
+        {iosAppStoreUrl && (
+          <a
+            href={iosAppStoreUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="purchase-card__btn purchase-card__btn--secondary"
+          >
+            {iosAppStoreLabel}
+          </a>
+        )}
+
         <p className="purchase-card__note">
-          No payment required. Create an account to track your downloads.
+          {isSourceCode
+            ? "No payment required. Download the Xcode project source code and build on your device."
+            : "No payment required. Create an account to track your downloads."}
         </p>
       </div>
     );
@@ -156,7 +241,9 @@ export function PurchaseCard({
 
   return (
     <div className="purchase-card">
-      <div className="purchase-card__price-label">NAME YOUR PRICE</div>
+      <div className="purchase-card__price-label">
+        {isSourceCode ? "NAME YOUR PRICE — SOURCE CODE" : "NAME YOUR PRICE"}
+      </div>
 
       <div className="purchase-card__input-wrapper">
         <span className="purchase-card__currency">$</span>
@@ -291,22 +378,39 @@ export function PurchaseCard({
         {isLoading
           ? "LOADING..."
           : finalPriceCents === 0
-            ? "GET FREE"
-            : `PAY $${(finalPriceCents / 100).toFixed(2)}`}
+            ? isSourceCode ? "↓ GET SOURCE CODE" : "GET FREE"
+            : isSourceCode
+              ? `↓ GET SOURCE — $${(finalPriceCents / 100).toFixed(2)}`
+              : `PAY $${(finalPriceCents / 100).toFixed(2)}`}
       </button>
 
       {!isAuthenticated && (
         <button
           className="purchase-card__btn purchase-card__btn--secondary"
-          onClick={() => (window.location.href = "/auth/login")}
+          onClick={() => {
+            const redirectPath = `/apps/${appSlug}`;
+            window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
+          }}
         >
           SIGN IN FIRST
         </button>
       )}
 
+      {iosAppStoreUrl && (
+        <a
+          href={iosAppStoreUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="purchase-card__btn purchase-card__btn--secondary"
+        >
+          {iosAppStoreLabel}
+        </a>
+      )}
+
       <p className="purchase-card__note">
-        Secure payment via Stripe. You&apos;ll get instant access to download
-        after purchase. All prices in USD.
+        {isSourceCode
+          ? "Secure payment via Stripe. You\u2019ll get instant access to download the Xcode project source code. All prices in USD."
+          : "Secure payment via Stripe. You\u2019ll get instant access to download after purchase. All prices in USD."}
       </p>
     </div>
   );

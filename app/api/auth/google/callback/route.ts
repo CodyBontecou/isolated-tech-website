@@ -6,10 +6,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { createGoogleClient, linkOAuthAccount, getUserByOAuth } from "@/lib/auth/oauth";
+import {
+  createGoogleClient,
+  consumeOAuthState,
+  linkOAuthAccount,
+  getUserByOAuth,
+} from "@/lib/auth/oauth";
 import { createSession } from "@/lib/auth/session";
 import { createUser, getUserByEmail } from "@/lib/auth/user";
 import { decodeIdToken } from "arctic";
+import { sanitizeRedirectPath } from "@/lib/auth/redirect";
 
 interface GoogleIdToken {
   sub: string;
@@ -42,23 +48,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Get and verify state
-    const stateKey = `oauth_state:${state}`;
-    const stateValue = await env.AUTH_KV.get(stateKey);
+    const stateData = await consumeOAuthState(state, "google", env);
 
-    if (!stateValue) {
+    if (!stateData || !stateData.codeVerifier) {
       return NextResponse.redirect(
         new URL("/auth/login?error=invalid_state", request.url)
       );
     }
 
-    await env.AUTH_KV.delete(stateKey);
-
-    const stateData = JSON.parse(stateValue);
-    if (stateData.provider !== "google") {
-      return NextResponse.redirect(
-        new URL("/auth/login?error=invalid_state", request.url)
-      );
-    }
+    const redirectTo = sanitizeRedirectPath(stateData.redirectTo);
 
     const google = createGoogleClient(env, baseUrl);
     if (!google) {
@@ -125,25 +123,34 @@ export async function GET(request: NextRequest) {
 
     // Create session
     const session = await createSession(userId, env);
-    
-    const response = NextResponse.redirect(new URL("/dashboard", request.url));
-    
-    // Set session cookie using Next.js cookies API
-    const maxAge = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
-    const isIsolatedTech = url.hostname === "isolated.tech" || url.hostname.endsWith(".isolated.tech");
-    
-    response.cookies.set({
-      name: "session",
-      value: session.id,
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge,
-      path: "/",
-      ...(isIsolatedTech && { domain: ".isolated.tech" }),
-    });
 
-    return response;
+    // Build Set-Cookie header manually (vinext compatibility)
+    const maxAge = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
+    const isIsolatedTech =
+      url.hostname === "isolated.tech" ||
+      url.hostname.endsWith(".isolated.tech");
+
+    const cookieHeaderParts = [
+      `session=${session.id}`,
+      "Path=/",
+      "HttpOnly",
+      "Secure",
+      "SameSite=Lax",
+      `Max-Age=${maxAge}`,
+    ];
+
+    if (isIsolatedTech) {
+      cookieHeaderParts.push("Domain=.isolated.tech");
+    }
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: new URL(redirectTo, request.url).toString(),
+        "Set-Cookie": cookieHeaderParts.join("; "),
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    });
   } catch (error) {
     console.error("Google OAuth callback error:", error);
     return NextResponse.redirect(

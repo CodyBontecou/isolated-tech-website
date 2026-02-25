@@ -25,6 +25,7 @@ const MOCK_APP = {
   min_price_cents: 0,
   suggested_price_cents: 500,
   is_published: 1,
+  distribution_type: "binary",
 };
 
 const MOCK_VERSIONS: Version[] = [

@@ -14,7 +14,7 @@ interface AppVersion {
   app_id: string;
   version: string;
   r2_key: string;
-  file_size: number;
+  file_size_bytes: number;
 }
 
 interface App {
@@ -67,7 +67,7 @@ export async function GET(
     }
 
     const version = await env.DB.prepare(
-      `SELECT id, app_id, version, r2_key, file_size 
+      `SELECT id, app_id, version, r2_key, file_size_bytes
        FROM app_versions WHERE id = ? AND app_id = ?`
     )
       .bind(params.versionId, params.appId)
@@ -106,14 +106,14 @@ export async function GET(
     }
 
     // 5. Determine filename and content type
-    const filename = `${app.slug}-${version.version}.zip`;
+    const filename = version.r2_key.split("/").pop() || `${app.slug}-${version.version}.zip`;
     const contentType = object.httpMetadata?.contentType || "application/octet-stream";
 
     // 6. Stream the file
     const headers = new Headers();
     headers.set("Content-Type", contentType);
     headers.set("Content-Disposition", `attachment; filename="${filename}"`);
-    headers.set("Content-Length", (object.size || version.file_size).toString());
+    headers.set("Content-Length", (object.size || version.file_size_bytes).toString());
     headers.set("Cache-Control", "private, no-cache");
 
     // Log download

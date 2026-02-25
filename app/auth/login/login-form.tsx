@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export function LoginForm() {
+interface LoginFormProps {
+  redirect?: string;
+}
+
+export function LoginForm({ redirect }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -23,7 +27,7 @@ export function LoginForm() {
       const res = await fetch("/api/auth/magic-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, redirect }),
       });
 
       const data = await res.json();

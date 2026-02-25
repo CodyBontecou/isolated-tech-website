@@ -14,6 +14,7 @@ interface App {
   suggested_price_cents: number | null;
   is_featured: number;
   featured_order: number;
+  distribution_type: string;
 }
 
 async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
@@ -24,7 +25,8 @@ async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
 
   // Get featured app (lowest featured_order where is_featured = 1)
   const featured = await env.DB.prepare(
-    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order,
+            COALESCE(distribution_type, 'binary') as distribution_type
      FROM apps 
      WHERE is_published = 1 AND is_featured = 1
      ORDER BY featured_order ASC
@@ -33,7 +35,8 @@ async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
 
   // Get all published apps (excluding hero featured app)
   const result = await env.DB.prepare(
-    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order,
+            COALESCE(distribution_type, 'binary') as distribution_type
      FROM apps 
      WHERE is_published = 1 ${featured ? "AND id != ?" : ""}
      ORDER BY is_featured DESC, featured_order ASC, created_at DESC`
@@ -76,6 +79,7 @@ function PlatformBadge({ platform }: { platform: string }) {
 function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
   const platforms = getPlatforms(app.platforms);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
+  const isSourceCode = app.distribution_type === "source_code";
 
   return (
     <section className="store-hero">
@@ -95,6 +99,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                 {platforms.map((p) => (
                   <PlatformBadge key={p} platform={p} />
                 ))}
+                {isSourceCode && <span className="store-badge store-badge--source">SOURCE CODE</span>}
               </div>
               <h1 className="store-hero__name">{app.name}</h1>
               {app.tagline && <p className="store-hero__tagline">{app.tagline}</p>}
@@ -111,7 +116,9 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
               )}
               <div className="store-hero__actions">
                 <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--primary">
-                  {isFree ? "GET — FREE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`}
+                  {isSourceCode
+                    ? isFree ? "GET SOURCE — FREE" : `GET SOURCE — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`
+                    : isFree ? "GET — FREE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`}
                 </Link>
                 <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--ghost">
                   LEARN MORE
@@ -161,6 +168,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
   const platforms = getPlatforms(app.platforms);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
   const price = formatPrice(app.min_price_cents, app.suggested_price_cents);
+  const isSourceCode = app.distribution_type === "source_code";
 
   return (
     <Link
@@ -180,6 +188,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
           {platforms.map((p) => (
             <PlatformBadge key={p} platform={p} />
           ))}
+          {isSourceCode && <span className="store-badge store-badge--source">SOURCE</span>}
           {app.is_featured === 1 && <span className="store-badge store-badge--featured">★</span>}
         </div>
         <h2 className="store-card__name">{app.name}</h2>

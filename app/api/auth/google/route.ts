@@ -9,11 +9,20 @@ import { getEnv } from "@/lib/cloudflare-context";
 import {
   createGoogleClient,
   generateState,
+  storeOAuthState,
 } from "@/lib/auth/oauth";
+import { sanitizeRedirectPath } from "@/lib/auth/redirect";
 
 export async function GET(request: NextRequest) {
   try {
     const env = getEnv();
+
+    if (!env?.AUTH_KV) {
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
 
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
@@ -27,15 +36,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const redirectTo = sanitizeRedirectPath(
+      request.nextUrl.searchParams.get("redirect")
+    );
+
     // Generate and store state
     const state = generateState();
     const codeVerifier = generateState(); // PKCE code verifier
-    
-    await env.AUTH_KV.put(
-      `oauth_state:${state}`,
-      JSON.stringify({ provider: "google", codeVerifier, createdAt: Date.now() }),
-      { expirationTtl: 600 }
-    );
+
+    await storeOAuthState(state, "google", env, {
+      codeVerifier,
+      redirectTo,
+    });
 
     // Create authorization URL with PKCE
     const authUrl = google.createAuthorizationURL(state, codeVerifier, [

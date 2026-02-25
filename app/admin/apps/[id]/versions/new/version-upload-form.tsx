@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 interface VersionUploadFormProps {
   appId: string;
   appSlug: string;
+  distributionType?: string;
 }
 
-export function VersionUploadForm({ appId, appSlug }: VersionUploadFormProps) {
+export function VersionUploadForm({ appId, appSlug, distributionType = "binary" }: VersionUploadFormProps) {
+  const isSourceCode = distributionType === "source_code";
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,15 +32,17 @@ export function VersionUploadForm({ appId, appSlug }: VersionUploadFormProps) {
       const validTypes = [
         "application/zip",
         "application/x-apple-diskimage",
+        "application/gzip",
+        "application/x-gzip",
         "application/octet-stream",
       ];
-      const validExtensions = [".zip", ".dmg"];
+      const validExtensions = [".zip", ".dmg", ".tar.gz"];
       const hasValidExtension = validExtensions.some((ext) =>
         selectedFile.name.toLowerCase().endsWith(ext)
       );
 
       if (!validTypes.includes(selectedFile.type) && !hasValidExtension) {
-        setError("Please select a .zip or .dmg file");
+        setError("Please select a .zip, .dmg, or .tar.gz file");
         return;
       }
 
@@ -207,10 +211,22 @@ export function VersionUploadForm({ appId, appSlug }: VersionUploadFormProps) {
           value={minOsVersion}
           onChange={(e) => setMinOsVersion(e.target.value)}
         >
-          <option value="12.0">macOS 12.0 (Monterey)</option>
-          <option value="13.0">macOS 13.0 (Ventura)</option>
-          <option value="14.0">macOS 14.0 (Sonoma)</option>
-          <option value="15.0">macOS 15.0 (Sequoia)</option>
+          {isSourceCode ? (
+            <>
+              <option value="15.0">iOS 15.0</option>
+              <option value="16.0">iOS 16.0</option>
+              <option value="17.0">iOS 17.0</option>
+              <option value="18.0">iOS 18.0</option>
+              <option value="19.0">iOS 19.0</option>
+            </>
+          ) : (
+            <>
+              <option value="12.0">macOS 12.0 (Monterey)</option>
+              <option value="13.0">macOS 13.0 (Ventura)</option>
+              <option value="14.0">macOS 14.0 (Sonoma)</option>
+              <option value="15.0">macOS 15.0 (Sequoia)</option>
+            </>
+          )}
         </select>
       </div>
 
@@ -229,7 +245,9 @@ export function VersionUploadForm({ appId, appSlug }: VersionUploadFormProps) {
 
       {/* File Upload */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <label className="settings-label">FILE (.zip or .dmg) *</label>
+        <label className="settings-label">
+          {isSourceCode ? "FILE (.zip or .tar.gz) *" : "FILE (.zip or .dmg) *"}
+        </label>
         <div
           onClick={() => fileInputRef.current?.click()}
           style={{
@@ -243,7 +261,7 @@ export function VersionUploadForm({ appId, appSlug }: VersionUploadFormProps) {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".zip,.dmg"
+            accept={isSourceCode ? ".zip,.tar.gz" : ".zip,.dmg"}
             onChange={handleFileChange}
             style={{ display: "none" }}
           />
@@ -260,34 +278,36 @@ export function VersionUploadForm({ appId, appSlug }: VersionUploadFormProps) {
                 Click to select or drag and drop
               </p>
               <p style={{ fontSize: "0.8rem", color: "var(--gray)" }}>
-                .zip or .dmg files only
+                {isSourceCode ? ".zip or .tar.gz files — Xcode project source" : ".zip or .dmg files only"}
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Sparkle Signature */}
-      <div style={{ marginBottom: "2rem" }}>
-        <label className="settings-label">SPARKLE SIGNATURE (OPTIONAL)</label>
-        <input
-          type="text"
-          className="settings-input"
-          value={signature}
-          onChange={(e) => setSignature(e.target.value)}
-          placeholder="EdDSA signature from sign_update tool"
-          style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}
-        />
-        <p
-          style={{
-            fontSize: "0.7rem",
-            color: "var(--gray)",
-            marginTop: "0.25rem",
-          }}
-        >
-          Generate with: ./bin/sign_update YourApp.zip
-        </p>
-      </div>
+      {/* Sparkle Signature (hidden for source code) */}
+      {!isSourceCode && (
+        <div style={{ marginBottom: "2rem" }}>
+          <label className="settings-label">SPARKLE SIGNATURE (OPTIONAL)</label>
+          <input
+            type="text"
+            className="settings-input"
+            value={signature}
+            onChange={(e) => setSignature(e.target.value)}
+            placeholder="EdDSA signature from sign_update tool"
+            style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}
+          />
+          <p
+            style={{
+              fontSize: "0.7rem",
+              color: "var(--gray)",
+              marginTop: "0.25rem",
+            }}
+          >
+            Generate with: ./bin/sign_update YourApp.zip
+          </p>
+        </div>
+      )}
 
       {/* Upload Progress */}
       {isUploading && (

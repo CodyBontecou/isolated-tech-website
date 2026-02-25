@@ -3685,3 +3685,345 @@ img {
     padding: 1.5rem 1.25rem;
   }
 }
+
+/* ============================================================
+   SOURCE CODE DISTRIBUTION
+   ============================================================ */
+
+/* Source badge on app detail page */
+.badge--source {
+  border-color: #4ade80;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+/* Source badge on store cards */
+.store-badge--source {
+  border-color: #4ade80;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+}
+
+/* Build from Source section on app detail page */
+.source-info {
+  margin: 2.5rem 0;
+  padding: 2rem;
+  border: 1px solid #333;
+  background: rgba(74, 222, 128, 0.03);
+}
+
+.source-info__title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #4ade80;
+  margin-bottom: 0.75rem;
+}
+
+.source-info__subtitle {
+  font-size: 0.85rem;
+  color: var(--gray);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+/* Requirements row */
+.source-info__requirements {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #222;
+}
+
+.source-info__req {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.source-info__req-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--gray);
+}
+
+.source-info__req-value {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+/* Build instructions */
+.source-info__instructions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #222;
+}
+
+.source-info__instructions-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--gray);
+  margin-bottom: 1rem;
+}
+
+.source-info__instructions .app-page__description {
+  font-size: 0.85rem;
+}
+
+.source-info__instructions .app-page__description ol,
+.source-info__instructions .app-page__description ul {
+  padding-left: 1.25rem;
+}
+
+.source-info__instructions .app-page__description li {
+  margin-bottom: 0.5rem;
+}
+
+/* GitHub link */
+.source-info__github {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  border: 1px solid #444;
+  background: transparent;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.source-info__github:hover {
+  border-color: var(--white);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 700px) {
+  .source-info {
+    padding: 1.25rem;
+  }
+
+  .source-info__requirements {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+}
+
+/* ============================================================
+   APP UPDATES — Version info on app detail page
+   ============================================================ */
+
+.app-updates {
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--gray-dark);
+  border: var(--border);
+}
+
+.app-updates__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gray);
+  margin-bottom: 0.5rem;
+}
+
+.app-updates__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.app-updates__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.app-updates__platform {
+  font-weight: 700;
+  color: var(--white);
+  min-width: 48px;
+}
+
+.app-updates__version {
+  font-weight: 700;
+  color: var(--white);
+}
+
+.app-updates__dot {
+  color: #444;
+}
+
+.app-updates__date {
+  color: var(--gray);
+  font-size: 0.75rem;
+}
+
+.app-updates__changelog-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+  transition: color 0.2s;
+}
+
+.app-updates__changelog-link:hover {
+  color: var(--white);
+}
+
+/* ============================================================
+   CHANGELOG PAGE STYLES
+   ============================================================ */
+
+.changelog-empty {
+  padding: 3rem 0;
+}
+
+.changelog-empty__text {
+  color: var(--gray);
+  font-size: 0.9rem;
+}
+
+.changelog-nav {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--gray-dark);
+  border: var(--border);
+}
+
+.changelog-nav__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  margin-bottom: 0.5rem;
+}
+
+.changelog-nav__list {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.changelog-nav__link {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.changelog-nav__platform {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--gray);
+  letter-spacing: 0.08em;
+}
+
+.changelog-versions {
+  max-width: 700px;
+}
+
+.changelog-section {
+  margin-bottom: 3rem;
+}
+
+.changelog-section__label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gray);
+  padding-bottom: 0.75rem;
+  border-bottom: var(--border);
+  margin-bottom: 2rem;
+}
+
+.changelog-entry {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+.changelog-entry--bordered {
+  border-bottom: var(--border);
+}
+
+.changelog-entry__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.changelog-entry__version {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.changelog-entry__latest {
+  margin-left: 0.75rem;
+  font-size: 0.6rem;
+  color: #4ade80;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.changelog-entry__date {
+  color: var(--gray);
+  font-size: 0.8rem;
+}
+
+.changelog-entry__meta {
+  font-size: 0.7rem;
+  color: var(--gray);
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.changelog-entry__notes h4,
+.changelog__heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--white);
+}
+
+.changelog-entry__notes li,
+.changelog__item {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-left: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.changelog-entry__notes p,
+.changelog__text {
+  font-size: 0.85rem;
+  color: #aaa;
+}

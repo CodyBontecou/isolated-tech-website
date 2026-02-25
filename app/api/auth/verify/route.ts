@@ -38,30 +38,36 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { session } = result;
+    const { session, redirectTo } = result;
 
-    // Create response with redirect to dashboard
-    const response = NextResponse.redirect(
-      new URL("/dashboard", request.url)
-    );
-
-    // Set session cookie using Next.js cookies API
+    // Build Set-Cookie header manually (vinext compatibility)
     const url = new URL(request.url);
     const maxAge = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
-    const isIsolatedTech = url.hostname === "isolated.tech" || url.hostname.endsWith(".isolated.tech");
-    
-    response.cookies.set({
-      name: "session",
-      value: session.id,
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge,
-      path: "/",
-      ...(isIsolatedTech && { domain: ".isolated.tech" }),
-    });
+    const isIsolatedTech =
+      url.hostname === "isolated.tech" ||
+      url.hostname.endsWith(".isolated.tech");
 
-    return response;
+    const cookieHeaderParts = [
+      `session=${session.id}`,
+      "Path=/",
+      "HttpOnly",
+      "Secure",
+      "SameSite=Lax",
+      `Max-Age=${maxAge}`,
+    ];
+
+    if (isIsolatedTech) {
+      cookieHeaderParts.push("Domain=.isolated.tech");
+    }
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: new URL(redirectTo, request.url).toString(),
+        "Set-Cookie": cookieHeaderParts.join("; "),
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    });
   } catch (error) {
     console.error("Verification error:", error);
     return NextResponse.redirect(

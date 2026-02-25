@@ -9,12 +9,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import {
   createGitHubClient,
-  verifyOAuthState,
+  consumeOAuthState,
   linkOAuthAccount,
   getUserByOAuth,
 } from "@/lib/auth/oauth";
 import { createSession } from "@/lib/auth/session";
 import { createUser, getUserByEmail } from "@/lib/auth/user";
+import { sanitizeRedirectPath } from "@/lib/auth/redirect";
 
 interface GitHubUser {
   id: number;
@@ -52,13 +53,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify state
-    const validState = await verifyOAuthState(state, "github", env);
-    if (!validState) {
+    // Verify and consume state
+    const stateData = await consumeOAuthState(state, "github", env);
+    if (!stateData) {
       return NextResponse.redirect(
         new URL("/auth/login?error=invalid_state", request.url)
       );
     }
+
+    const redirectTo = sanitizeRedirectPath(stateData.redirectTo);
 
     const github = createGitHubClient(env, baseUrl);
     if (!github) {
@@ -166,7 +169,7 @@ export async function GET(request: NextRequest) {
 
     // Create session
     const session = await createSession(userId, env);
-    
+
     // Build Set-Cookie header manually (vinext compatibility)
     const maxAge = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
     const cookieHeader = [
@@ -177,12 +180,12 @@ export async function GET(request: NextRequest) {
       `SameSite=Lax`,
       `Max-Age=${maxAge}`,
     ].join("; ");
-    
+
     // Create redirect response with cookie
     return new Response(null, {
       status: 302,
       headers: {
-        "Location": "https://isolated.tech/dashboard",
+        Location: new URL(redirectTo, request.url).toString(),
         "Set-Cookie": cookieHeader,
         "Cache-Control": "no-store, no-cache, must-revalidate",
       },

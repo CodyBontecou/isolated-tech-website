@@ -23,6 +23,11 @@ interface AppData {
   is_featured: number;
   featured_order: number;
   custom_page_config: string | null;
+  distribution_type: string | null;
+  build_instructions: string | null;
+  github_url: string | null;
+  required_xcode_version: string | null;
+  min_ios_version: string | null;
 }
 
 async function getApp(id: string): Promise<AppData | null> {
@@ -34,7 +39,9 @@ async function getApp(id: string): Promise<AppData | null> {
             min_price_cents, suggested_price_cents, is_published,
             COALESCE(is_featured, 0) as is_featured,
             COALESCE(featured_order, 0) as featured_order,
-            custom_page_config
+            custom_page_config,
+            COALESCE(distribution_type, 'binary') as distribution_type,
+            build_instructions, github_url, required_xcode_version, min_ios_version
      FROM apps WHERE id = ?`
   )
     .bind(id)
@@ -77,6 +84,11 @@ export default async function EditAppPage({ params }: { params: { id: string } }
     is_featured: app.is_featured === 1,
     featured_order: app.featured_order,
     page_config: app.custom_page_config ? JSON.parse(app.custom_page_config) : null,
+    distribution_type: app.distribution_type || "binary",
+    build_instructions: app.build_instructions || "",
+    github_url: app.github_url || "",
+    required_xcode_version: app.required_xcode_version || "",
+    min_ios_version: app.min_ios_version || "18.0",
   };
 
   return (

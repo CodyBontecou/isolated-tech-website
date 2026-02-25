@@ -11,6 +11,7 @@ import {
   getMagicLinkUrl,
 } from "@/lib/auth";
 import { getEnv } from "@/lib/cloudflare-context";
+import { sanitizeRedirectPath } from "@/lib/auth/redirect";
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const email = body.email?.toLowerCase()?.trim();
+    const redirectTo = sanitizeRedirectPath(body.redirect);
 
     // Validate email
     if (!email || !EMAIL_REGEX.test(email)) {
@@ -49,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate token
-    const token = await createMagicLinkToken(email, env);
+    const token = await createMagicLinkToken(email, env, { redirectTo });
 
     // Get base URL
     const baseUrl = env.APP_URL || new URL(request.url).origin;

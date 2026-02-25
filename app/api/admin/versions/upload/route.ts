@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    const validExtensions = [".zip", ".dmg"];
+    const validExtensions = [".zip", ".dmg", ".tar.gz"];
     const hasValidExtension = validExtensions.some((ext) =>
       file.name.toLowerCase().endsWith(ext)
     );
 
     if (!hasValidExtension) {
       return NextResponse.json(
-        { error: "Invalid file type. Only .zip and .dmg are allowed." },
+        { error: "Invalid file type. Only .zip, .dmg, and .tar.gz are allowed." },
         { status: 400 }
       );
     }

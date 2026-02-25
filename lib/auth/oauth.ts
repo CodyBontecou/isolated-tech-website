@@ -5,6 +5,13 @@
 import { GitHub, Google, Apple } from "arctic";
 import type { Env } from "@/lib/env";
 
+interface OAuthStateData {
+  provider: string;
+  createdAt: number;
+  redirectTo?: string;
+  codeVerifier?: string;
+}
+
 /**
  * Generate a cryptographically secure state parameter
  */
@@ -21,13 +28,47 @@ export function generateState(): string {
 export async function storeOAuthState(
   state: string,
   provider: string,
-  env: Env
+  env: Env,
+  options?: { redirectTo?: string; codeVerifier?: string }
 ): Promise<void> {
+  const data: OAuthStateData = {
+    provider,
+    createdAt: Date.now(),
+    ...(options?.redirectTo ? { redirectTo: options.redirectTo } : {}),
+    ...(options?.codeVerifier ? { codeVerifier: options.codeVerifier } : {}),
+  };
+
   await env.AUTH_KV.put(
     `oauth_state:${state}`,
-    JSON.stringify({ provider, createdAt: Date.now() }),
+    JSON.stringify(data),
     { expirationTtl: 600 } // 10 minutes
   );
+}
+
+/**
+ * Consume and verify OAuth state
+ */
+export async function consumeOAuthState(
+  state: string,
+  expectedProvider: string,
+  env: Env
+): Promise<OAuthStateData | null> {
+  const key = `oauth_state:${state}`;
+  const value = await env.AUTH_KV.get(key);
+
+  if (!value) {
+    return null;
+  }
+
+  // Delete state (one-time use)
+  await env.AUTH_KV.delete(key);
+
+  const data = JSON.parse(value) as OAuthStateData;
+  if (data.provider !== expectedProvider) {
+    return null;
+  }
+
+  return data;
 }
 
 /**
@@ -38,18 +79,8 @@ export async function verifyOAuthState(
   expectedProvider: string,
   env: Env
 ): Promise<boolean> {
-  const key = `oauth_state:${state}`;
-  const value = await env.AUTH_KV.get(key);
-
-  if (!value) {
-    return false;
-  }
-
-  // Delete state (one-time use)
-  await env.AUTH_KV.delete(key);
-
-  const data = JSON.parse(value);
-  return data.provider === expectedProvider;
+  const data = await consumeOAuthState(state, expectedProvider, env);
+  return !!data;
 }
 
 /**

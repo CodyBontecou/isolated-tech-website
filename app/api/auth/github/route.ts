@@ -12,6 +12,7 @@ import {
   generateState,
   storeOAuthState,
 } from "@/lib/auth/oauth";
+import { sanitizeRedirectPath } from "@/lib/auth/redirect";
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,9 +31,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const redirectTo = sanitizeRedirectPath(
+      request.nextUrl.searchParams.get("redirect")
+    );
+
     // Generate and store state
     const state = generateState();
-    await storeOAuthState(state, "github", env);
+    await storeOAuthState(state, "github", env, {
+      redirectTo,
+    });
 
     // Create authorization URL
     const authUrl = github.createAuthorizationURL(state, ["user:email"]);

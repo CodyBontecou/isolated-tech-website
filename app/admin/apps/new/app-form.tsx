@@ -19,6 +19,11 @@ interface AppFormProps {
     is_featured: boolean;
     featured_order: number;
     page_config: Record<string, unknown> | null;
+    distribution_type: string;
+    build_instructions: string;
+    github_url: string;
+    required_xcode_version: string;
+    min_ios_version: string;
   };
 }
 
@@ -60,6 +65,21 @@ export function AppForm({ existingApp }: AppFormProps) {
   );
   const [featuredOrder, setFeaturedOrder] = useState(
     existingApp?.featured_order?.toString() ?? "0"
+  );
+  const [distributionType, setDistributionType] = useState(
+    existingApp?.distribution_type || "binary"
+  );
+  const [buildInstructions, setBuildInstructions] = useState(
+    existingApp?.build_instructions || ""
+  );
+  const [githubUrl, setGithubUrl] = useState(
+    existingApp?.github_url || ""
+  );
+  const [requiredXcodeVersion, setRequiredXcodeVersion] = useState(
+    existingApp?.required_xcode_version || ""
+  );
+  const [minIosVersion, setMinIosVersion] = useState(
+    existingApp?.min_ios_version || "18.0"
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -132,6 +152,11 @@ export function AppForm({ existingApp }: AppFormProps) {
           is_published: isPublished,
           is_featured: isFeatured,
           featured_order: parseInt(featuredOrder || "0", 10),
+          distribution_type: distributionType,
+          build_instructions: distributionType === "source_code" ? buildInstructions.trim() : null,
+          github_url: githubUrl.trim() || null,
+          required_xcode_version: distributionType === "source_code" ? requiredXcodeVersion.trim() || null : null,
+          min_ios_version: distributionType === "source_code" ? minIosVersion : null,
         }),
       });
 
@@ -346,6 +371,143 @@ export function AppForm({ existingApp }: AppFormProps) {
           </p>
         </div>
       </div>
+
+      {/* Distribution Type */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <label className="settings-label">DISTRIBUTION TYPE</label>
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              cursor: "crosshair",
+            }}
+          >
+            <input
+              type="radio"
+              name="distribution_type"
+              value="binary"
+              checked={distributionType === "binary"}
+              onChange={() => setDistributionType("binary")}
+              style={{ width: "1.25rem", height: "1.25rem" }}
+            />
+            <span>Binary (compiled app)</span>
+          </label>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              cursor: "crosshair",
+            }}
+          >
+            <input
+              type="radio"
+              name="distribution_type"
+              value="source_code"
+              checked={distributionType === "source_code"}
+              onChange={() => setDistributionType("source_code")}
+              style={{ width: "1.25rem", height: "1.25rem" }}
+            />
+            <span>Source Code (Xcode project)</span>
+          </label>
+        </div>
+        <p
+          style={{
+            fontSize: "0.7rem",
+            color: "var(--gray)",
+            marginTop: "0.25rem",
+          }}
+        >
+          Source code apps let users download and build in Xcode
+        </p>
+      </div>
+
+      {/* Source Code Fields (shown when distribution_type = source_code) */}
+      {distributionType === "source_code" && (
+        <>
+          {/* Required Xcode Version */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label className="settings-label">REQUIRED XCODE VERSION</label>
+            <input
+              type="text"
+              className="settings-input"
+              value={requiredXcodeVersion}
+              onChange={(e) => setRequiredXcodeVersion(e.target.value)}
+              placeholder="16.0"
+            />
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              Minimum Xcode version needed to build (e.g., 16.0)
+            </p>
+          </div>
+
+          {/* Minimum iOS Version */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label className="settings-label">MINIMUM iOS VERSION</label>
+            <select
+              className="settings-input"
+              value={minIosVersion}
+              onChange={(e) => setMinIosVersion(e.target.value)}
+            >
+              <option value="15.0">iOS 15.0</option>
+              <option value="16.0">iOS 16.0</option>
+              <option value="17.0">iOS 17.0</option>
+              <option value="18.0">iOS 18.0</option>
+              <option value="19.0">iOS 19.0</option>
+            </select>
+          </div>
+
+          {/* Build Instructions */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label className="settings-label">BUILD INSTRUCTIONS (MARKDOWN)</label>
+            <textarea
+              className="settings-input"
+              value={buildInstructions}
+              onChange={(e) => setBuildInstructions(e.target.value)}
+              placeholder={"1. Open the `.xcodeproj` in Xcode\n2. Select your device\n3. Build & Run (⌘R)"}
+              rows={6}
+              style={{ resize: "vertical", minHeight: "120px" }}
+            />
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              Shown on the app page — how users build and run the source code
+            </p>
+          </div>
+
+          {/* GitHub URL */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label className="settings-label">GITHUB REPO URL (OPTIONAL)</label>
+            <input
+              type="url"
+              className="settings-input"
+              value={githubUrl}
+              onChange={(e) => setGithubUrl(e.target.value)}
+              placeholder="https://github.com/user/repo"
+            />
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              Link to the public repo, shown alongside the download
+            </p>
+          </div>
+        </>
+      )}
 
       {/* Published */}
       <div style={{ marginBottom: "1.5rem" }}>

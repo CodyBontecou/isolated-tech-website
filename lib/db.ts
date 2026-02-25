@@ -147,4 +147,64 @@ export const queries = {
       [code],
       env
     ),
+
+  // App updates
+  getLatestUpdates: (appId: string, env?: Env) =>
+    query<{
+      id: string;
+      app_id: string;
+      platform: string;
+      version: string;
+      build_number: number | null;
+      release_notes: string | null;
+      released_at: string;
+    }>(
+      `SELECT u.*
+       FROM app_updates u
+       INNER JOIN (
+         SELECT platform, MAX(released_at) as max_released
+         FROM app_updates
+         WHERE app_id = ?
+         GROUP BY platform
+       ) latest ON u.platform = latest.platform AND u.released_at = latest.max_released
+       WHERE u.app_id = ?`,
+      [appId, appId],
+      env
+    ),
+
+  getAppUpdates: (appId: string, env?: Env) =>
+    query<{
+      id: string;
+      app_id: string;
+      platform: string;
+      version: string;
+      build_number: number | null;
+      release_notes: string | null;
+      released_at: string;
+      created_at: string;
+    }>(
+      `SELECT * FROM app_updates
+       WHERE app_id = ?
+       ORDER BY released_at DESC`,
+      [appId],
+      env
+    ),
+
+  getAppUpdatesByPlatform: (appId: string, platform: string, env?: Env) =>
+    query<{
+      id: string;
+      app_id: string;
+      platform: string;
+      version: string;
+      build_number: number | null;
+      release_notes: string | null;
+      released_at: string;
+      created_at: string;
+    }>(
+      `SELECT * FROM app_updates
+       WHERE app_id = ? AND platform = ?
+       ORDER BY released_at DESC`,
+      [appId, platform],
+      env
+    ),
 };
