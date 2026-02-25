@@ -73,51 +73,84 @@ function PlatformBadge({ platform }: { platform: string }) {
   );
 }
 
-function HeroApp({ app }: { app: App }) {
+function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
   const platforms = getPlatforms(app.platforms);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
 
   return (
     <section className="store-hero">
-      <div className="store-hero__content">
-        <div className="store-hero__label">FEATURED</div>
-        <div className="store-hero__app">
-          <div className="store-hero__icon">
-            {app.icon_url ? (
-              <img src={app.icon_url} alt={`${app.name} icon`} />
-            ) : (
-              <span>{app.name[0].toUpperCase()}</span>
-            )}
-          </div>
-          <div className="store-hero__info">
-            <div className="store-hero__badges">
-              {platforms.map((p) => (
-                <PlatformBadge key={p} platform={p} />
-              ))}
+      <div className="store-hero__inner">
+        <div className="store-hero__content">
+          <div className="store-hero__label">FEATURED</div>
+          <div className="store-hero__app">
+            <div className="store-hero__icon">
+              {app.icon_url ? (
+                <img src={app.icon_url} alt={`${app.name} icon`} />
+              ) : (
+                <span>{app.name[0].toUpperCase()}</span>
+              )}
             </div>
-            <h1 className="store-hero__name">{app.name}</h1>
-            {app.tagline && <p className="store-hero__tagline">{app.tagline}</p>}
-            {app.description && (
-              <p className="store-hero__desc">
-                {app.description
-                  .replace(/##?\s+/g, "")
-                  .replace(/\*\*(.+?)\*\*/g, "$1")
-                  .replace(/\*(.+?)\*/g, "$1")
-                  .replace(/^-\s+/gm, "• ")
-                  .slice(0, 200)}
-                {app.description.length > 200 ? "..." : ""}
-              </p>
-            )}
-            <div className="store-hero__actions">
-              <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--primary">
-                {isFree ? "GET — FREE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`}
-              </Link>
-              <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--ghost">
-                LEARN MORE
-              </Link>
+            <div className="store-hero__info">
+              <div className="store-hero__badges">
+                {platforms.map((p) => (
+                  <PlatformBadge key={p} platform={p} />
+                ))}
+              </div>
+              <h1 className="store-hero__name">{app.name}</h1>
+              {app.tagline && <p className="store-hero__tagline">{app.tagline}</p>}
+              {app.description && (
+                <p className="store-hero__desc">
+                  {app.description
+                    .replace(/##?\s+/g, "")
+                    .replace(/\*\*(.+?)\*\*/g, "$1")
+                    .replace(/\*(.+?)\*/g, "$1")
+                    .replace(/^-\s+/gm, "• ")
+                    .slice(0, 200)}
+                  {app.description.length > 200 ? "..." : ""}
+                </p>
+              )}
+              <div className="store-hero__actions">
+                <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--primary">
+                  {isFree ? "GET — FREE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`}
+                </Link>
+                <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--ghost">
+                  LEARN MORE
+                </Link>
+              </div>
             </div>
           </div>
         </div>
+
+        {previewApps.length > 0 && (
+          <aside className="store-hero__rail" aria-label="More apps">
+            <div className="store-hero__rail-label">MORE APPS</div>
+            <div className="store-hero__rail-list">
+              {previewApps.slice(0, 4).map((preview) => {
+                const previewPlatforms = getPlatforms(preview.platforms)
+                  .map((p) => (p === "ios" ? "iOS" : p === "macos" ? "macOS" : p.toUpperCase()))
+                  .join(" · ");
+
+                return (
+                  <Link key={preview.id} href={`/apps/${preview.slug}`} className="store-hero__rail-item">
+                    <div className="store-hero__rail-icon">
+                      {preview.icon_url ? (
+                        <img src={preview.icon_url} alt={`${preview.name} icon`} />
+                      ) : (
+                        <span>{preview.name[0].toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="store-hero__rail-body">
+                      <span className="store-hero__rail-name">{preview.name}</span>
+                      <span className="store-hero__rail-meta">
+                        {previewPlatforms} · {formatPrice(preview.min_price_cents, preview.suggested_price_cents)}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </aside>
+        )}
       </div>
       <div className="store-hero__grid" />
     </section>
@@ -193,7 +226,7 @@ export default async function HomePage() {
 
       {/* HERO */}
       {featured ? (
-        <HeroApp app={featured} />
+        <HeroApp app={featured} previewApps={apps} />
       ) : (
         <section className="store-hero store-hero--empty">
           <div className="store-hero__content">
