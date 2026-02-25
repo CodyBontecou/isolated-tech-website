@@ -219,7 +219,7 @@ function PlatformCarousel({
 
 export function MediaShowcase({ media }: MediaShowcaseProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [activePlatform, setActivePlatform] = useState<"all" | "ios" | "macos">("all");
+  const [activePlatform, setActivePlatform] = useState<"ios" | "macos">("ios");
 
   if (!media || media.length === 0) return null;
 
@@ -231,18 +231,19 @@ export function MediaShowcase({ media }: MediaShowcaseProps) {
   );
 
   const hasPlatforms = iosItems.length > 0 && macosItems.length > 0;
+  // If only one platform exists, show that one
+  const effectivePlatform = !hasPlatforms
+    ? (iosItems.length > 0 ? "ios" : "macos")
+    : activePlatform;
 
-  // Build flat list for lightbox navigation
-  const allImageItems = media.filter((m) => m.type === "image");
-
-  const getVisibleItems = () => {
-    if (!hasPlatforms || activePlatform === "all") return media;
-    if (activePlatform === "ios") return [...iosItems, ...otherItems];
-    return [...macosItems, ...otherItems];
-  };
+  // Build flat list for lightbox navigation based on active platform
+  const visibleItems = effectivePlatform === "ios"
+    ? [...iosItems, ...otherItems]
+    : [...macosItems, ...otherItems];
+  const visibleImageItems = visibleItems.filter((m) => m.type === "image");
 
   const openLightbox = (item: MediaItem) => {
-    const idx = allImageItems.findIndex((m) => m.id === item.id);
+    const idx = visibleImageItems.findIndex((m) => m.id === item.id);
     if (idx >= 0) setLightboxIndex(idx);
   };
 
@@ -254,13 +255,13 @@ export function MediaShowcase({ media }: MediaShowcaseProps) {
           <h2 className="showcase-v2__title">SHOWCASE</h2>
           {hasPlatforms && (
             <div className="showcase-v2__tabs">
-              {(["all", "ios", "macos"] as const).map((tab) => (
+              {(["ios", "macos"] as const).map((tab) => (
                 <button
                   key={tab}
-                  className={`showcase-v2__tab ${activePlatform === tab ? "showcase-v2__tab--active" : ""}`}
+                  className={`showcase-v2__tab ${effectivePlatform === tab ? "showcase-v2__tab--active" : ""}`}
                   onClick={() => setActivePlatform(tab)}
                 >
-                  {tab === "all" ? "ALL" : tab === "ios" ? "iOS" : "macOS"}
+                  {tab === "ios" ? "iOS" : "macOS"}
                 </button>
               ))}
             </div>
@@ -268,14 +269,8 @@ export function MediaShowcase({ media }: MediaShowcaseProps) {
         </div>
 
         {/* iOS Section */}
-        {(activePlatform === "all" || activePlatform === "ios") && iosItems.length > 0 && (
+        {effectivePlatform === "ios" && iosItems.length > 0 && (
           <div className="showcase-v2__section">
-            {hasPlatforms && activePlatform === "all" && (
-              <div className="showcase-v2__section-label">
-                <span className="showcase-v2__section-icon">📱</span>
-                <span>iPHONE</span>
-              </div>
-            )}
             <PlatformCarousel
               items={iosItems}
               onImageClick={openLightbox}
@@ -285,14 +280,8 @@ export function MediaShowcase({ media }: MediaShowcaseProps) {
         )}
 
         {/* macOS Section */}
-        {(activePlatform === "all" || activePlatform === "macos") && macosItems.length > 0 && (
+        {effectivePlatform === "macos" && macosItems.length > 0 && (
           <div className="showcase-v2__section">
-            {hasPlatforms && activePlatform === "all" && (
-              <div className="showcase-v2__section-label">
-                <span className="showcase-v2__section-icon">💻</span>
-                <span>macOS</span>
-              </div>
-            )}
             <PlatformCarousel
               items={macosItems}
               onImageClick={openLightbox}
@@ -301,7 +290,7 @@ export function MediaShowcase({ media }: MediaShowcaseProps) {
           </div>
         )}
 
-        {/* Other items */}
+        {/* Other items (always shown) */}
         {otherItems.length > 0 && (
           <div className="showcase-v2__section">
             <PlatformCarousel
@@ -313,15 +302,15 @@ export function MediaShowcase({ media }: MediaShowcaseProps) {
         )}
       </section>
 
-      {lightboxIndex !== null && allImageItems[lightboxIndex] && (
+      {lightboxIndex !== null && visibleImageItems[lightboxIndex] && (
         <Lightbox
-          src={allImageItems[lightboxIndex].url}
-          title={allImageItems[lightboxIndex].title || undefined}
+          src={visibleImageItems[lightboxIndex].url}
+          title={visibleImageItems[lightboxIndex].title || undefined}
           onClose={() => setLightboxIndex(null)}
           onPrev={() => setLightboxIndex((prev) => Math.max(0, (prev ?? 0) - 1))}
-          onNext={() => setLightboxIndex((prev) => Math.min(allImageItems.length - 1, (prev ?? 0) + 1))}
+          onNext={() => setLightboxIndex((prev) => Math.min(visibleImageItems.length - 1, (prev ?? 0) + 1))}
           hasPrev={lightboxIndex > 0}
-          hasNext={lightboxIndex < allImageItems.length - 1}
+          hasNext={lightboxIndex < visibleImageItems.length - 1}
         />
       )}
     </>
