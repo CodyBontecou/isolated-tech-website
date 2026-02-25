@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "isolated-tech-store",
+  "compatibility_date": "2026-02-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "worker/entry.ts",
+  "assets": {
+    "not_found_handling": "none",
+    "binding": "ASSETS"
+  },
+
+  // Custom domain
+  "routes": [
+    { "pattern": "isolated.tech/*", "zone_name": "isolated.tech" },
+    { "pattern": "www.isolated.tech/*", "zone_name": "isolated.tech" }
+  ],
+
+  // D1 Database
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "isolated-tech-store",
+      "database_id": "32793cc4-3186-48c0-a2ca-74b071510ce1"
+    }
+  ],
+
+  // R2 Bucket (app binaries)
+  "r2_buckets": [
+    {
+      "binding": "APPS_BUCKET",
+      "bucket_name": "isolated-tech-apps"
+    }
+  ],
+
+  // KV Namespace (sessions, magic link tokens)
+  "kv_namespaces": [
+    {
+      "binding": "AUTH_KV",
+      "id": "40dc994ec2994f22ad408d6a93f0f708"
+    }
+  ]
+
+  // Secrets (set via wrangler secret put):
+  // - STRIPE_SECRET_KEY
+  // - STRIPE_WEBHOOK_SECRET
+  // - AWS_ACCESS_KEY_ID
+  // - AWS_SECRET_ACCESS_KEY
+  // - APPLE_CLIENT_ID, APPLE_CLIENT_SECRET
+  // - GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+  // - GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+}
