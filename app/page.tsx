@@ -203,6 +203,7 @@ export default async function HomePage() {
   ]);
 
   const totalApps = (featured ? 1 : 0) + apps.length;
+  const allApps = featured ? [featured, ...apps] : apps;
 
   return (
     <>
@@ -270,16 +271,16 @@ export default async function HomePage() {
       <section className="store-section" id="apps">
         <div className="store-section__header">
           <h2 className="store-section__title">ALL APPS</h2>
-          <span className="store-section__count">{apps.length} available</span>
+          <span className="store-section__count">{allApps.length} available</span>
         </div>
 
-        {apps.length === 0 ? (
+        {allApps.length === 0 ? (
           <div className="store-empty">
             <p>No apps available yet. Check back soon.</p>
           </div>
         ) : (
           <div className="store-grid">
-            {apps.map((app, i) => (
+            {allApps.map((app, i) => (
               <AppCard key={app.id} app={app} index={i} />
             ))}
           </div>
