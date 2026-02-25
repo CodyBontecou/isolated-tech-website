@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     await env.DB.prepare(
-      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, page_config, created_at, updated_at)
+      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, custom_page_config, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(

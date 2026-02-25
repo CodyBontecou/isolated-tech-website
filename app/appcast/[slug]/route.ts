@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import type { Env } from "@/lib/env";
+import { getEnv } from "@/lib/cloudflare-context";
 
 interface AppVersion {
   id: string;
@@ -81,7 +81,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const env = (request as unknown as { env?: Env }).env;
+    const env = getEnv();
 
     if (!env?.DB) {
       return new NextResponse("Server configuration error", { status: 500 });
@@ -95,7 +95,7 @@ export async function GET(
       `SELECT 
         a.id as app_id, a.name, a.slug, a.tagline,
         v.id as version_id, v.version, v.build_number, v.release_notes,
-        v.min_os_version, v.r2_key, v.file_size, v.signature, v.created_at
+        v.min_os_version, v.r2_key, v.file_size_bytes as file_size, v.sparkle_signature as signature, v.released_at as created_at
        FROM apps a
        JOIN app_versions v ON v.app_id = a.id
        WHERE a.slug = ? AND v.is_latest = 1 AND a.is_published = 1`

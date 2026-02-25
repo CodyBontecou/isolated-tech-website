@@ -192,9 +192,39 @@ updater.debugLogging = true
 - Check that the download URL in appcast is correct
 - Verify R2 bucket permissions
 
+## CLI Upload
+
+For automated releases, use the admin API with an API key:
+
+```bash
+# Set your API key
+export ISOLATED_API_KEY="your-admin-api-key"
+
+# Upload a new version
+curl -X POST https://isolated.tech/api/admin/versions/presign \
+  -H "X-API-Key: $ISOLATED_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"appId":"...","appSlug":"your-app","version":"1.2.0","filename":"YourApp.zip"}'
+
+# Upload file
+curl -X POST https://isolated.tech/api/admin/versions/upload \
+  -H "X-API-Key: $ISOLATED_API_KEY" \
+  -F "file=@YourApp.zip" \
+  -F "r2Key=apps/your-app/versions/1.2.0/YourApp.zip"
+
+# Create version record
+curl -X POST https://isolated.tech/api/admin/versions \
+  -H "X-API-Key: $ISOLATED_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"appId":"...","version":"1.2.0","buildNumber":42,...}'
+```
+
+Or use the `sparkle-release` pi skill which automates this entire flow.
+
 ## Security Notes
 
 - Never commit your private signing key
 - Store the private key securely (1Password, etc.)
 - The public key can be committed to your repo
 - Downloads require authentication via session cookie
+- API keys are for admin CLI access only — keep them secure

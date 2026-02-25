@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     await env.DB.prepare(
-      `INSERT INTO app_versions (id, app_id, version, build_number, release_notes, min_os_version, r2_key, file_size, signature, is_latest, created_at)
+      `INSERT INTO app_versions (id, app_id, version, build_number, release_notes, min_os_version, r2_key, file_size_bytes, sparkle_signature, is_latest, released_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`
     )
       .bind(

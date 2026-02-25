@@ -15,9 +15,11 @@ const API_KEY_ADMIN_USER: User = {
   id: "api-key-admin",
   email: "api@isolated.tech",
   name: "API Key Admin",
+  avatarUrl: null,
   isAdmin: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  newsletterSubscribed: false,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 /**

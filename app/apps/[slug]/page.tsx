@@ -15,122 +15,21 @@ interface App {
   platforms: string;
   min_price_cents: number;
   suggested_price_cents: number | null;
+  is_published: number;
 }
 
-// Static data for now - will be replaced with D1 query
-const APPS: Record<string, App> = {
-  voxboard: {
-    id: "app_voxboard_001",
-    slug: "voxboard",
-    name: "Voxboard",
-    tagline: "Your voice. Your keyboard.",
-    description: `On-device voice transcription that works in any text field. Private. No cloud. No network required.
-
-## Features
-
-- **On-Device Processing** — All transcription happens locally using Apple's Speech Recognition
-- **Works Everywhere** — Use in any app with a text field via the custom keyboard
-- **Privacy First** — No data leaves your device. Ever.
-- **No Internet Required** — Works completely offline
-- **Multiple Languages** — Supports all languages available in iOS Speech Recognition
-
-## How It Works
-
-1. Install Voxboard from the App Store
-2. Enable the keyboard in Settings → General → Keyboard → Keyboards
-3. Switch to Voxboard in any text field
-4. Tap the microphone and speak
-
-Your voice is transcribed instantly, right on your device.`,
-    icon_url: "/apps/voxboard/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 500,
-  },
-  syncmd: {
-    id: "app_syncmd_001",
-    slug: "syncmd",
-    name: "sync.md",
-    tagline: "Git on your iPhone.",
-    description: `Real Git on your iPhone. Clone, pull, commit & push any repo. No terminal, no keys layer, no lock-in.
-
-## Features
-
-- **Full Git Support** — Clone, pull, commit, push, branch, merge
-- **GitHub & GitLab Integration** — Connect your accounts seamlessly
-- **Markdown Editor** — Built-in editor for your notes and docs
-- **Offline First** — Work on your repos without internet
-- **iCloud Sync** — Your repos are backed up automatically
-
-## Perfect For
-
-- Developers who want to review code on the go
-- Writers using Git-based publishing workflows
-- Anyone who needs their repos accessible on mobile`,
-    icon_url: "/apps/syncmd/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 800,
-  },
-  healthmd: {
-    id: "app_healthmd_001",
-    slug: "healthmd",
-    name: "health.md",
-    tagline: "Apple Health → Markdown",
-    description: `Export your Apple Health data directly to Markdown files in your iOS file system. On-device. Private. Automated.
-
-## Features
-
-- **Automated Exports** — Schedule daily, weekly, or monthly exports
-- **Markdown Format** — Perfect for Obsidian, Notion, or any markdown app
-- **Privacy First** — All processing happens on your device
-- **Customizable** — Choose which health metrics to export
-- **Files App Integration** — Export directly to iCloud, Dropbox, or local storage
-
-## Supported Data
-
-- Steps & Distance
-- Heart Rate & HRV
-- Sleep Analysis
-- Workouts
-- Weight & Body Measurements
-- And more...`,
-    icon_url: "/apps/healthmd/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 500,
-  },
-  imghost: {
-    id: "app_imghost_001",
-    slug: "imghost",
-    name: "imghost",
-    tagline: "Upload. Share. Done.",
-    description: `Brutal image hosting for iOS. No fluff, no friction. Share images and get instant, direct links.
-
-## Features
-
-- **Instant Upload** — Share any image from your camera roll
-- **Direct Links** — Get a direct link to your image, not a landing page
-- **Share Sheet Integration** — Upload from any app
-- **No Account Required** — Just upload and share
-- **Fast CDN** — Images served from a global edge network
-
-## How It Works
-
-1. Select an image from your camera roll or capture one
-2. Tap upload
-3. Get a direct link to share anywhere
-
-No watermarks. No compression. No bullshit.`,
-    icon_url: "/apps/imghost/icon.png",
-    platforms: '["ios"]',
-    min_price_cents: 0,
-    suggested_price_cents: 0,
-  },
-};
-
-function getApp(slug: string): App | undefined {
-  return APPS[slug];
+async function getApp(slug: string): Promise<App | null> {
+  const env = getEnv();
+  if (!env?.DB) return null;
+  
+  const app = await env.DB.prepare(
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_published
+     FROM apps WHERE slug = ? AND is_published = 1`
+  )
+    .bind(slug)
+    .first<App>();
+  
+  return app || null;
 }
 
 export async function generateMetadata({
@@ -138,7 +37,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const app = getApp(params.slug);
+  const app = await getApp(params.slug);
 
   if (!app) {
     return { title: "App Not Found" };
@@ -225,7 +124,7 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 export default async function AppPage({ params }: { params: { slug: string } }) {
-  const app = getApp(params.slug);
+  const app = await getApp(params.slug);
 
   if (!app) {
     notFound();

@@ -46,11 +46,7 @@ export async function GET(
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const app = await env.DB.prepare(
-      `SELECT * FROM apps WHERE id = ?`
-    )
-      .bind(params.id)
-      .first();
+    const app = await findApp(params.id, env.DB);
 
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
