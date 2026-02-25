@@ -238,7 +238,10 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
         </Link>
 
         <header className="app-page__header">
-          <div className="app-page__icon">
+          <div 
+            className="app-page__icon"
+            style={{ viewTransitionName: 'app-icon' }}
+          >
             {app.icon_url ? (
               <img src={app.icon_url} alt={`${app.name} icon`} />
             ) : (

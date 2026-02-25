@@ -3,6 +3,7 @@
  *
  * Create a Stripe Checkout session for app purchase.
  * Handles both paid and free apps.
+ * For source code distribution, generates one-time download token and sends email.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -10,6 +11,7 @@ import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionIdFromCookies, validateSession } from "@/lib/auth";
 import { createStripeClient, getBaseUrl } from "@/lib/stripe";
 import { nanoid } from "@/lib/db";
+import { sendEmail, generateSourceCodeEmail } from "@/lib/email";
 
 interface CheckoutRequest {
   appId: string;
@@ -24,6 +26,7 @@ interface App {
   tagline: string | null;
   icon_url: string | null;
   min_price_cents: number;
+  distribution_type: string;
 }
 
 interface DiscountCode {
@@ -79,7 +82,9 @@ export async function POST(request: NextRequest) {
 
     // Get app
     const app = await env.DB.prepare(
-      `SELECT id, name, slug, tagline, icon_url, min_price_cents FROM apps WHERE id = ?`
+      `SELECT id, name, slug, tagline, icon_url, min_price_cents, 
+              COALESCE(distribution_type, 'binary') as distribution_type 
+       FROM apps WHERE id = ?`
     )
       .bind(appId)
       .first<App>();
@@ -87,6 +92,8 @@ export async function POST(request: NextRequest) {
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
     }
+
+    const isSourceCode = app.distribution_type === "source_code";
 
     // Check if already purchased
     const existingPurchase = await env.DB.prepare(
@@ -166,6 +173,57 @@ export async function POST(request: NextRequest) {
           .run();
       }
 
+      // For source code: Generate download token and send email
+      if (isSourceCode) {
+        const token = nanoid(32); // Longer token for security
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+
+        await env.DB.prepare(
+          `INSERT INTO download_tokens (id, token, user_id, app_id, purchase_id, expires_at, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`
+        )
+          .bind(
+            nanoid(),
+            token,
+            user.id,
+            appId,
+            purchaseId,
+            expiresAt.toISOString(),
+            now
+          )
+          .run();
+
+        const downloadUrl = `${baseUrl}/api/download/token/${token}`;
+        
+        // Send email with download link
+        const { html, text } = generateSourceCodeEmail(
+          app.name,
+          0,
+          user.name || null,
+          downloadUrl,
+          7
+        );
+
+        await sendEmail(
+          {
+            to: user.email,
+            subject: `Your ${app.name} Source Code Download`,
+            html,
+            text,
+          },
+          env
+        );
+
+        return NextResponse.json({
+          success: true,
+          free: true,
+          sourceCode: true,
+          message: "Check your email for the download link!",
+          redirectUrl: `${baseUrl}/dashboard?purchased=${app.slug}&emailed=1`,
+        });
+      }
+
       return NextResponse.json({
         success: true,
         free: true,
@@ -192,7 +250,7 @@ export async function POST(request: NextRequest) {
             currency: "usd",
             unit_amount: finalPriceCents,
             product_data: {
-              name: app.name,
+              name: isSourceCode ? `${app.name} (Source Code)` : app.name,
               description: app.tagline || undefined,
               images: app.icon_url ? [`${baseUrl}${app.icon_url}`] : undefined,
             },
@@ -203,11 +261,16 @@ export async function POST(request: NextRequest) {
       metadata: {
         app_id: app.id,
         user_id: user.id,
+        user_email: user.email,
+        user_name: user.name || "",
         discount_code_id: usedDiscountCode?.id || "",
         original_price_cents: priceCents.toString(),
         final_price_cents: finalPriceCents.toString(),
+        is_source_code: isSourceCode ? "1" : "0",
       },
-      success_url: `${baseUrl}/dashboard?purchased=${app.slug}`,
+      success_url: isSourceCode 
+        ? `${baseUrl}/dashboard?purchased=${app.slug}&emailed=1`
+        : `${baseUrl}/dashboard?purchased=${app.slug}`,
       cancel_url: `${baseUrl}/apps/${app.slug}`,
     });
 

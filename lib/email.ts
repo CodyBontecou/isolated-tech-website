@@ -271,3 +271,129 @@ You're receiving this because you purchased ${appName}.
 
   return { html, text };
 }
+
+/**
+ * Generate source code download email HTML
+ * Includes one-time download link
+ */
+export function generateSourceCodeEmail(
+  appName: string,
+  amountCents: number,
+  userName: string | null,
+  downloadUrl: string,
+  expiresInDays: number = 7
+): { html: string; text: string } {
+  const amount = amountCents === 0 ? "Free" : `$${(amountCents / 100).toFixed(2)}`;
+  const greeting = userName ? `Hi ${userName},` : "Hi,";
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Source Code Download</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: 'Courier New', monospace;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; border: 1px solid #333;">
+          <tr>
+            <td style="padding: 30px;">
+              <!-- Header -->
+              <h1 style="margin: 0 0 30px 0; font-size: 14px; color: #666; letter-spacing: 2px;">
+                ISOLATED<span style="color: #fff;">.</span>TECH
+              </h1>
+              
+              <!-- Greeting -->
+              <p style="margin: 0 0 20px 0; color: #f0f0f0; font-size: 14px;">
+                ${greeting}
+              </p>
+              
+              <p style="margin: 0 0 30px 0; color: #f0f0f0; font-size: 14px;">
+                Thank you for your purchase! Here's your source code download.
+              </p>
+              
+              <!-- Receipt Details -->
+              <table width="100%" style="border-top: 1px solid #333; border-bottom: 1px solid #333; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 15px 0;">
+                    <span style="color: #666; font-size: 11px; letter-spacing: 1px;">SOURCE CODE</span><br>
+                    <span style="color: #f0f0f0; font-size: 16px; font-weight: bold;">${appName}</span>
+                  </td>
+                  <td align="right" style="padding: 15px 0;">
+                    <span style="color: #666; font-size: 11px; letter-spacing: 1px;">AMOUNT</span><br>
+                    <span style="color: #4ade80; font-size: 16px; font-weight: bold;">${amount}</span>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- CTA -->
+              <a href="${downloadUrl}" style="display: inline-block; background: #4ade80; color: #0a0a0a; padding: 14px 28px; font-size: 13px; font-weight: bold; text-decoration: none; letter-spacing: 1px;">
+                ↓ DOWNLOAD SOURCE CODE
+              </a>
+              
+              <!-- Warning -->
+              <div style="margin-top: 25px; padding: 15px; background: #0a0a0a; border-left: 3px solid #f59e0b;">
+                <p style="margin: 0; color: #f59e0b; font-size: 11px; letter-spacing: 0.5px;">
+                  ⚠️ ONE-TIME LINK
+                </p>
+                <p style="margin: 8px 0 0 0; color: #999; font-size: 12px;">
+                  This download link can only be used once and expires in ${expiresInDays} days.<br>
+                  Save the file after downloading.
+                </p>
+              </div>
+              
+              <!-- What's included -->
+              <div style="margin-top: 25px;">
+                <p style="margin: 0 0 10px 0; color: #666; font-size: 11px; letter-spacing: 1px;">
+                  WHAT'S INCLUDED
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #999; font-size: 12px; line-height: 1.8;">
+                  <li>Complete Xcode project</li>
+                  <li>All source files and assets</li>
+                  <li>Build instructions in README</li>
+                </ul>
+              </div>
+              
+              <!-- Footer -->
+              <p style="margin: 40px 0 0 0; color: #666; font-size: 11px;">
+                Need help? Reply to this email or contact support@isolated.tech
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+  const text = `
+ISOLATED.TECH
+
+${greeting}
+
+Thank you for your purchase! Here's your source code download.
+
+SOURCE CODE: ${appName}
+AMOUNT: ${amount}
+
+DOWNLOAD: ${downloadUrl}
+
+⚠️ ONE-TIME LINK
+This download link can only be used once and expires in ${expiresInDays} days.
+Save the file after downloading.
+
+WHAT'S INCLUDED:
+- Complete Xcode project
+- All source files and assets
+- Build instructions in README
+
+Need help? Contact support@isolated.tech
+`;
+
+  return { html, text };
+}

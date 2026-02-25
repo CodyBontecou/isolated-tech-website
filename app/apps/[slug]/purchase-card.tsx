@@ -98,6 +98,10 @@ export function PurchaseCard({
 
         // Handle free purchase
         if (data.free && data.redirectUrl) {
+          // For source code, show email confirmation before redirect
+          if (data.sourceCode && data.message) {
+            alert(data.message);
+          }
           window.location.href = data.redirectUrl;
           return;
         }
@@ -201,14 +205,14 @@ export function PurchaseCard({
     void startCheckout(checkoutPriceCents, resumeDiscountCode);
   }, [appId, finalPriceCents, startCheckout]);
 
-  if (isFree) {
+  // For source code: Always show name-your-price UI (even when free) to capture email + allow optional payment
+  // For regular free apps: Show simple free download
+  if (isFree && !isSourceCode) {
     return (
       <div className="purchase-card">
-        <div className="purchase-card__price-label">
-          {isSourceCode ? "DISTRIBUTION" : "PRICE"}
-        </div>
+        <div className="purchase-card__price-label">PRICE</div>
         <div className="purchase-card__price" style={{ color: "#4ade80" }}>
-          {isSourceCode ? "Source Code — Free" : "Free"}
+          Free
         </div>
 
         <button
@@ -216,7 +220,7 @@ export function PurchaseCard({
           onClick={handlePurchase}
           disabled={isLoading}
         >
-          {isLoading ? "LOADING..." : isSourceCode ? "↓ GET SOURCE CODE" : "GET FREE"}
+          {isLoading ? "LOADING..." : "GET FREE"}
         </button>
 
         {iosAppStoreUrl && (
@@ -231,9 +235,7 @@ export function PurchaseCard({
         )}
 
         <p className="purchase-card__note">
-          {isSourceCode
-            ? "No payment required. Download the Xcode project source code and build on your device."
-            : "No payment required. Create an account to track your downloads."}
+          No payment required. Create an account to track your downloads.
         </p>
       </div>
     );
@@ -241,8 +243,15 @@ export function PurchaseCard({
 
   return (
     <div className="purchase-card">
-      <div className="purchase-card__price-label">
-        {isSourceCode ? "NAME YOUR PRICE — SOURCE CODE" : "NAME YOUR PRICE"}
+      <div className="purchase-card__price-label">DISTRIBUTION</div>
+      {isSourceCode && (
+        <div className="purchase-card__price" style={{ color: "#4ade80", marginBottom: "1rem" }}>
+          Source Code
+        </div>
+      )}
+
+      <div className="purchase-card__price-label" style={{ marginBottom: "0.5rem" }}>
+        {isSourceCode ? "PAY WHAT YOU WANT" : "NAME YOUR PRICE"}
       </div>
 
       <div className="purchase-card__input-wrapper">
@@ -264,12 +273,19 @@ export function PurchaseCard({
         />
       </div>
 
-      {suggestedPriceCents && suggestedPriceCents > 0 && (
+      {isSourceCode && isFree ? (
+        <p className="purchase-card__suggested">
+          {suggestedPriceCents && suggestedPriceCents > 0
+            ? `Suggested: $${(suggestedPriceCents / 100).toFixed(2)} • `
+            : ""}
+          $0 minimum — pay what it's worth to you
+        </p>
+      ) : suggestedPriceCents && suggestedPriceCents > 0 ? (
         <p className="purchase-card__suggested">
           Suggested: ${(suggestedPriceCents / 100).toFixed(2)}
           {minPriceCents > 0 && ` • Minimum: $${minPrice}`}
         </p>
-      )}
+      ) : null}
 
       {!isValidPrice && priceInCents > 0 && (
         <p style={{ color: "#f87171", fontSize: "0.75rem", marginBottom: "1rem" }}>
@@ -370,30 +386,59 @@ export function PurchaseCard({
         </div>
       )}
 
-      <button
-        className="purchase-card__btn"
-        onClick={handlePurchase}
-        disabled={isLoading || !isValidPrice}
-      >
-        {isLoading
-          ? "LOADING..."
-          : finalPriceCents === 0
-            ? isSourceCode ? "↓ GET SOURCE CODE" : "GET FREE"
-            : isSourceCode
-              ? `↓ GET SOURCE — $${(finalPriceCents / 100).toFixed(2)}`
-              : `PAY $${(finalPriceCents / 100).toFixed(2)}`}
-      </button>
+      {/* For source code: Require sign-in before any action */}
+      {isSourceCode && !isAuthenticated ? (
+        <>
+          <button
+            className="purchase-card__btn"
+            onClick={() => {
+              const redirectPath = `/apps/${appSlug}`;
+              window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
+            }}
+          >
+            SIGN IN TO DOWNLOAD
+          </button>
+          <p className="purchase-card__note">
+            Sign in with your email to access the source code.
+            {finalPriceCents > 0 && " Payment processed securely via Stripe."}
+          </p>
+        </>
+      ) : (
+        <>
+          <button
+            className="purchase-card__btn"
+            onClick={handlePurchase}
+            disabled={isLoading || !isValidPrice}
+          >
+            {isLoading
+              ? "LOADING..."
+              : finalPriceCents === 0
+                ? isSourceCode ? "↓ GET SOURCE CODE" : "GET FREE"
+                : isSourceCode
+                  ? `↓ GET SOURCE — $${(finalPriceCents / 100).toFixed(2)}`
+                  : `PAY $${(finalPriceCents / 100).toFixed(2)}`}
+          </button>
 
-      {!isAuthenticated && (
-        <button
-          className="purchase-card__btn purchase-card__btn--secondary"
-          onClick={() => {
-            const redirectPath = `/apps/${appSlug}`;
-            window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
-          }}
-        >
-          SIGN IN FIRST
-        </button>
+          {!isAuthenticated && (
+            <button
+              className="purchase-card__btn purchase-card__btn--secondary"
+              onClick={() => {
+                const redirectPath = `/apps/${appSlug}`;
+                window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
+              }}
+            >
+              SIGN IN FIRST
+            </button>
+          )}
+
+          <p className="purchase-card__note">
+            {isSourceCode
+              ? finalPriceCents > 0
+                ? "Secure payment via Stripe. You'll get instant access to download the Xcode project source code."
+                : "Download the Xcode project source code and build on your device."
+              : "Secure payment via Stripe. You'll get instant access to download after purchase. All prices in USD."}
+          </p>
+        </>
       )}
 
       {iosAppStoreUrl && (
@@ -406,12 +451,6 @@ export function PurchaseCard({
           {iosAppStoreLabel}
         </a>
       )}
-
-      <p className="purchase-card__note">
-        {isSourceCode
-          ? "Secure payment via Stripe. You\u2019ll get instant access to download the Xcode project source code. All prices in USD."
-          : "Secure payment via Stripe. You\u2019ll get instant access to download after purchase. All prices in USD."}
-      </p>
     </div>
   );
 }

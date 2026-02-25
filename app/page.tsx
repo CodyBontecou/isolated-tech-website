@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth";
+import { ViewTransitionLink } from "./components/view-transition-link";
+import { HeroAppLink } from "./components/hero-app-link";
 
 interface App {
   id: string;
@@ -87,7 +89,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
         <div className="store-hero__content">
           <div className="store-hero__label">FEATURED</div>
           <div className="store-hero__app">
-            <div className="store-hero__icon">
+            <div className="store-hero__icon" id="hero-featured-icon">
               {app.icon_url ? (
                 <img src={app.icon_url} alt={`${app.name} icon`} />
               ) : (
@@ -115,14 +117,22 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                 </p>
               )}
               <div className="store-hero__actions">
-                <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--primary">
+                <HeroAppLink 
+                  href={`/apps/${app.slug}`} 
+                  className="store-hero__btn store-hero__btn--primary"
+                  heroIconId="hero-featured-icon"
+                >
                   {isSourceCode
                     ? isFree ? "GET SOURCE — FREE" : `GET SOURCE — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`
                     : isFree ? "GET — FREE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`}
-                </Link>
-                <Link href={`/apps/${app.slug}`} className="store-hero__btn store-hero__btn--ghost">
+                </HeroAppLink>
+                <HeroAppLink 
+                  href={`/apps/${app.slug}`} 
+                  className="store-hero__btn store-hero__btn--ghost"
+                  heroIconId="hero-featured-icon"
+                >
                   LEARN MORE
-                </Link>
+                </HeroAppLink>
               </div>
             </div>
           </div>
@@ -138,8 +148,13 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                   .join(" · ");
 
                 return (
-                  <Link key={preview.id} href={`/apps/${preview.slug}`} className="store-hero__rail-item">
-                    <div className="store-hero__rail-icon">
+                  <ViewTransitionLink 
+                    key={preview.id} 
+                    href={`/apps/${preview.slug}`} 
+                    className="store-hero__rail-item"
+                    transitionSelector="[data-transition-icon]"
+                  >
+                    <div className="store-hero__rail-icon" data-transition-icon>
                       {preview.icon_url ? (
                         <img src={preview.icon_url} alt={`${preview.name} icon`} />
                       ) : (
@@ -152,7 +167,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                         {previewPlatforms} · {formatPrice(preview.min_price_cents, preview.suggested_price_cents)}
                       </span>
                     </div>
-                  </Link>
+                  </ViewTransitionLink>
                 );
               })}
             </div>
@@ -171,12 +186,13 @@ function AppCard({ app, index }: { app: App; index: number }) {
   const isSourceCode = app.distribution_type === "source_code";
 
   return (
-    <Link
+    <ViewTransitionLink
       href={`/apps/${app.slug}`}
       className="store-card"
       style={{ animationDelay: `${index * 0.05}s` }}
+      transitionSelector="[data-transition-icon]"
     >
-      <div className="store-card__icon">
+      <div className="store-card__icon" data-transition-icon>
         {app.icon_url ? (
           <img src={app.icon_url} alt={`${app.name} icon`} />
         ) : (
@@ -200,7 +216,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
         </span>
         <span className="store-card__arrow">→</span>
       </div>
-    </Link>
+    </ViewTransitionLink>
   );
 }
 

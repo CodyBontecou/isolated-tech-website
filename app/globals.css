@@ -4027,3 +4027,89 @@ img {
   font-size: 0.85rem;
   color: #aaa;
 }
+
+/* ============================================
+   VIEW TRANSITIONS — SHARED ELEMENT ANIMATIONS
+   ============================================ */
+
+/* Enable view transitions */
+@view-transition {
+  navigation: auto;
+}
+
+/* App icon transition customization */
+::view-transition-old(app-icon),
+::view-transition-new(app-icon) {
+  animation-duration: 0.35s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Icon slides left and scales down when leaving */
+::view-transition-old(app-icon) {
+  animation: icon-slide-out 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Icon slides in from right when entering */
+::view-transition-new(app-icon) {
+  animation: icon-slide-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes icon-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.9);
+  }
+}
+
+@keyframes icon-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(30px) scale(1.1);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Page content fade during transition */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+/* Smooth crossfade for page content */
+::view-transition-old(root) {
+  animation: page-fade-out 0.25s ease-out forwards;
+}
+
+::view-transition-new(root) {
+  animation: page-fade-in 0.35s ease-out forwards;
+}
+
+@keyframes page-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Utility class for applying view-transition-name dynamically */
+.view-transition-icon {
+  view-transition-name: app-icon;
+}
