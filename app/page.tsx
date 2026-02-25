@@ -164,7 +164,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                     <div className="store-hero__rail-body">
                       <span className="store-hero__rail-name">{preview.name}</span>
                       <span className="store-hero__rail-meta">
-                        {previewPlatforms} · {formatPrice(preview.min_price_cents, preview.suggested_price_cents)}
+                        {previewPlatforms} · {preview.tagline || formatPrice(preview.min_price_cents, preview.suggested_price_cents)}
                       </span>
                     </div>
                   </ViewTransitionLink>
