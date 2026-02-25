@@ -3186,13 +3186,12 @@ img {
   padding: 0.6rem;
   border: 1px solid #222;
   background: rgba(0, 0, 0, 0.45);
-  transition: border-color 0.2s, transform 0.2s, background 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .store-hero__rail-item:hover {
   border-color: #3a3a3a;
   background: rgba(255, 255, 255, 0.02);
-  transform: translateX(-2px);
 }
 
 .store-hero__rail-icon {
