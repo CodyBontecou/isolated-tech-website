@@ -1524,7 +1524,7 @@ img {
 
 .app-page__content {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: minmax(0, 1fr) 350px;
   gap: 4rem;
 }
 
