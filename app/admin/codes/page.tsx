@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { query } from "@/lib/db";
+import { getEnv } from "@/lib/cloudflare-context";
 
 export const metadata: Metadata = {
   title: "Discount Codes — Admin — ISOLATED.TECH",
@@ -8,7 +10,7 @@ export const metadata: Metadata = {
 interface DiscountCode {
   id: string;
   code: string;
-  discount_type: "percent" | "fixed";
+  discount_type: string;
   discount_value: number;
   app_id: string | null;
   app_name: string | null;
@@ -19,48 +21,31 @@ interface DiscountCode {
   created_at: string;
 }
 
-// Mock data
-const MOCK_CODES: DiscountCode[] = [
-  {
-    id: "code_1",
-    code: "LAUNCH50",
-    discount_type: "percent",
-    discount_value: 50,
-    app_id: null,
-    app_name: null,
-    max_uses: 100,
-    times_used: 23,
-    expires_at: "2026-03-31T23:59:59Z",
-    is_active: 1,
-    created_at: "2026-02-01T00:00:00Z",
-  },
-  {
-    id: "code_2",
-    code: "VOXFREE",
-    discount_type: "percent",
-    discount_value: 100,
-    app_id: "app_voxboard_001",
-    app_name: "Voxboard",
-    max_uses: 10,
-    times_used: 10,
-    expires_at: null,
-    is_active: 0,
-    created_at: "2026-01-15T00:00:00Z",
-  },
-  {
-    id: "code_3",
-    code: "SAVE2",
-    discount_type: "fixed",
-    discount_value: 200,
-    app_id: null,
-    app_name: null,
-    max_uses: null,
-    times_used: 45,
-    expires_at: null,
-    is_active: 1,
-    created_at: "2026-02-10T00:00:00Z",
-  },
-];
+async function getDiscountCodes(): Promise<DiscountCode[]> {
+  const env = getEnv();
+
+  const codes = await query<DiscountCode>(
+    `SELECT 
+       dc.id,
+       dc.code,
+       dc.discount_type,
+       dc.discount_value,
+       dc.app_id,
+       a.name as app_name,
+       dc.max_uses,
+       dc.times_used,
+       dc.expires_at,
+       dc.is_active,
+       dc.created_at
+     FROM discount_codes dc
+     LEFT JOIN apps a ON dc.app_id = a.id
+     ORDER BY dc.created_at DESC`,
+    [],
+    env
+  );
+
+  return codes;
+}
 
 function formatDiscount(type: string, value: number): string {
   if (type === "percent") return `${value}%`;
@@ -100,8 +85,8 @@ function CodeStatus({ code }: { code: DiscountCode }) {
   );
 }
 
-export default function AdminCodesPage() {
-  const codes = MOCK_CODES;
+export default async function AdminCodesPage() {
+  const codes = await getDiscountCodes();
 
   return (
     <>
@@ -119,75 +104,75 @@ export default function AdminCodesPage() {
         </div>
       </header>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>CODE</th>
-              <th>DISCOUNT</th>
-              <th>APP</th>
-              <th>USAGE</th>
-              <th>EXPIRES</th>
-              <th>STATUS</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {codes.map((code) => (
-              <tr key={code.id}>
-                <td>
-                  <code
-                    style={{
-                      background: "var(--black)",
-                      padding: "0.25rem 0.5rem",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "0.8rem",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {code.code}
-                  </code>
-                </td>
-                <td className="admin-table__money">
-                  {formatDiscount(code.discount_type, code.discount_value)}
-                </td>
-                <td>
-                  {code.app_name || (
-                    <span style={{ color: "var(--gray)" }}>All apps</span>
-                  )}
-                </td>
-                <td>
-                  {code.times_used}
-                  {code.max_uses && (
-                    <span style={{ color: "var(--gray)" }}>
-                      {" "}/ {code.max_uses}
-                    </span>
-                  )}
-                </td>
-                <td className="admin-table__date">{formatDate(code.expires_at)}</td>
-                <td>
-                  <CodeStatus code={code} />
-                </td>
-                <td>
-                  <div className="admin-table__actions">
-                    <Link
-                      href={`/admin/codes/${code.id}/edit`}
-                      className="admin-table__btn"
-                    >
-                      EDIT
-                    </Link>
-                    <button className="admin-table__btn admin-table__btn--danger">
-                      DELETE
-                    </button>
-                  </div>
-                </td>
+      {codes.length > 0 ? (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>CODE</th>
+                <th>DISCOUNT</th>
+                <th>APP</th>
+                <th>USAGE</th>
+                <th>EXPIRES</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {codes.length === 0 && (
+            </thead>
+            <tbody>
+              {codes.map((code) => (
+                <tr key={code.id}>
+                  <td>
+                    <code
+                      style={{
+                        background: "var(--black)",
+                        padding: "0.25rem 0.5rem",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "0.8rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {code.code}
+                    </code>
+                  </td>
+                  <td className="admin-table__money">
+                    {formatDiscount(code.discount_type, code.discount_value)}
+                  </td>
+                  <td>
+                    {code.app_name || (
+                      <span style={{ color: "var(--gray)" }}>All apps</span>
+                    )}
+                  </td>
+                  <td>
+                    {code.times_used}
+                    {code.max_uses && (
+                      <span style={{ color: "var(--gray)" }}>
+                        {" "}/ {code.max_uses}
+                      </span>
+                    )}
+                  </td>
+                  <td className="admin-table__date">{formatDate(code.expires_at)}</td>
+                  <td>
+                    <CodeStatus code={code} />
+                  </td>
+                  <td>
+                    <div className="admin-table__actions">
+                      <Link
+                        href={`/admin/codes/${code.id}/edit`}
+                        className="admin-table__btn"
+                      >
+                        EDIT
+                      </Link>
+                      <button className="admin-table__btn admin-table__btn--danger">
+                        DELETE
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
         <div className="empty-state">
           <h2 className="empty-state__title">No discount codes yet</h2>
           <p className="empty-state__text">

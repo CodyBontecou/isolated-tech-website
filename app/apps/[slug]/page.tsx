@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PurchaseCard } from "./purchase-card";
+import { MediaShowcase, MediaItem } from "./media-showcase";
 import { getCurrentUser } from "@/lib/auth";
 import { getEnv } from "@/lib/cloudflare-context";
 
@@ -30,6 +31,22 @@ async function getApp(slug: string): Promise<App | null> {
     .first<App>();
   
   return app || null;
+}
+
+async function getAppMedia(appId: string): Promise<MediaItem[]> {
+  const env = getEnv();
+  if (!env?.DB) return [];
+  
+  const result = await env.DB.prepare(
+    `SELECT id, type, url, title
+     FROM app_media
+     WHERE app_id = ?
+     ORDER BY sort_order ASC, created_at ASC`
+  )
+    .bind(appId)
+    .all<{ id: string; type: "image" | "youtube"; url: string; title: string | null }>();
+  
+  return result.results || [];
 }
 
 export async function generateMetadata({
@@ -131,7 +148,10 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
   }
 
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const [user, media] = await Promise.all([
+    env ? getCurrentUser(env) : null,
+    getAppMedia(app.id),
+  ]);
 
   const platforms = getPlatforms(app.platforms);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
@@ -213,7 +233,10 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
         </header>
 
         <div className="app-page__content">
-          {app.description && <MarkdownContent content={app.description} />}
+          <div className="app-page__main">
+            {app.description && <MarkdownContent content={app.description} />}
+            <MediaShowcase media={media} />
+          </div>
 
           <aside>
             <PurchaseCard

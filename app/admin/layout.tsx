@@ -1,12 +1,17 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
+import { getEnv } from "@/lib/cloudflare-context";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // TODO: Add requireAdmin() check here
-  // const user = await requireAdmin(env);
+  const env = getEnv();
+  
+  // This will redirect to /auth/login if not authenticated,
+  // or to /dashboard if authenticated but not an admin
+  const user = await requireAdmin(env);
 
   return (
     <>
@@ -19,6 +24,9 @@ export default function AdminLayout({
             ADMIN
           </Link>
           <Link href="/apps">STORE</Link>
+          <span style={{ color: "var(--gray)", fontSize: "0.7rem" }}>
+            {user.email}
+          </span>
           <Link href="/api/auth/logout">SIGN OUT</Link>
         </div>
       </nav>

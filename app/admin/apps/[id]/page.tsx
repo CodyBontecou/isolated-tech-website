@@ -103,6 +103,13 @@ export default function EditAppPage({ params }: { params: { id: string } }) {
               VIEW PAGE
             </Link>
             <Link
+              href={`/admin/apps/${params.id}/media`}
+              className="auth-btn auth-btn--outline"
+              style={{ width: "auto" }}
+            >
+              MEDIA
+            </Link>
+            <Link
               href={`/admin/apps/${params.id}/edit`}
               className="auth-btn"
               style={{ width: "auto" }}

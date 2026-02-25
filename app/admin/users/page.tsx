@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { query } from "@/lib/db";
+import { getEnv } from "@/lib/cloudflare-context";
 
 export const metadata: Metadata = {
   title: "Users — Admin — ISOLATED.TECH",
@@ -16,75 +18,59 @@ interface User {
   oauth_providers: string[];
 }
 
-// Mock data
-const MOCK_USERS: User[] = [
-  {
-    id: "user_admin_001",
-    email: "cody@isolated.tech",
-    name: "Cody Bontecou",
-    is_admin: 1,
-    newsletter_subscribed: 1,
-    created_at: "2026-01-01T00:00:00Z",
-    purchase_count: 0,
-    review_count: 0,
-    oauth_providers: ["github", "google"],
-  },
-  {
-    id: "u1",
-    email: "john@example.com",
-    name: "John Doe",
-    is_admin: 0,
-    newsletter_subscribed: 1,
-    created_at: "2026-02-10T10:00:00Z",
-    purchase_count: 3,
-    review_count: 2,
-    oauth_providers: ["github"],
-  },
-  {
-    id: "u2",
-    email: "jane@example.com",
-    name: "Jane Smith",
-    is_admin: 0,
-    newsletter_subscribed: 1,
-    created_at: "2026-02-12T14:30:00Z",
-    purchase_count: 2,
-    review_count: 1,
-    oauth_providers: ["google"],
-  },
-  {
-    id: "u3",
-    email: "dev@company.io",
-    name: null,
-    is_admin: 0,
-    newsletter_subscribed: 0,
-    created_at: "2026-02-15T09:00:00Z",
-    purchase_count: 1,
-    review_count: 0,
-    oauth_providers: [],
-  },
-  {
-    id: "u4",
-    email: "mike@test.com",
-    name: "Mike Johnson",
-    is_admin: 0,
-    newsletter_subscribed: 1,
-    created_at: "2026-02-18T16:45:00Z",
-    purchase_count: 1,
-    review_count: 1,
-    oauth_providers: ["apple"],
-  },
-  {
-    id: "u5",
-    email: "anonymous@mail.com",
-    name: null,
-    is_admin: 0,
-    newsletter_subscribed: 0,
-    created_at: "2026-02-20T11:15:00Z",
-    purchase_count: 1,
-    review_count: 0,
-    oauth_providers: [],
-  },
-];
+async function getUsers(): Promise<User[]> {
+  const env = getEnv();
+
+  // Get users with purchase and review counts
+  const users = await query<{
+    id: string;
+    email: string;
+    name: string | null;
+    is_admin: number;
+    newsletter_subscribed: number;
+    created_at: string;
+    purchase_count: number;
+    review_count: number;
+  }>(
+    `SELECT 
+       u.id,
+       u.email,
+       u.name,
+       u.is_admin,
+       u.newsletter_subscribed,
+       u.created_at,
+       COALESCE((SELECT COUNT(*) FROM purchases WHERE user_id = u.id AND status = 'completed'), 0) as purchase_count,
+       COALESCE((SELECT COUNT(*) FROM reviews WHERE user_id = u.id), 0) as review_count
+     FROM users u
+     ORDER BY u.created_at DESC`,
+    [],
+    env
+  );
+
+  // Get OAuth providers for each user
+  const oauthAccounts = await query<{
+    user_id: string;
+    provider: string;
+  }>(
+    `SELECT user_id, provider FROM oauth_accounts`,
+    [],
+    env
+  );
+
+  // Build provider map
+  const providerMap = new Map<string, string[]>();
+  for (const account of oauthAccounts) {
+    const providers = providerMap.get(account.user_id) || [];
+    providers.push(account.provider);
+    providerMap.set(account.user_id, providers);
+  }
+
+  // Merge providers into users
+  return users.map((user) => ({
+    ...user,
+    oauth_providers: providerMap.get(user.id) || [],
+  }));
+}
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -123,8 +109,8 @@ function OAuthBadges({ providers }: { providers: string[] }) {
   );
 }
 
-export default function AdminUsersPage() {
-  const users = MOCK_USERS;
+export default async function AdminUsersPage() {
+  const users = await getUsers();
 
   const newsletterCount = users.filter((u) => u.newsletter_subscribed).length;
 
@@ -160,91 +146,102 @@ export default function AdminUsersPage() {
         </select>
       </div>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>USER</th>
-              <th>AUTH</th>
-              <th>PURCHASES</th>
-              <th>REVIEWS</th>
-              <th>NEWSLETTER</th>
-              <th>JOINED</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>
-                  <div className="admin-table__user">
-                    <span className="admin-table__user-name">
-                      {user.name || "—"}
-                      {user.is_admin === 1 && (
-                        <span
-                          style={{
-                            color: "#fbbf24",
-                            marginLeft: "0.5rem",
-                            fontSize: "0.6rem",
-                          }}
-                        >
-                          ADMIN
-                        </span>
-                      )}
-                    </span>
-                    <span className="admin-table__user-email">{user.email}</span>
-                  </div>
-                </td>
-                <td>
-                  <OAuthBadges providers={user.oauth_providers} />
-                </td>
-                <td>{user.purchase_count}</td>
-                <td>{user.review_count}</td>
-                <td>
-                  {user.newsletter_subscribed ? (
-                    <span style={{ color: "#4ade80", fontSize: "0.7rem" }}>
-                      ✓
-                    </span>
-                  ) : (
-                    <span style={{ color: "var(--gray)", fontSize: "0.7rem" }}>
-                      —
-                    </span>
-                  )}
-                </td>
-                <td className="admin-table__date">
-                  {formatDate(user.created_at)}
-                </td>
-                <td>
-                  <div className="admin-table__actions">
-                    <button className="admin-table__btn">VIEW</button>
-                    {user.is_admin === 0 && (
-                      <button className="admin-table__btn admin-table__btn--danger">
-                        DELETE
-                      </button>
-                    )}
-                  </div>
-                </td>
+      {users.length > 0 ? (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>USER</th>
+                <th>AUTH</th>
+                <th>PURCHASES</th>
+                <th>REVIEWS</th>
+                <th>NEWSLETTER</th>
+                <th>JOINED</th>
+                <th>ACTIONS</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>
+                    <div className="admin-table__user">
+                      <span className="admin-table__user-name">
+                        {user.name || "—"}
+                        {user.is_admin === 1 && (
+                          <span
+                            style={{
+                              color: "#fbbf24",
+                              marginLeft: "0.5rem",
+                              fontSize: "0.6rem",
+                            }}
+                          >
+                            ADMIN
+                          </span>
+                        )}
+                      </span>
+                      <span className="admin-table__user-email">{user.email}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <OAuthBadges providers={user.oauth_providers} />
+                  </td>
+                  <td>{user.purchase_count}</td>
+                  <td>{user.review_count}</td>
+                  <td>
+                    {user.newsletter_subscribed ? (
+                      <span style={{ color: "#4ade80", fontSize: "0.7rem" }}>
+                        ✓
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--gray)", fontSize: "0.7rem" }}>
+                        —
+                      </span>
+                    )}
+                  </td>
+                  <td className="admin-table__date">
+                    {formatDate(user.created_at)}
+                  </td>
+                  <td>
+                    <div className="admin-table__actions">
+                      <button className="admin-table__btn">VIEW</button>
+                      {user.is_admin === 0 && (
+                        <button className="admin-table__btn admin-table__btn--danger">
+                          DELETE
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="empty-state">
+          <h2 className="empty-state__title">No users yet</h2>
+          <p className="empty-state__text">
+            Users will appear here once they sign up.
+          </p>
+        </div>
+      )}
 
       {/* Export */}
-      <div
-        style={{
-          marginTop: "1.5rem",
-          display: "flex",
-          gap: "0.75rem",
-        }}
-      >
-        <button className="auth-btn auth-btn--outline" style={{ width: "auto" }}>
-          EXPORT NEWSLETTER LIST (CSV)
-        </button>
-        <button className="auth-btn auth-btn--outline" style={{ width: "auto" }}>
-          EXPORT ALL USERS (CSV)
-        </button>
-      </div>
+      {users.length > 0 && (
+        <div
+          style={{
+            marginTop: "1.5rem",
+            display: "flex",
+            gap: "0.75rem",
+          }}
+        >
+          <button className="auth-btn auth-btn--outline" style={{ width: "auto" }}>
+            EXPORT NEWSLETTER LIST (CSV)
+          </button>
+          <button className="auth-btn auth-btn--outline" style={{ width: "auto" }}>
+            EXPORT ALL USERS (CSV)
+          </button>
+        </div>
+      )}
     </>
   );
 }
