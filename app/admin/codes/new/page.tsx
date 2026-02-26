@@ -1,20 +1,25 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { CodeForm } from "./code-form";
+import { query } from "@/lib/db";
+import { getEnv } from "@/lib/cloudflare-context";
 
 export const metadata: Metadata = {
   title: "New Discount Code — Admin — ISOLATED.TECH",
 };
 
-// Mock apps for selector
-const APPS = [
-  { id: "app_voxboard_001", name: "Voxboard" },
-  { id: "app_syncmd_001", name: "sync.md" },
-  { id: "app_healthmd_001", name: "health.md" },
-  { id: "app_imghost_001", name: "imghost" },
-];
+async function getApps(): Promise<{ id: string; name: string }[]> {
+  const env = getEnv();
+  return query<{ id: string; name: string }>(
+    `SELECT id, name FROM apps ORDER BY name ASC`,
+    [],
+    env
+  );
+}
 
-export default function NewCodePage() {
+export default async function NewCodePage() {
+  const apps = await getApps();
+
   return (
     <>
       <header className="admin-header">
@@ -28,7 +33,7 @@ export default function NewCodePage() {
       </header>
 
       <div style={{ maxWidth: "500px" }}>
-        <CodeForm apps={APPS} />
+        <CodeForm apps={apps} />
       </div>
     </>
   );

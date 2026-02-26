@@ -1529,10 +1529,18 @@ img {
   gap: 4rem;
 }
 
+.app-page__main {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
 .app-page__description {
   font-size: 0.9rem;
   line-height: 1.8;
   color: #ccc;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .app-page__description h2 {

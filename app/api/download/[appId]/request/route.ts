@@ -129,10 +129,10 @@ export async function POST(
       env
     );
 
-    if (!emailResult) {
-      console.error("Failed to send download email to:", user.email);
+    if (emailResult.error) {
+      console.error("Failed to send download email to:", user.email, emailResult.error);
       return NextResponse.json(
-        { error: "Failed to send email. Please try again." },
+        { error: `Failed to send email: ${emailResult.error}` },
         { status: 500 }
       );
     }

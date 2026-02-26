@@ -70,14 +70,14 @@ async function getSigningKey(
 export async function sendEmail(
   options: EmailOptions,
   env: Env
-): Promise<{ messageId: string } | null> {
-  const accessKeyId = (env as unknown as { AWS_ACCESS_KEY_ID?: string }).AWS_ACCESS_KEY_ID;
-  const secretAccessKey = (env as unknown as { AWS_SECRET_ACCESS_KEY?: string }).AWS_SECRET_ACCESS_KEY;
+): Promise<{ messageId: string; error?: undefined } | { error: string; messageId?: undefined }> {
+  const accessKeyId = env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = env.AWS_SECRET_ACCESS_KEY;
 
   if (!accessKeyId || !secretAccessKey) {
     console.error("Email sending skipped - AWS credentials not configured");
     console.error("Missing:", !accessKeyId ? "AWS_ACCESS_KEY_ID" : "", !secretAccessKey ? "AWS_SECRET_ACCESS_KEY" : "");
-    return null;
+    return { error: "AWS credentials not configured" };
   }
 
   const service = "ses";
@@ -167,7 +167,10 @@ export async function sendEmail(
 
     if (!response.ok) {
       console.error("SES API error:", response.status, responseText);
-      return null;
+      // Parse SES error message from XML
+      const errorMatch = responseText.match(/<Message>([^<]+)<\/Message>/);
+      const errorMessage = errorMatch ? errorMatch[1] : `SES error ${response.status}`;
+      return { error: errorMessage };
     }
 
     // Parse message ID from XML response
@@ -178,7 +181,8 @@ export async function sendEmail(
     return { messageId };
   } catch (error) {
     console.error("Email send error:", error);
-    return null;
+    const errorMessage = error instanceof Error ? error.message : "Unknown email error";
+    return { error: errorMessage };
   }
 }
 

@@ -1,41 +1,99 @@
 import { Metadata } from "next";
 import { BroadcastForm } from "./broadcast-form";
+import { query, queryOne } from "@/lib/db";
+import { getEnv } from "@/lib/cloudflare-context";
 
 export const metadata: Metadata = {
   title: "Broadcast — Admin — ISOLATED.TECH",
 };
 
-// Mock data for apps
-const APPS = [
-  { id: "app_voxboard_001", name: "Voxboard", purchaser_count: 45 },
-  { id: "app_syncmd_001", name: "sync.md", purchaser_count: 28 },
-  { id: "app_healthmd_001", name: "health.md", purchaser_count: 12 },
-  { id: "app_imghost_001", name: "imghost", purchaser_count: 67 },
-];
+interface AppWithCount {
+  id: string;
+  name: string;
+  purchaser_count: number;
+}
 
-// Mock stats
-const STATS = {
-  total_users: 156,
-  newsletter_subscribers: 89,
-  recent_broadcasts: [
-    {
-      id: "b1",
-      subject: "Voxboard 1.2.0 Released!",
-      audience: "app",
-      app_name: "Voxboard",
-      sent_count: 45,
-      sent_at: "2026-02-20T12:00:00Z",
-    },
-    {
-      id: "b2",
-      subject: "February Newsletter",
-      audience: "newsletter",
-      app_name: null,
-      sent_count: 78,
-      sent_at: "2026-02-01T10:00:00Z",
-    },
-  ],
-};
+interface BroadcastStats {
+  total_users: number;
+  newsletter_subscribers: number;
+  recent_broadcasts: {
+    id: string;
+    subject: string;
+    audience: string;
+    app_name: string | null;
+    sent_count: number;
+    sent_at: string;
+  }[];
+}
+
+async function getAppsWithPurchaserCounts(): Promise<AppWithCount[]> {
+  const env = getEnv();
+  return query<AppWithCount>(
+    `SELECT 
+       a.id, 
+       a.name,
+       COUNT(DISTINCT p.user_id) as purchaser_count
+     FROM apps a
+     LEFT JOIN purchases p ON p.app_id = a.id AND p.status = 'completed'
+     GROUP BY a.id, a.name
+     ORDER BY a.name ASC`,
+    [],
+    env
+  );
+}
+
+async function getBroadcastStats(): Promise<BroadcastStats> {
+  const env = getEnv();
+
+  // Total users
+  const usersResult = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM users`,
+    [],
+    env
+  );
+
+  // Newsletter subscribers
+  const subscribersResult = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM users WHERE newsletter_subscribed = 1`,
+    [],
+    env
+  );
+
+  // Recent broadcasts (from email_log where email_type starts with 'broadcast:')
+  const recentBroadcasts = await query<{
+    id: string;
+    subject: string;
+    email_type: string;
+    sent_at: string;
+  }>(
+    `SELECT id, subject, email_type, sent_at
+     FROM email_log
+     WHERE email_type LIKE 'broadcast:%'
+     ORDER BY sent_at DESC
+     LIMIT 10`,
+    [],
+    env
+  );
+
+  // Map email_type to audience format
+  const formattedBroadcasts = recentBroadcasts.map((b) => {
+    const audienceType = b.email_type.replace("broadcast:", "");
+    return {
+      id: b.id,
+      subject: b.subject || "No subject",
+      audience: audienceType,
+      app_name: null, // We don't store app name in email_log currently
+      sent_count: 0, // Would need a separate count table to track this
+      sent_at: b.sent_at,
+    };
+  });
+
+  return {
+    total_users: usersResult?.count ?? 0,
+    newsletter_subscribers: subscribersResult?.count ?? 0,
+    recent_broadcasts: formattedBroadcasts,
+  };
+}
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -47,7 +105,12 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function AdminBroadcastPage() {
+export default async function AdminBroadcastPage() {
+  const [apps, stats] = await Promise.all([
+    getAppsWithPurchaserCounts(),
+    getBroadcastStats(),
+  ]);
+
   return (
     <>
       <header className="admin-header">
@@ -61,11 +124,11 @@ export default function AdminBroadcastPage() {
       <div className="admin-stats" style={{ marginBottom: "2rem" }}>
         <div className="admin-stat">
           <div className="admin-stat__label">TOTAL USERS</div>
-          <div className="admin-stat__value">{STATS.total_users}</div>
+          <div className="admin-stat__value">{stats.total_users}</div>
         </div>
         <div className="admin-stat">
           <div className="admin-stat__label">NEWSLETTER SUBSCRIBERS</div>
-          <div className="admin-stat__value">{STATS.newsletter_subscribers}</div>
+          <div className="admin-stat__value">{stats.newsletter_subscribers}</div>
         </div>
       </div>
 
@@ -79,14 +142,14 @@ export default function AdminBroadcastPage() {
             padding: "1.5rem",
           }}
         >
-          <BroadcastForm apps={APPS} stats={STATS} />
+          <BroadcastForm apps={apps} stats={stats} />
         </div>
       </section>
 
       {/* Recent Broadcasts */}
       <section className="admin-section" style={{ marginTop: "2rem" }}>
         <h2 className="admin-section__title">RECENT BROADCASTS</h2>
-        {STATS.recent_broadcasts.length === 0 ? (
+        {stats.recent_broadcasts.length === 0 ? (
           <p style={{ color: "var(--gray)", fontSize: "0.85rem" }}>
             No broadcasts sent yet.
           </p>
@@ -102,7 +165,7 @@ export default function AdminBroadcastPage() {
                 </tr>
               </thead>
               <tbody>
-                {STATS.recent_broadcasts.map((broadcast) => (
+                {stats.recent_broadcasts.map((broadcast) => (
                   <tr key={broadcast.id}>
                     <td style={{ fontWeight: 600 }}>{broadcast.subject}</td>
                     <td>

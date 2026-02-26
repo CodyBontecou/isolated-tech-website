@@ -1,62 +1,58 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { query, queryOne } from "@/lib/db";
+import { getEnv } from "@/lib/cloudflare-context";
 
 export const metadata: Metadata = {
   title: "Edit App — Admin — ISOLATED.TECH",
 };
+
+interface App {
+  id: string;
+  name: string;
+  slug: string;
+  tagline: string | null;
+  platforms: string;
+  min_price_cents: number;
+  suggested_price_cents: number | null;
+  is_published: number;
+  distribution_type: string;
+}
 
 interface Version {
   id: string;
   version: string;
   build_number: number;
   min_os_version: string;
-  file_size: number;
+  file_size_bytes: number;
   is_latest: number;
-  created_at: string;
+  released_at: string;
 }
 
-// Mock data
-const MOCK_APP = {
-  id: "app_voxboard_001",
-  name: "Voxboard",
-  slug: "voxboard",
-  tagline: "Your voice. Your keyboard.",
-  platforms: "macos",
-  min_price_cents: 0,
-  suggested_price_cents: 500,
-  is_published: 1,
-  distribution_type: "binary",
-};
+async function getApp(id: string): Promise<App | null> {
+  const env = getEnv();
+  return queryOne<App>(
+    `SELECT id, name, slug, tagline, platforms, min_price_cents, 
+            suggested_price_cents, is_published, distribution_type
+     FROM apps WHERE id = ?`,
+    [id],
+    env
+  );
+}
 
-const MOCK_VERSIONS: Version[] = [
-  {
-    id: "v3",
-    version: "1.2.0",
-    build_number: 42,
-    min_os_version: "14.0",
-    file_size: 5242880,
-    is_latest: 1,
-    created_at: "2026-02-20T12:00:00Z",
-  },
-  {
-    id: "v2",
-    version: "1.1.0",
-    build_number: 30,
-    min_os_version: "13.0",
-    file_size: 4980736,
-    is_latest: 0,
-    created_at: "2026-01-15T10:00:00Z",
-  },
-  {
-    id: "v1",
-    version: "1.0.0",
-    build_number: 1,
-    min_os_version: "13.0",
-    file_size: 4718592,
-    is_latest: 0,
-    created_at: "2026-01-01T00:00:00Z",
-  },
-];
+async function getVersions(appId: string): Promise<Version[]> {
+  const env = getEnv();
+  return query<Version>(
+    `SELECT id, version, build_number, min_os_version, file_size_bytes, 
+            is_latest, released_at
+     FROM app_versions 
+     WHERE app_id = ? 
+     ORDER BY released_at DESC`,
+    [appId],
+    env
+  );
+}
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -72,10 +68,15 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function EditAppPage({ params }: { params: { id: string } }) {
-  // TODO: Fetch from D1
-  const app = MOCK_APP;
-  const versions = MOCK_VERSIONS;
+export default async function EditAppPage({ params }: { params: { id: string } }) {
+  const [app, versions] = await Promise.all([
+    getApp(params.id),
+    getVersions(params.id),
+  ]);
+
+  if (!app) {
+    notFound();
+  }
 
   return (
     <>
@@ -207,9 +208,9 @@ export default function EditAppPage({ params }: { params: { id: string } }) {
                     </td>
                     <td>{version.build_number}</td>
                     <td>{version.min_os_version}</td>
-                    <td>{formatFileSize(version.file_size)}</td>
+                    <td>{formatFileSize(version.file_size_bytes)}</td>
                     <td className="admin-table__date">
-                      {formatDate(version.created_at)}
+                      {formatDate(version.released_at)}
                     </td>
                     <td>
                       {version.is_latest ? (
