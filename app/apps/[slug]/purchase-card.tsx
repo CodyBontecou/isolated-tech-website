@@ -266,43 +266,7 @@ export function PurchaseCard({
     );
   }
 
-  // Free macOS app
-  if (isFree && hasMacOS) {
-    return (
-      <div className="purchase-card">
-        <div className="purchase-card__price-label">PRICE</div>
-        <div className="purchase-card__price" style={{ color: "#4ade80" }}>
-          Free
-        </div>
-
-        <button
-          className="purchase-card__btn"
-          onClick={handlePurchase}
-          disabled={isLoading}
-        >
-          {isLoading ? "LOADING..." : "↓ GET FOR MAC — FREE"}
-        </button>
-
-        {iosAppStoreUrl && (
-          <a
-            href={iosAppStoreUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="purchase-card__btn purchase-card__btn--secondary"
-            style={{ display: "block", textAlign: "center", textDecoration: "none" }}
-          >
-            {iosAppStoreLabel}
-          </a>
-        )}
-
-        <p className="purchase-card__note">
-          No payment required. Create an account to track your downloads.
-        </p>
-      </div>
-    );
-  }
-
-  // Paid macOS app
+  // macOS app - always show name your price
   if (hasMacOS) {
     return (
       <div className="purchase-card">

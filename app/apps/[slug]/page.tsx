@@ -129,7 +129,7 @@ function getPageConfig(configJson: string | null): AppPageConfig | null {
 }
 
 function MarkdownContent({ content }: { content: string }) {
-  // Apply inline formatting: links and bold
+  // Apply inline formatting: links, bold, and inline code
   const formatInline = (text: string) => {
     return text
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
@@ -137,41 +137,93 @@ function MarkdownContent({ content }: { content: string }) {
       .replace(/`([^`]+)`/g, "<code>$1</code>");
   };
 
-  // Simple markdown-to-HTML conversion
-  const html = content
-    .split("\n\n")
-    .map((block) => {
-      if (block.startsWith("## ")) {
-        return `<h2>${formatInline(block.slice(3))}</h2>`;
-      }
-      if (block.startsWith("- ")) {
-        const items = block
-          .split("\n")
-          .map((line) => {
-            if (line.startsWith("- ")) {
-              return `<li>${formatInline(line.slice(2))}</li>`;
-            }
-            return "";
-          })
-          .join("");
-        return `<ul>${items}</ul>`;
-      }
-      if (block.match(/^\d\./)) {
-        const items = block
-          .split("\n")
-          .map((line) => {
-            const match = line.match(/^\d\.\s*(.+)/);
-            if (match) {
-              return `<li>${formatInline(match[1])}</li>`;
-            }
-            return "";
-          })
-          .join("");
-        return `<ol>${items}</ol>`;
-      }
-      return `<p>${formatInline(block)}</p>`;
-    })
-    .join("");
+  // Parse table rows
+  const parseTable = (tableLines: string[]): string => {
+    const rows = tableLines.filter(line => line.trim().startsWith("|"));
+    if (rows.length < 2) return "";
+    
+    const parseRow = (row: string): string[] => {
+      return row.split("|").slice(1, -1).map(cell => cell.trim());
+    };
+    
+    const headerCells = parseRow(rows[0]);
+    // Skip separator row (rows[1])
+    const bodyRows = rows.slice(2);
+    
+    const headerHtml = `<thead><tr>${headerCells.map(cell => `<th>${formatInline(cell)}</th>`).join("")}</tr></thead>`;
+    const bodyHtml = bodyRows.length > 0 
+      ? `<tbody>${bodyRows.map(row => `<tr>${parseRow(row).map(cell => `<td>${formatInline(cell)}</td>`).join("")}</tr>`).join("")}</tbody>`
+      : "";
+    
+    return `<table>${headerHtml}${bodyHtml}</table>`;
+  };
+
+  // First, extract fenced code blocks to protect them from other processing
+  const codeBlocks: string[] = [];
+  const contentWithPlaceholders = content.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    const index = codeBlocks.length;
+    const langClass = lang ? ` class="language-${lang}"` : "";
+    codeBlocks.push(`<pre><code${langClass}>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;").trimEnd()}</code></pre>`);
+    return `__CODE_BLOCK_${index}__`;
+  });
+
+  // Split by double newlines for block processing
+  const blocks = contentWithPlaceholders.split(/\n\n+/);
+  
+  const html = blocks.map((block) => {
+    // Check for code block placeholder
+    const codeMatch = block.match(/^__CODE_BLOCK_(\d+)__$/);
+    if (codeMatch) {
+      return codeBlocks[parseInt(codeMatch[1])];
+    }
+    
+    // Headers
+    if (block.startsWith("### ")) {
+      return `<h3>${formatInline(block.slice(4))}</h3>`;
+    }
+    if (block.startsWith("## ")) {
+      return `<h2>${formatInline(block.slice(3))}</h2>`;
+    }
+    if (block.startsWith("# ")) {
+      return `<h1>${formatInline(block.slice(2))}</h1>`;
+    }
+    
+    // Tables - detect if block contains table rows
+    const lines = block.split("\n");
+    if (lines.some(line => line.trim().startsWith("|") && line.trim().endsWith("|"))) {
+      return parseTable(lines);
+    }
+    
+    // Unordered lists
+    if (block.startsWith("- ")) {
+      const items = lines
+        .map((line) => {
+          if (line.startsWith("- ")) {
+            return `<li>${formatInline(line.slice(2))}</li>`;
+          }
+          return "";
+        })
+        .join("");
+      return `<ul>${items}</ul>`;
+    }
+    
+    // Ordered lists
+    if (block.match(/^\d\./)) {
+      const items = lines
+        .map((line) => {
+          const match = line.match(/^\d\.\s*(.+)/);
+          if (match) {
+            return `<li>${formatInline(match[1])}</li>`;
+          }
+          return "";
+        })
+        .join("");
+      return `<ol>${items}</ol>`;
+    }
+    
+    // Regular paragraph
+    return `<p>${formatInline(block)}</p>`;
+  }).join("");
 
   return (
     <div

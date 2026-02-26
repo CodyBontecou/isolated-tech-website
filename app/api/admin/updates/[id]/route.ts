@@ -117,10 +117,10 @@ export async function PATCH(
       );
     }
 
-    // Update release notes
+    // Update release notes (use update.id, not the URL param which could be a composite key)
     await execute(
       `UPDATE app_updates SET release_notes = ? WHERE id = ?`,
-      [releaseNotes, id],
+      [releaseNotes, update.id],
       env
     );
 
