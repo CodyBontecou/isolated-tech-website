@@ -91,11 +91,12 @@
 
 .instarep__cta--primary {
   background: var(--white);
-  color: var(--bg);
+  color: #0a0a0a;
 }
 
 .instarep__cta--primary:hover {
   background: #e0e0e0;
+  color: #0a0a0a;
   transform: translateY(-2px);
 }
 
@@ -111,11 +112,12 @@
 
 .instarep__cta--light {
   background: var(--white);
-  color: var(--bg);
+  color: #0a0a0a;
 }
 
 .instarep__cta--light:hover {
   background: #e0e0e0;
+  color: #0a0a0a;
   transform: translateY(-2px);
 }
 
