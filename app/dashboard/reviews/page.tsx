@@ -1,5 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth/middleware";
+import { getEnv } from "@/lib/cloudflare-context";
+import { DeleteReviewButton } from "./delete-button";
 
 export const metadata: Metadata = {
   title: "My Reviews — ISOLATED.TECH",
@@ -17,32 +21,6 @@ interface Review {
   created_at: string;
   updated_at: string;
 }
-
-// Mock data
-const MOCK_REVIEWS: Review[] = [
-  {
-    id: "review_1",
-    app_id: "app_voxboard_001",
-    app_name: "Voxboard",
-    app_slug: "voxboard",
-    rating: 5,
-    title: "Exactly what I needed",
-    body: "Finally a voice transcription app that works offline. The accuracy is great and it integrates perfectly with any text field.",
-    created_at: "2026-02-22T10:00:00Z",
-    updated_at: "2026-02-22T10:00:00Z",
-  },
-  {
-    id: "review_2",
-    app_id: "app_syncmd_001",
-    app_name: "sync.md",
-    app_slug: "syncmd",
-    rating: 4,
-    title: "Great but could use more features",
-    body: "Works well for basic git operations. Would love to see branch visualization added.",
-    created_at: "2026-02-18T15:30:00Z",
-    updated_at: "2026-02-19T08:00:00Z",
-  },
-];
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -131,17 +109,19 @@ function ReviewCard({ review }: { review: Review }) {
         >
           EDIT
         </Link>
-        <button className="admin-table__btn admin-table__btn--danger">
-          DELETE
-        </button>
+        <DeleteReviewButton reviewId={review.id} appName={review.app_name} />
       </div>
     </div>
   );
 }
 
-export default function ReviewsPage() {
-  // TODO: Get user from auth
-  const user = { id: "user_1", name: "Cody" };
+export default async function ReviewsPage({
+  searchParams,
+}: {
+  searchParams: { success?: string; edited?: string };
+}) {
+  const env = getEnv();
+  const user = env ? await getCurrentUser(env) : null;
 
   if (!user) {
     return (
@@ -167,7 +147,35 @@ export default function ReviewsPage() {
     );
   }
 
-  const reviews = MOCK_REVIEWS;
+  // Fetch user's reviews from database
+  let reviews: Review[] = [];
+  if (env?.DB) {
+    try {
+      const result = await env.DB.prepare(`
+        SELECT 
+          r.id,
+          r.app_id,
+          a.name as app_name,
+          a.slug as app_slug,
+          r.rating,
+          r.title,
+          r.body,
+          r.created_at,
+          r.updated_at
+        FROM reviews r
+        JOIN apps a ON r.app_id = a.id
+        WHERE r.user_id = ?
+        ORDER BY r.created_at DESC
+      `).bind(user.id).all<Review>();
+      
+      reviews = result.results;
+    } catch (err) {
+      console.error("Failed to fetch reviews:", err);
+    }
+  }
+
+  const showSuccess = searchParams.success === "1";
+  const wasEdited = searchParams.edited === "1";
 
   return (
     <>
@@ -200,6 +208,17 @@ export default function ReviewsPage() {
             </Link>
           </nav>
         </header>
+
+        {showSuccess && (
+          <div className="dashboard__success" style={{ marginBottom: "1.5rem" }}>
+            <span className="dashboard__success-icon">✓</span>
+            <span className="dashboard__success-text">
+              {wasEdited
+                ? "Your review has been updated."
+                : "Your review has been submitted. Thank you for your feedback!"}
+            </span>
+          </div>
+        )}
 
         {reviews.length === 0 ? (
           <div className="empty-state">

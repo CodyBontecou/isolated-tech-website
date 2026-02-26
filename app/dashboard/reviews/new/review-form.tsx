@@ -102,7 +102,7 @@ export function ReviewForm({
         throw new Error(data.error || "Failed to submit review");
       }
 
-      router.push("/dashboard/reviews?success=1");
+      router.push(`/dashboard/reviews?success=1${isEditing ? "&edited=1" : ""}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
