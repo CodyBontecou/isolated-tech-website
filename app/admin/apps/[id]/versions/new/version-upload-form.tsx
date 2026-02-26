@@ -13,6 +13,7 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
   const isSourceCode = distributionType === "source_code";
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const binaryFileInputRef = useRef<HTMLInputElement>(null);
 
   const [version, setVersion] = useState("");
   const [buildNumber, setBuildNumber] = useState("");
@@ -20,6 +21,7 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
   const [releaseNotes, setReleaseNotes] = useState("");
   const [signature, setSignature] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [binaryFile, setBinaryFile] = useState<File | null>(null);
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -51,6 +53,30 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
     }
   };
 
+  const handleBinaryFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      // Validate file type for compiled app
+      const validTypes = [
+        "application/zip",
+        "application/x-apple-diskimage",
+        "application/octet-stream",
+      ];
+      const validExtensions = [".zip", ".dmg", ".app"];
+      const hasValidExtension = validExtensions.some((ext) =>
+        selectedFile.name.toLowerCase().endsWith(ext)
+      );
+
+      if (!validTypes.includes(selectedFile.type) && !hasValidExtension) {
+        setError("Please select a .zip, .dmg, or .app file for the compiled app");
+        return;
+      }
+
+      setBinaryFile(selectedFile);
+      setError(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -75,7 +101,7 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
     setUploadProgress(0);
 
     try {
-      // Step 1: Get presigned upload URL
+      // Step 1: Get presigned upload URL for primary file
       setUploadProgress(10);
       const presignRes = await fetch("/api/admin/versions/presign", {
         method: "POST",
@@ -97,7 +123,7 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
       const { r2Key } = await presignRes.json();
       setUploadProgress(20);
 
-      // Step 2: Upload file directly to R2 via API
+      // Step 2: Upload primary file directly to R2 via API
       const formData = new FormData();
       formData.append("file", file);
       formData.append("r2Key", r2Key);
@@ -110,6 +136,54 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
       if (!uploadRes.ok) {
         const data = await uploadRes.json();
         throw new Error(data.error || "Failed to upload file");
+      }
+
+      setUploadProgress(50);
+
+      // Step 2b: Upload binary file if provided (for source_code apps)
+      let binaryR2Key: string | null = null;
+      let binaryFileSize: number | null = null;
+
+      if (binaryFile && isSourceCode) {
+        // Get presigned URL for binary
+        const binaryPresignRes = await fetch("/api/admin/versions/presign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appId,
+            appSlug,
+            version: version.trim(),
+            filename: binaryFile.name,
+            contentType: binaryFile.type || "application/octet-stream",
+            isBinary: true,
+          }),
+        });
+
+        if (!binaryPresignRes.ok) {
+          const data = await binaryPresignRes.json();
+          throw new Error(data.error || "Failed to get binary upload URL");
+        }
+
+        const binaryPresignData = await binaryPresignRes.json();
+        binaryR2Key = binaryPresignData.r2Key;
+        binaryFileSize = binaryFile.size;
+
+        setUploadProgress(55);
+
+        // Upload binary file
+        const binaryFormData = new FormData();
+        binaryFormData.append("file", binaryFile);
+        binaryFormData.append("r2Key", binaryR2Key!);
+
+        const binaryUploadRes = await fetch("/api/admin/versions/upload", {
+          method: "POST",
+          body: binaryFormData,
+        });
+
+        if (!binaryUploadRes.ok) {
+          const data = await binaryUploadRes.json();
+          throw new Error(data.error || "Failed to upload binary file");
+        }
       }
 
       setUploadProgress(70);
@@ -127,6 +201,8 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
           r2Key,
           fileSize: file.size,
           signature: signature.trim() || null,
+          binaryR2Key,
+          binaryFileSize,
         }),
       });
 
@@ -246,7 +322,7 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
       {/* File Upload */}
       <div style={{ marginBottom: "1.5rem" }}>
         <label className="settings-label">
-          {isSourceCode ? "FILE (.zip or .tar.gz) *" : "FILE (.zip or .dmg) *"}
+          {isSourceCode ? "SOURCE CODE (.zip or .tar.gz) *" : "FILE (.zip or .dmg) *"}
         </label>
         <div
           onClick={() => fileInputRef.current?.click()}
@@ -284,6 +360,50 @@ export function VersionUploadForm({ appId, appSlug, distributionType = "binary" 
           )}
         </div>
       </div>
+
+      {/* Compiled App Upload (for source_code apps only) */}
+      {isSourceCode && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <label className="settings-label">
+            COMPILED APP (.zip or .dmg) — OPTIONAL
+          </label>
+          <div
+            onClick={() => binaryFileInputRef.current?.click()}
+            style={{
+              padding: "2rem",
+              border: "2px dashed #333",
+              textAlign: "center",
+              cursor: "crosshair",
+              background: binaryFile ? "rgba(74, 222, 128, 0.1)" : "transparent",
+            }}
+          >
+            <input
+              ref={binaryFileInputRef}
+              type="file"
+              accept=".zip,.dmg"
+              onChange={handleBinaryFileChange}
+              style={{ display: "none" }}
+            />
+            {binaryFile ? (
+              <div>
+                <p style={{ fontWeight: 700 }}>{binaryFile.name}</p>
+                <p style={{ fontSize: "0.8rem", color: "var(--gray)" }}>
+                  {(binaryFile.size / (1024 * 1024)).toFixed(2)} MB
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p style={{ marginBottom: "0.5rem" }}>
+                  Click to select a pre-compiled app (optional)
+                </p>
+                <p style={{ fontSize: "0.8rem", color: "var(--gray)" }}>
+                  .zip or .dmg — compiled version for users who don&apos;t want to build
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Sparkle Signature (hidden for source code) */}
       {!isSourceCode && (

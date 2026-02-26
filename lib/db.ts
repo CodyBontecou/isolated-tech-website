@@ -127,13 +127,53 @@ export const queries = {
 
   // Reviews
   getAppReviews: (appId: string, env?: Env) =>
-    query(
+    query<{
+      id: string;
+      user_id: string;
+      app_id: string;
+      rating: number;
+      title: string | null;
+      body: string | null;
+      created_at: string;
+      user_name: string | null;
+    }>(
       `SELECT r.*, u.name as user_name 
        FROM reviews r 
        JOIN users u ON r.user_id = u.id 
        WHERE r.app_id = ? AND r.is_approved = 1
        ORDER BY r.created_at DESC`,
       [appId],
+      env
+    ),
+
+  getAppReviewStats: (appId: string, env?: Env) =>
+    queryOne<{
+      avg_rating: number | null;
+      review_count: number;
+    }>(
+      `SELECT 
+         AVG(CAST(rating AS REAL)) as avg_rating, 
+         COUNT(*) as review_count 
+       FROM reviews 
+       WHERE app_id = ? AND is_approved = 1`,
+      [appId],
+      env
+    ),
+
+  getAllAppReviewStats: (env?: Env) =>
+    query<{
+      app_id: string;
+      avg_rating: number | null;
+      review_count: number;
+    }>(
+      `SELECT 
+         app_id,
+         AVG(CAST(rating AS REAL)) as avg_rating, 
+         COUNT(*) as review_count 
+       FROM reviews 
+       WHERE is_approved = 1
+       GROUP BY app_id`,
+      [],
       env
     ),
 

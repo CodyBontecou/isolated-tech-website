@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { appId, appSlug, version, filename } = body;
+    const { appId, appSlug, version, filename, isBinary } = body;
 
     if (!appId || !appSlug || !version || !filename) {
       return NextResponse.json(
@@ -49,8 +49,11 @@ export async function POST(request: NextRequest) {
 
     // Generate R2 key
     // Format: apps/{slug}/versions/{version}/{filename}
+    // For binary builds of source_code apps: apps/{slug}/versions/{version}/binary/{filename}
     const safeFilename = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const r2Key = `apps/${appSlug}/versions/${version}/${safeFilename}`;
+    const r2Key = isBinary
+      ? `apps/${appSlug}/versions/${version}/binary/${safeFilename}`
+      : `apps/${appSlug}/versions/${version}/${safeFilename}`;
 
     return NextResponse.json({
       success: true,

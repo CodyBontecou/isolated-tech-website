@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
       r2Key,
       fileSize,
       signature,
+      binaryR2Key,
+      binaryFileSize,
     } = body;
 
     // Validate required fields
@@ -102,8 +104,8 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     await env.DB.prepare(
-      `INSERT INTO app_versions (id, app_id, version, build_number, release_notes, min_os_version, r2_key, file_size_bytes, sparkle_signature, is_latest, released_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`
+      `INSERT INTO app_versions (id, app_id, version, build_number, release_notes, min_os_version, r2_key, file_size_bytes, sparkle_signature, is_latest, released_at, binary_r2_key, binary_file_size_bytes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`
     )
       .bind(
         versionId,
@@ -115,7 +117,9 @@ export async function POST(request: NextRequest) {
         r2Key,
         fileSize || 0,
         signature || null,
-        now
+        now,
+        binaryR2Key || null,
+        binaryFileSize || null
       )
       .run();
 
