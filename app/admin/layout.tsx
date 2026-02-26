@@ -24,9 +24,6 @@ export default async function AdminLayout({
             ADMIN
           </Link>
           <Link href="/apps">STORE</Link>
-          <span style={{ color: "var(--gray)", fontSize: "0.7rem" }}>
-            {user.email}
-          </span>
           <Link href="/api/auth/logout">SIGN OUT</Link>
         </div>
       </nav>
