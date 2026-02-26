@@ -20,10 +20,6 @@ interface Purchase {
   version: string;
   version_id: string | null;
   has_review: boolean;
-  distribution_type: string;
-  allow_source_download: boolean;
-  allow_binary_download: boolean;
-  has_binary: boolean;
 }
 
 function formatDate(dateStr: string): string {
@@ -47,18 +43,6 @@ function PurchasedAppCard({
   purchase: Purchase;
   isNew?: boolean;
 }) {
-  const isSourceCode = purchase.distribution_type === "source_code";
-  
-  // For source_code apps: show source download if allowed
-  const canDownloadSource = isSourceCode && purchase.allow_source_download;
-  // For source_code apps: show binary download if allowed AND binary exists
-  // For binary apps: show binary download if allowed
-  const canDownloadBinary = isSourceCode
-    ? purchase.allow_binary_download && purchase.has_binary
-    : purchase.allow_binary_download;
-  
-  const hasAnyDownload = canDownloadSource || canDownloadBinary;
-
   return (
     <div className={`purchased-card ${isNew ? "purchased-card--new" : ""}`}>
       <div className="purchased-card__header">
@@ -78,38 +62,17 @@ function PurchasedAppCard({
       </div>
 
       <div className="purchased-card__actions">
-        {!hasAnyDownload ? (
-          <span className="purchased-card__btn purchased-card__btn--disabled">
-            Download unavailable
-          </span>
-        ) : !purchase.version_id ? (
+        {!purchase.version_id ? (
           <span className="purchased-card__btn purchased-card__btn--disabled">
             Download unavailable
           </span>
         ) : (
-          <>
-            {/* Source download button for source_code apps */}
-            {canDownloadSource && (
-              <a
-                href={`/api/download/${purchase.app_id}/${purchase.version_id}?type=source`}
-                className="purchased-card__btn"
-              >
-                ↓ DOWNLOAD SOURCE v{purchase.version}
-              </a>
-            )}
-            
-            {/* Binary download button */}
-            {canDownloadBinary && (
-              <a
-                href={`/api/download/${purchase.app_id}/${purchase.version_id}${isSourceCode ? '?type=binary' : ''}`}
-                className="purchased-card__btn"
-              >
-                {isSourceCode
-                  ? `↓ DOWNLOAD APP v${purchase.version}`
-                  : `↓ DOWNLOAD v${purchase.version}`}
-              </a>
-            )}
-          </>
+          <a
+            href={`/api/download/${purchase.app_id}/${purchase.version_id}`}
+            className="purchased-card__btn"
+          >
+            ↓ DOWNLOAD v{purchase.version}
+          </a>
         )}
 
         {purchase.has_review ? (
@@ -196,15 +159,11 @@ export default async function DashboardPage({
           a.name as app_name,
           a.slug as app_slug,
           a.icon_url as app_icon_url,
-          COALESCE(a.distribution_type, 'binary') as distribution_type,
-          COALESCE(a.allow_source_download, 1) as allow_source_download,
-          COALESCE(a.allow_binary_download, 1) as allow_binary_download,
           p.created_at as purchased_at,
           p.amount_cents,
           COALESCE(v.version, '1.0.0') as version,
           v.id as version_id,
-          CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as has_review,
-          CASE WHEN v.binary_r2_key IS NOT NULL THEN 1 ELSE 0 END as has_binary
+          CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as has_review
         FROM purchases p
         JOIN apps a ON p.app_id = a.id
         LEFT JOIN app_versions v ON v.id = (
@@ -222,23 +181,16 @@ export default async function DashboardPage({
         app_name: string;
         app_slug: string;
         app_icon_url: string | null;
-        distribution_type: string;
-        allow_source_download: number;
-        allow_binary_download: number;
         purchased_at: string;
         amount_cents: number;
         version: string;
         version_id: string;
         has_review: number;
-        has_binary: number;
       }>();
       
       purchases = result.results.map(p => ({
         ...p,
         has_review: p.has_review === 1,
-        allow_source_download: p.allow_source_download === 1,
-        allow_binary_download: p.allow_binary_download === 1,
-        has_binary: p.has_binary === 1,
       }));
     } catch (err) {
       console.error("Failed to fetch purchases:", err);

@@ -3,7 +3,7 @@
  *
  * Create a Stripe Checkout session for app purchase.
  * Handles both paid and free apps.
- * Users can download purchased apps (including source code) from their dashboard.
+ * Users can download purchased apps from their dashboard.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -26,7 +26,6 @@ interface App {
   description: string | null;
   icon_url: string | null;
   min_price_cents: number;
-  distribution_type: string;
 }
 
 interface DiscountCode {
@@ -72,8 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Get app
     const app = await env.DB.prepare(
-      `SELECT id, name, slug, tagline, description, icon_url, min_price_cents, 
-              COALESCE(distribution_type, 'binary') as distribution_type 
+      `SELECT id, name, slug, tagline, description, icon_url, min_price_cents 
        FROM apps WHERE id = ?`
     )
       .bind(appId)
@@ -82,8 +80,6 @@ export async function POST(request: NextRequest) {
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
     }
-
-    const isSourceCode = app.distribution_type === "source_code";
 
     // Check if already purchased
     const existingPurchase = await env.DB.prepare(
@@ -167,7 +163,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         free: true,
-        sourceCode: isSourceCode,
         redirectUrl: `${baseUrl}/dashboard?purchased=${app.slug}`,
       });
     }
@@ -233,7 +228,7 @@ export async function POST(request: NextRequest) {
             currency: "usd",
             unit_amount: finalPriceCents,
             product_data: {
-              name: isSourceCode ? `${app.name} (Source Code)` : app.name,
+              name: app.name,
               description: buildCheckoutDescription(),
               images: app.icon_url ? [`${baseUrl}${app.icon_url}`] : undefined,
             },
@@ -249,7 +244,6 @@ export async function POST(request: NextRequest) {
         discount_code_id: usedDiscountCode?.id || "",
         original_price_cents: priceCents.toString(),
         final_price_cents: finalPriceCents.toString(),
-        is_source_code: isSourceCode ? "1" : "0",
       },
       success_url: `${baseUrl}/dashboard?purchased=${app.slug}`,
       cancel_url: `${baseUrl}/apps/${app.slug}`,

@@ -17,7 +17,6 @@ interface App {
   min_price_cents: number;
   suggested_price_cents: number | null;
   is_published: number;
-  distribution_type: string;
 }
 
 interface Version {
@@ -34,7 +33,7 @@ async function getApp(id: string): Promise<App | null> {
   const env = getEnv();
   return queryOne<App>(
     `SELECT id, name, slug, tagline, platforms, min_price_cents, 
-            suggested_price_cents, is_published, distribution_type
+            suggested_price_cents, is_published
      FROM apps WHERE id = ?`,
     [id],
     env

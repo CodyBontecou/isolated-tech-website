@@ -19,13 +19,7 @@ interface AppFormProps {
     is_featured: boolean;
     featured_order: number;
     page_config: Record<string, unknown> | null;
-    distribution_type: string;
-    build_instructions: string;
     github_url: string;
-    required_xcode_version: string;
-    min_ios_version: string;
-    allow_source_download: boolean;
-    allow_binary_download: boolean;
   };
 }
 
@@ -68,26 +62,8 @@ export function AppForm({ existingApp }: AppFormProps) {
   const [featuredOrder, setFeaturedOrder] = useState(
     existingApp?.featured_order?.toString() ?? "0"
   );
-  const [distributionType, setDistributionType] = useState(
-    existingApp?.distribution_type || "binary"
-  );
-  const [buildInstructions, setBuildInstructions] = useState(
-    existingApp?.build_instructions || ""
-  );
   const [githubUrl, setGithubUrl] = useState(
     existingApp?.github_url || ""
-  );
-  const [requiredXcodeVersion, setRequiredXcodeVersion] = useState(
-    existingApp?.required_xcode_version || ""
-  );
-  const [minIosVersion, setMinIosVersion] = useState(
-    existingApp?.min_ios_version || "18.0"
-  );
-  const [allowSourceDownload, setAllowSourceDownload] = useState(
-    existingApp?.allow_source_download ?? true
-  );
-  const [allowBinaryDownload, setAllowBinaryDownload] = useState(
-    existingApp?.allow_binary_download ?? true
   );
 
   // iOS App Store URL (from page_config)
@@ -178,13 +154,7 @@ export function AppForm({ existingApp }: AppFormProps) {
           is_featured: isFeatured,
           featured_order: parseInt(featuredOrder || "0", 10),
           page_config: Object.keys(pageConfig).length > 0 ? pageConfig : null,
-          distribution_type: distributionType,
-          build_instructions: distributionType === "source_code" ? buildInstructions.trim() : null,
           github_url: githubUrl.trim() || null,
-          required_xcode_version: distributionType === "source_code" ? requiredXcodeVersion.trim() || null : null,
-          min_ios_version: distributionType === "source_code" ? minIosVersion : null,
-          allow_source_download: allowSourceDownload,
-          allow_binary_download: allowBinaryDownload,
         }),
       });
 
@@ -400,47 +370,16 @@ export function AppForm({ existingApp }: AppFormProps) {
         </div>
       </div>
 
-      {/* Distribution Type */}
+      {/* GitHub URL (optional) */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <label className="settings-label">DISTRIBUTION TYPE</label>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              cursor: "crosshair",
-            }}
-          >
-            <input
-              type="radio"
-              name="distribution_type"
-              value="binary"
-              checked={distributionType === "binary"}
-              onChange={() => setDistributionType("binary")}
-              style={{ width: "1.25rem", height: "1.25rem" }}
-            />
-            <span>Binary (compiled app)</span>
-          </label>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              cursor: "crosshair",
-            }}
-          >
-            <input
-              type="radio"
-              name="distribution_type"
-              value="source_code"
-              checked={distributionType === "source_code"}
-              onChange={() => setDistributionType("source_code")}
-              style={{ width: "1.25rem", height: "1.25rem" }}
-            />
-            <span>Source Code (Xcode project)</span>
-          </label>
-        </div>
+        <label className="settings-label">GITHUB REPO URL (OPTIONAL)</label>
+        <input
+          type="url"
+          className="settings-input"
+          value={githubUrl}
+          onChange={(e) => setGithubUrl(e.target.value)}
+          placeholder="https://github.com/user/repo"
+        />
         <p
           style={{
             fontSize: "0.7rem",
@@ -448,94 +387,9 @@ export function AppForm({ existingApp }: AppFormProps) {
             marginTop: "0.25rem",
           }}
         >
-          Source code apps let users download and build in Xcode
+          Link to the public repo (if open source)
         </p>
       </div>
-
-      {/* Source Code Fields (shown when distribution_type = source_code) */}
-      {distributionType === "source_code" && (
-        <>
-          {/* Required Xcode Version */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label className="settings-label">REQUIRED XCODE VERSION</label>
-            <input
-              type="text"
-              className="settings-input"
-              value={requiredXcodeVersion}
-              onChange={(e) => setRequiredXcodeVersion(e.target.value)}
-              placeholder="16.0"
-            />
-            <p
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--gray)",
-                marginTop: "0.25rem",
-              }}
-            >
-              Minimum Xcode version needed to build (e.g., 16.0)
-            </p>
-          </div>
-
-          {/* Minimum iOS Version */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label className="settings-label">MINIMUM iOS VERSION</label>
-            <select
-              className="settings-input"
-              value={minIosVersion}
-              onChange={(e) => setMinIosVersion(e.target.value)}
-            >
-              <option value="15.0">iOS 15.0</option>
-              <option value="16.0">iOS 16.0</option>
-              <option value="17.0">iOS 17.0</option>
-              <option value="18.0">iOS 18.0</option>
-              <option value="19.0">iOS 19.0</option>
-            </select>
-          </div>
-
-          {/* Build Instructions */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label className="settings-label">BUILD INSTRUCTIONS (MARKDOWN)</label>
-            <textarea
-              className="settings-input"
-              value={buildInstructions}
-              onChange={(e) => setBuildInstructions(e.target.value)}
-              placeholder={"1. Open the `.xcodeproj` in Xcode\n2. Select your device\n3. Build & Run (⌘R)"}
-              rows={6}
-              style={{ resize: "vertical", minHeight: "120px" }}
-            />
-            <p
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--gray)",
-                marginTop: "0.25rem",
-              }}
-            >
-              Shown on the app page — how users build and run the source code
-            </p>
-          </div>
-
-          {/* GitHub URL */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label className="settings-label">GITHUB REPO URL (OPTIONAL)</label>
-            <input
-              type="url"
-              className="settings-input"
-              value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
-              placeholder="https://github.com/user/repo"
-            />
-            <p
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--gray)",
-                marginTop: "0.25rem",
-              }}
-            >
-              Link to the public repo, shown alongside the download
-            </p>
-          </div>
-        </>
-      )}
 
       {/* Published */}
       <div style={{ marginBottom: "1.5rem" }}>
@@ -674,74 +528,7 @@ export function AppForm({ existingApp }: AppFormProps) {
         </div>
       )}
 
-      {/* Download Permissions */}
-      <div style={{ marginBottom: "2rem", padding: "1rem", border: "1px solid var(--border)", background: "rgba(255,255,255,0.02)" }}>
-        <label className="settings-label" style={{ marginBottom: "1rem", display: "block" }}>
-          DOWNLOAD PERMISSIONS
-        </label>
-        
-        <div style={{ marginBottom: "1rem" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              cursor: "crosshair",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={allowSourceDownload}
-              onChange={(e) => setAllowSourceDownload(e.target.checked)}
-              style={{ width: "1.25rem", height: "1.25rem" }}
-            />
-            <span style={{ fontSize: "0.85rem" }}>
-              ALLOW SOURCE CODE DOWNLOAD
-            </span>
-          </label>
-          <p
-            style={{
-              fontSize: "0.7rem",
-              color: "var(--gray)",
-              marginTop: "0.25rem",
-              marginLeft: "2rem",
-            }}
-          >
-            Users can download the Xcode project / source code
-          </p>
-        </div>
 
-        <div>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              cursor: "crosshair",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={allowBinaryDownload}
-              onChange={(e) => setAllowBinaryDownload(e.target.checked)}
-              style={{ width: "1.25rem", height: "1.25rem" }}
-            />
-            <span style={{ fontSize: "0.85rem" }}>
-              ALLOW COMPILED APP DOWNLOAD
-            </span>
-          </label>
-          <p
-            style={{
-              fontSize: "0.7rem",
-              color: "var(--gray)",
-              marginTop: "0.25rem",
-              marginLeft: "2rem",
-            }}
-          >
-            Users can download the compiled app (.dmg, .zip)
-          </p>
-        </div>
-      </div>
 
       {/* Submit */}
       <div style={{ display: "flex", gap: "0.75rem" }}>

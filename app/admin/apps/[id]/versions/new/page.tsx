@@ -11,7 +11,6 @@ interface AppRow {
   id: string;
   name: string;
   slug: string;
-  distribution_type: string | null;
 }
 
 async function getApp(id: string): Promise<AppRow | null> {
@@ -19,7 +18,7 @@ async function getApp(id: string): Promise<AppRow | null> {
   if (!env?.DB) return null;
 
   const app = await env.DB.prepare(
-    `SELECT id, name, slug, COALESCE(distribution_type, 'binary') as distribution_type FROM apps WHERE id = ?`
+    `SELECT id, name, slug FROM apps WHERE id = ?`
   )
     .bind(id)
     .first<AppRow>();
@@ -28,7 +27,7 @@ async function getApp(id: string): Promise<AppRow | null> {
 }
 
 export default async function NewVersionPage({ params }: { params: { id: string } }) {
-  const app = await getApp(params.id) || { id: params.id, name: "App", slug: "app", distribution_type: "binary" };
+  const app = await getApp(params.id) || { id: params.id, name: "App", slug: "app" };
 
   return (
     <>
@@ -38,7 +37,7 @@ export default async function NewVersionPage({ params }: { params: { id: string 
         </a>
         <h1 className="admin-header__title">Upload New Version</h1>
         <p className="admin-header__subtitle">
-          Upload a new {app.distribution_type === "source_code" ? "source code" : ""} version for {app.name}
+          Upload a new version for {app.name}
         </p>
       </header>
 
@@ -46,7 +45,6 @@ export default async function NewVersionPage({ params }: { params: { id: string 
         <VersionUploadForm
           appId={app.id}
           appSlug={app.slug}
-          distributionType={app.distribution_type || "binary"}
         />
       </div>
     </>

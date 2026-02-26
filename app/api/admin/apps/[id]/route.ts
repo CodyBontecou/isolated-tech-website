@@ -104,13 +104,7 @@ export async function PUT(
       is_featured,
       featured_order,
       page_config,
-      distribution_type,
-      build_instructions,
       github_url,
-      required_xcode_version,
-      min_ios_version,
-      allow_source_download,
-      allow_binary_download,
     } = body;
 
     // Check slug uniqueness if changed
@@ -198,39 +192,9 @@ export async function PUT(
       values.push(page_config ? JSON.stringify(page_config) : null);
     }
 
-    if (distribution_type !== undefined) {
-      updates.push("distribution_type = ?");
-      values.push(distribution_type);
-    }
-
-    if (build_instructions !== undefined) {
-      updates.push("build_instructions = ?");
-      values.push(build_instructions || null);
-    }
-
     if (github_url !== undefined) {
       updates.push("github_url = ?");
       values.push(github_url || null);
-    }
-
-    if (required_xcode_version !== undefined) {
-      updates.push("required_xcode_version = ?");
-      values.push(required_xcode_version || null);
-    }
-
-    if (min_ios_version !== undefined) {
-      updates.push("min_ios_version = ?");
-      values.push(min_ios_version || null);
-    }
-
-    if (allow_source_download !== undefined) {
-      updates.push("allow_source_download = ?");
-      values.push(allow_source_download ? 1 : 0);
-    }
-
-    if (allow_binary_download !== undefined) {
-      updates.push("allow_binary_download = ?");
-      values.push(allow_binary_download ? 1 : 0);
     }
 
     if (updates.length === 0) {
