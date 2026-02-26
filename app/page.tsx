@@ -173,9 +173,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
             <div className="store-hero__rail-label">MORE APPS</div>
             <div className="store-hero__rail-list">
               {previewApps.slice(0, 4).map((preview) => {
-                const previewPlatforms = getPlatforms(preview.platforms)
-                  .map((p) => (p === "ios" ? "iOS" : p === "macos" ? "macOS" : p.toUpperCase()))
-                  .join(" · ");
+                const previewPlatforms = getPlatforms(preview.platforms);
 
                 return (
                   <ViewTransitionLink 
@@ -194,7 +192,11 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                     <div className="store-hero__rail-body">
                       <div className="store-hero__rail-header">
                         <span className="store-hero__rail-name">{preview.name}</span>
-                        <span className="store-hero__rail-platforms">{previewPlatforms}</span>
+                        <div className="store-hero__rail-badges">
+                          {previewPlatforms.map((p) => (
+                            <PlatformBadge key={p} platform={p} />
+                          ))}
+                        </div>
                       </div>
                       <span className="store-hero__rail-tagline">
                         {preview.tagline || formatPrice(preview.min_price_cents, preview.suggested_price_cents)}
