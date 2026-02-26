@@ -2,7 +2,33 @@ import { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { SignOutButton } from "@/components/sign-out-button";
+import { PurchaseCard } from "../[slug]/purchase-card";
+import { queries } from "@/lib/db";
 import "./healthmd.css";
+
+const APP_SLUG = "healthmd";
+
+interface AppPageConfig {
+  ios_app_store_url?: string;
+  ios_app_store_label?: string;
+}
+
+function getPageConfig(configJson: string | null): AppPageConfig | null {
+  if (!configJson) return null;
+  try {
+    return JSON.parse(configJson) as AppPageConfig;
+  } catch {
+    return null;
+  }
+}
+
+function getPlatforms(platformsJson: string): string[] {
+  try {
+    return JSON.parse(platformsJson);
+  } catch {
+    return [];
+  }
+}
 
 export const metadata: Metadata = {
   title: "health.md — Apple Health → Markdown",
@@ -63,6 +89,33 @@ const WORKFLOW_FEATURES = [
 export default async function HealthMdPage() {
   const env = getEnv();
   const user = env ? await getCurrentUser(env) : null;
+
+  // Fetch app data from database
+  const app = env?.DB ? await env.DB.prepare(
+    `SELECT id, slug, name, platforms, min_price_cents, suggested_price_cents, custom_page_config
+     FROM apps WHERE slug = ? AND is_published = 1`
+  ).bind(APP_SLUG).first<{
+    id: string;
+    slug: string;
+    name: string;
+    platforms: string;
+    min_price_cents: number;
+    suggested_price_cents: number | null;
+    custom_page_config: string | null;
+  }>() : null;
+
+  // Check if user already owns this app
+  const hasPurchased = user && app && env
+    ? !!(await queries.getPurchase(user.id, app.id, env))
+    : false;
+
+  const platforms = app ? getPlatforms(app.platforms) : ["ios", "macos"];
+  const pageConfig = app ? getPageConfig(app.custom_page_config) : null;
+  const isFree = app ? (app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0)) : false;
+  const iosAppStoreUrl = pageConfig?.ios_app_store_url?.trim() || "https://apps.apple.com/us/app/health-md/id6757763969";
+  const iosAppStoreLabel = pageConfig?.ios_app_store_label?.trim() || "DOWNLOAD ON APP STORE (iOS)";
+  const hasMacOS = platforms.includes("macos");
+  const hasIOS = platforms.includes("ios");
 
   return (
     <div className="hmd-page">
@@ -138,17 +191,29 @@ export default async function HealthMdPage() {
 
             {/* Purchase Card */}
             <aside className="hmd-purchase">
-              <div className="hmd-purchase__card">
-                <span className="hmd-purchase__label">NAME YOUR PRICE</span>
-                <h2 className="hmd-purchase__title">Pay what you want</h2>
-                <a 
-                  href="/apps/healthmd" 
-                  className="hmd-purchase__btn"
-                >
-                  GET THE APP
-                </a>
-                <p className="hmd-purchase__note">Also available on the iOS App Store and macOS via Gumroad.</p>
-              </div>
+              {app ? (
+                <PurchaseCard
+                  appId={app.id}
+                  appSlug={app.slug}
+                  appName={app.name}
+                  minPriceCents={app.min_price_cents}
+                  suggestedPriceCents={app.suggested_price_cents}
+                  isFree={isFree}
+                  isAuthenticated={!!user}
+                  hasPurchased={hasPurchased}
+                  iosAppStoreUrl={iosAppStoreUrl}
+                  iosAppStoreLabel={iosAppStoreLabel}
+                  hasMacOS={hasMacOS}
+                  hasIOS={hasIOS}
+                />
+              ) : (
+                <div className="hmd-purchase__card">
+                  <span className="hmd-purchase__label">NAME YOUR PRICE</span>
+                  <h2 className="hmd-purchase__title">Pay what you want</h2>
+                  <a href="/apps/healthmd" className="hmd-purchase__btn">GET THE APP</a>
+                  <p className="hmd-purchase__note">Also available on the iOS App Store and macOS via Gumroad.</p>
+                </div>
+              )}
             </aside>
           </div>
         </section>
@@ -242,24 +307,22 @@ export default async function HealthMdPage() {
             <span className="hmd-cta__highlight">health data</span>
           </h2>
           <p className="hmd-cta__text">$5 one-time purchase. No subscription. No hidden costs.</p>
-          <div className="hmd-cta__buttons">
-            <a 
-              href="https://apps.apple.com/us/app/health-md/id6757763969" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hmd-cta__btn"
-            >
-              Download on App Store
-            </a>
-            <a 
-              href="https://isolated.gumroad.com/l/healthmd-macos" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hmd-cta__btn hmd-cta__btn--secondary"
-            >
-              macOS on Gumroad
-            </a>
-          </div>
+          {app && (
+            <PurchaseCard
+              appId={app.id}
+              appSlug={app.slug}
+              appName={app.name}
+              minPriceCents={app.min_price_cents}
+              suggestedPriceCents={app.suggested_price_cents}
+              isFree={isFree}
+              isAuthenticated={!!user}
+              hasPurchased={hasPurchased}
+              iosAppStoreUrl={iosAppStoreUrl}
+              iosAppStoreLabel={iosAppStoreLabel}
+              hasMacOS={hasMacOS}
+              hasIOS={hasIOS}
+            />
+          )}
         </section>
       </main>
 
