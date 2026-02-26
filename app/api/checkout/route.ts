@@ -3,7 +3,7 @@
  *
  * Create a Stripe Checkout session for app purchase.
  * Handles both paid and free apps.
- * For source code distribution, generates one-time download token and sends email.
+ * Users can download purchased apps (including source code) from their dashboard.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -11,7 +11,6 @@ import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
 import { createStripeClient, getBaseUrl } from "@/lib/stripe";
 import { nanoid } from "@/lib/db";
-import { sendEmail, generateSourceCodeEmail } from "@/lib/email";
 
 interface CheckoutRequest {
   appId: string;
@@ -24,6 +23,7 @@ interface App {
   name: string;
   slug: string;
   tagline: string | null;
+  description: string | null;
   icon_url: string | null;
   min_price_cents: number;
   distribution_type: string;
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Get app
     const app = await env.DB.prepare(
-      `SELECT id, name, slug, tagline, icon_url, min_price_cents, 
+      `SELECT id, name, slug, tagline, description, icon_url, min_price_cents, 
               COALESCE(distribution_type, 'binary') as distribution_type 
        FROM apps WHERE id = ?`
     )
@@ -163,60 +163,11 @@ export async function POST(request: NextRequest) {
           .run();
       }
 
-      // For source code: Generate download token and send email
-      if (isSourceCode) {
-        const token = nanoid(32); // Longer token for security
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
-
-        await env.DB.prepare(
-          `INSERT INTO download_tokens (id, token, user_id, app_id, purchase_id, expires_at, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`
-        )
-          .bind(
-            nanoid(),
-            token,
-            user.id,
-            appId,
-            purchaseId,
-            expiresAt.toISOString(),
-            now
-          )
-          .run();
-
-        const downloadUrl = `${baseUrl}/api/download/token/${token}`;
-        
-        // Send email with download link
-        const { html, text } = generateSourceCodeEmail(
-          app.name,
-          0,
-          user.name || null,
-          downloadUrl,
-          7
-        );
-
-        await sendEmail(
-          {
-            to: user.email,
-            subject: `Your ${app.name} Source Code Download`,
-            html,
-            text,
-          },
-          env
-        );
-
-        return NextResponse.json({
-          success: true,
-          free: true,
-          sourceCode: true,
-          message: "Check your email for the download link!",
-          redirectUrl: `${baseUrl}/dashboard?purchased=${app.slug}&emailed=1`,
-        });
-      }
-
+      // Redirect to dashboard - user can download from there
       return NextResponse.json({
         success: true,
         free: true,
+        sourceCode: isSourceCode,
         redirectUrl: `${baseUrl}/dashboard?purchased=${app.slug}`,
       });
     }
@@ -241,6 +192,38 @@ export async function POST(request: NextRequest) {
       baseUrl,
     });
 
+    // Build checkout description from tagline and description
+    const buildCheckoutDescription = (): string | undefined => {
+      const parts: string[] = [];
+      
+      if (app.tagline) {
+        parts.push(app.tagline);
+      }
+      
+      if (app.description) {
+        // Strip markdown formatting and get plain text
+        const plainText = app.description
+          .replace(/#{1,6}\s+/g, '') // Remove headers
+          .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold
+          .replace(/\*([^*]+)\*/g, '$1') // Remove italics
+          .replace(/`([^`]+)`/g, '$1') // Remove inline code
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+          .replace(/\n+/g, ' ') // Replace newlines with spaces
+          .trim();
+        
+        if (plainText) {
+          // Stripe limits description to 500 chars, truncate with ellipsis
+          const maxLen = app.tagline ? 400 : 500;
+          const truncated = plainText.length > maxLen 
+            ? plainText.slice(0, maxLen - 3) + '...'
+            : plainText;
+          parts.push(truncated);
+        }
+      }
+      
+      return parts.length > 0 ? parts.join('\n\n') : undefined;
+    };
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: user.email,
@@ -251,7 +234,7 @@ export async function POST(request: NextRequest) {
             unit_amount: finalPriceCents,
             product_data: {
               name: isSourceCode ? `${app.name} (Source Code)` : app.name,
-              description: app.tagline || undefined,
+              description: buildCheckoutDescription(),
               images: app.icon_url ? [`${baseUrl}${app.icon_url}`] : undefined,
             },
           },
@@ -268,9 +251,7 @@ export async function POST(request: NextRequest) {
         final_price_cents: finalPriceCents.toString(),
         is_source_code: isSourceCode ? "1" : "0",
       },
-      success_url: isSourceCode 
-        ? `${baseUrl}/dashboard?purchased=${app.slug}&emailed=1`
-        : `${baseUrl}/dashboard?purchased=${app.slug}`,
+      success_url: `${baseUrl}/dashboard?purchased=${app.slug}`,
       cancel_url: `${baseUrl}/apps/${app.slug}`,
     });
 

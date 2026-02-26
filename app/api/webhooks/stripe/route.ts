@@ -2,7 +2,7 @@
  * POST /api/webhooks/stripe
  *
  * Handle Stripe webhook events for payment processing.
- * For source code purchases, generates one-time download tokens and sends email.
+ * Creates purchase records - users download from their dashboard.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -10,7 +10,6 @@ import Stripe from "stripe";
 import { getEnv } from "@/lib/cloudflare-context";
 import { createStripeClient } from "@/lib/stripe";
 import { nanoid } from "@/lib/db";
-import { sendEmail, generateSourceCodeEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const env = getEnv();
@@ -88,7 +87,7 @@ async function handleCheckoutComplete(
   env: Env
 ) {
   const metadata = session.metadata || {};
-  const { app_id, user_id, user_email, user_name, discount_code_id, is_source_code } = metadata;
+  const { app_id, user_id, discount_code_id } = metadata;
 
   if (!app_id || !user_id) {
     console.error("Webhook: Missing metadata", metadata);
@@ -139,82 +138,15 @@ async function handleCheckoutComplete(
     console.log(`Webhook: Incremented discount code ${discount_code_id}`);
   }
 
-  // Get app info for email
-  const appResult = await env.DB.prepare(`SELECT name, slug FROM apps WHERE id = ?`)
-    .bind(app_id)
-    .first<{ name: string; slug: string }>();
+  // Log purchase
+  await env.DB.prepare(
+    `INSERT INTO email_log (id, user_id, email_type, subject, sent_at)
+     VALUES (?, ?, 'purchase_receipt', ?, ?)`
+  )
+    .bind(nanoid(), user_id, `Purchase completed`, now)
+    .run();
 
-  // Handle source code purchase - generate token and send email
-  if (is_source_code === "1" && appResult && user_email) {
-    const token = nanoid(32);
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
-
-    await env.DB.prepare(
-      `INSERT INTO download_tokens (id, token, user_id, app_id, purchase_id, expires_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-      .bind(
-        nanoid(),
-        token,
-        user_id,
-        app_id,
-        purchaseId,
-        expiresAt.toISOString(),
-        now
-      )
-      .run();
-
-    // Determine base URL from session success URL
-    const successUrl = session.success_url || "";
-    const baseUrl = successUrl.split("/dashboard")[0] || "https://isolated.tech";
-    const downloadUrl = `${baseUrl}/api/download/token/${token}`;
-
-    // Send email with download link
-    const { html, text } = generateSourceCodeEmail(
-      appResult.name,
-      session.amount_total || 0,
-      user_name || null,
-      downloadUrl,
-      7
-    );
-
-    await sendEmail(
-      {
-        to: user_email,
-        subject: `Your ${appResult.name} Source Code Download`,
-        html,
-        text,
-      },
-      env
-    );
-
-    // Log email
-    await env.DB.prepare(
-      `INSERT INTO email_log (id, user_id, email_type, subject, sent_at)
-       VALUES (?, ?, 'source_code_download', ?, ?)`
-    )
-      .bind(nanoid(), user_id, `Source code download: ${appResult.name}`, now)
-      .run();
-
-    console.log(`Webhook: Source code download email sent to ${user_email}`);
-  } else {
-    // Regular purchase - log receipt email
-    const userResult = await env.DB.prepare(`SELECT email FROM users WHERE id = ?`)
-      .bind(user_id)
-      .first<{ email: string }>();
-
-    if (userResult) {
-      await env.DB.prepare(
-        `INSERT INTO email_log (id, user_id, email_type, subject, sent_at)
-         VALUES (?, ?, 'purchase_receipt', ?, ?)`
-      )
-        .bind(nanoid(), user_id, `Purchase receipt`, now)
-        .run();
-
-      console.log(`Webhook: Receipt logged for ${userResult.email}`);
-    }
-  }
+  console.log(`Webhook: Purchase ${purchaseId} completed for user ${user_id}`);
 }
 
 /**

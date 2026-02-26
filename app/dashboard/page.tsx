@@ -163,9 +163,9 @@ export default async function DashboardPage({
           CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as has_review
         FROM purchases p
         JOIN apps a ON p.app_id = a.id
-        JOIN app_versions v ON p.version_id = v.id
+        JOIN app_versions v ON v.app_id = a.id AND v.is_latest = 1
         LEFT JOIN reviews r ON r.user_id = p.user_id AND r.app_id = p.app_id
-        WHERE p.user_id = ?
+        WHERE p.user_id = ? AND p.status = 'completed'
         ORDER BY p.created_at DESC
       `).bind(user.id).all<{
         id: string;
