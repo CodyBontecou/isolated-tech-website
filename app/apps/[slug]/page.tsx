@@ -369,15 +369,15 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <nav className="nav">
-        <Link href="/" className="nav__logo">
+        {/* Use <a> tags to force full page navigation - vinext RSC fetch doesn't include credentials */}
+        <a href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </Link>
+        </a>
         <div className="nav__links">
-          <Link href="/apps">APPS</Link>
-          <Link href="/#about">ABOUT</Link>
+          <a href="/apps">APPS</a>
+          <a href="/#about">ABOUT</a>
           {user ? (
             <>
-              {/* Use <a> for auth routes - vinext RSC fetch doesn't send cookies */}
               {user.isAdmin && <a href="/admin">ADMIN</a>}
               <a href="/dashboard">DASHBOARD</a>
               <SignOutButton />
@@ -389,9 +389,9 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
       </nav>
 
       <main className="app-page">
-        <Link href="/apps" className="app-page__back">
+        <a href="/apps" className="app-page__back">
           ← ALL APPS
-        </Link>
+        </a>
 
         <header className="app-page__header">
           <div 

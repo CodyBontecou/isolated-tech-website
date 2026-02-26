@@ -81,9 +81,9 @@ export default async function EditAppPage({ params }: { params: { id: string } }
   return (
     <>
       <header className="admin-header">
-        <Link href="/admin/apps" className="app-page__back">
+        <a href="/admin/apps" className="app-page__back">
           ← BACK TO APPS
-        </Link>
+        </a>
         <div
           style={{
             display: "flex",
@@ -96,28 +96,28 @@ export default async function EditAppPage({ params }: { params: { id: string } }
             <p className="admin-header__subtitle">/{app.slug}</p>
           </div>
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            <Link
+            <a
               href={`/apps/${app.slug}`}
               className="auth-btn auth-btn--outline"
               style={{ width: "auto" }}
               target="_blank"
             >
               VIEW PAGE
-            </Link>
-            <Link
+            </a>
+            <a
               href={`/admin/apps/${params.id}/media`}
               className="auth-btn auth-btn--outline"
               style={{ width: "auto" }}
             >
               MEDIA
-            </Link>
-            <Link
+            </a>
+            <a
               href={`/admin/apps/${params.id}/edit`}
               className="auth-btn"
               style={{ width: "auto" }}
             >
               EDIT DETAILS
-            </Link>
+            </a>
           </div>
         </div>
       </header>
@@ -150,13 +150,13 @@ export default async function EditAppPage({ params }: { params: { id: string } }
       <section className="admin-section">
         <div className="admin-section__header">
           <h2 className="admin-section__title">VERSIONS</h2>
-          <Link
+          <a
             href={`/admin/apps/${params.id}/versions/new`}
             className="auth-btn"
             style={{ width: "auto" }}
           >
             + UPLOAD VERSION
-          </Link>
+          </a>
         </div>
 
         {versions.length === 0 ? (
@@ -171,13 +171,13 @@ export default async function EditAppPage({ params }: { params: { id: string } }
             <p style={{ color: "var(--gray)", marginBottom: "1rem" }}>
               No versions uploaded yet.
             </p>
-            <Link
+            <a
               href={`/admin/apps/${params.id}/versions/new`}
               className="auth-btn"
               style={{ width: "auto", display: "inline-block" }}
             >
               UPLOAD FIRST VERSION
-            </Link>
+            </a>
           </div>
         ) : (
           <div className="admin-table-wrap">

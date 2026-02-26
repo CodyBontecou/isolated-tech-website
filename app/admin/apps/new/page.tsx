@@ -10,9 +10,9 @@ export default function NewAppPage() {
   return (
     <>
       <header className="admin-header">
-        <Link href="/admin/apps" className="app-page__back">
+        <a href="/admin/apps" className="app-page__back">
           ← BACK TO APPS
-        </Link>
+        </a>
         <h1 className="admin-header__title">New App</h1>
         <p className="admin-header__subtitle">
           Add a new app to your store

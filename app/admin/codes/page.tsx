@@ -98,9 +98,9 @@ export default async function AdminCodesPage() {
               Manage promotional codes and discounts
             </p>
           </div>
-          <Link href="/admin/codes/new" className="auth-btn" style={{ width: "auto" }}>
+          <a href="/admin/codes/new" className="auth-btn" style={{ width: "auto" }}>
             + NEW CODE
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -156,12 +156,12 @@ export default async function AdminCodesPage() {
                   </td>
                   <td>
                     <div className="admin-table__actions">
-                      <Link
+                      <a
                         href={`/admin/codes/${code.id}/edit`}
                         className="admin-table__btn"
                       >
                         EDIT
-                      </Link>
+                      </a>
                       <button className="admin-table__btn admin-table__btn--danger">
                         DELETE
                       </button>
@@ -178,9 +178,9 @@ export default async function AdminCodesPage() {
           <p className="empty-state__text">
             Create your first discount code to offer promotions.
           </p>
-          <Link href="/admin/codes/new" className="auth-btn" style={{ display: "inline-block" }}>
+          <a href="/admin/codes/new" className="auth-btn" style={{ display: "inline-block" }}>
             CREATE CODE
-          </Link>
+          </a>
         </div>
       )}
     </>

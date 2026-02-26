@@ -100,9 +100,9 @@ export default async function EditAppPage({ params }: { params: { id: string } }
   return (
     <>
       <header className="admin-header">
-        <Link href={`/admin/apps/${params.id}`} className="app-page__back">
+        <a href={`/admin/apps/${params.id}`} className="app-page__back">
           ← BACK TO {app.name.toUpperCase()}
-        </Link>
+        </a>
         <h1 className="admin-header__title">Edit {app.name}</h1>
         <p className="admin-header__subtitle">
           Update app details, pricing, and visibility

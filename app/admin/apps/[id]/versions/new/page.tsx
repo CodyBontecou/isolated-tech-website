@@ -33,9 +33,9 @@ export default async function NewVersionPage({ params }: { params: { id: string 
   return (
     <>
       <header className="admin-header">
-        <Link href={`/admin/apps/${params.id}`} className="app-page__back">
+        <a href={`/admin/apps/${params.id}`} className="app-page__back">
           ← BACK TO {app.name.toUpperCase()}
-        </Link>
+        </a>
         <h1 className="admin-header__title">Upload New Version</h1>
         <p className="admin-header__subtitle">
           Upload a new {app.distribution_type === "source_code" ? "source code" : ""} version for {app.name}

@@ -145,12 +145,12 @@ export default async function DashboardPage({
     return (
       <>
         <nav className="nav">
-          <Link href="/" className="nav__logo">
+          <a href="/" className="nav__logo">
             ISOLATED<span className="dot">.</span>TECH
-          </Link>
+          </a>
           <div className="nav__links">
-            <Link href="/apps">APPS</Link>
-            <Link href="/auth/login">SIGN IN</Link>
+            <a href="/apps">APPS</a>
+            <a href="/auth/login">SIGN IN</a>
           </div>
         </nav>
 
@@ -249,12 +249,13 @@ export default async function DashboardPage({
   return (
     <>
       <nav className="nav">
-        <Link href="/" className="nav__logo">
+        {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
+        <a href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </Link>
+        </a>
         <div className="nav__links">
-          <Link href="/apps">APPS</Link>
-          {user.isAdmin && <Link href="/admin">ADMIN</Link>}
+          <a href="/apps">APPS</a>
+          {user.isAdmin && <a href="/admin">ADMIN</a>}
           <SignOutButton />
         </div>
       </nav>
@@ -268,15 +269,15 @@ export default async function DashboardPage({
           </h1>
 
           <nav className="dashboard__nav">
-            <Link href="/dashboard" className="dashboard__nav-link dashboard__nav-link--active">
+            <a href="/dashboard" className="dashboard__nav-link dashboard__nav-link--active">
               MY APPS
-            </Link>
-            <Link href="/dashboard/reviews" className="dashboard__nav-link">
+            </a>
+            <a href="/dashboard/reviews" className="dashboard__nav-link">
               REVIEWS
-            </Link>
-            <Link href="/dashboard/settings" className="dashboard__nav-link">
+            </a>
+            <a href="/dashboard/settings" className="dashboard__nav-link">
               SETTINGS
-            </Link>
+            </a>
           </nav>
         </header>
 
@@ -296,9 +297,9 @@ export default async function DashboardPage({
               You haven&apos;t purchased any apps yet. Check out our catalog to
               find something you&apos;ll love.
             </p>
-            <Link href="/apps" className="auth-btn" style={{ display: "inline-block" }}>
+            <a href="/apps" className="auth-btn" style={{ display: "inline-block" }}>
               BROWSE APPS
-            </Link>
+            </a>
           </div>
         ) : (
           <>

@@ -278,18 +278,17 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* NAV */}
+      {/* NAV - Use <a> tags for navigation to force full page loads.
+          vinext's RSC fetch doesn't include credentials, so cookies aren't sent
+          during client-side navigation, causing auth to fail. */}
       <nav className="nav">
-        <Link href="/" className="nav__logo">
+        <a href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </Link>
+        </a>
         <div className="nav__links">
           <a href="#apps">APPS</a>
           {user ? (
             <>
-              {/* Use <a> tags for auth-protected routes to force full page navigation.
-                  vinext's RSC fetch doesn't include credentials, so cookies aren't sent
-                  during client-side navigation, causing auth to fail. */}
               {user.isAdmin && <a href="/admin">ADMIN</a>}
               <a href="/dashboard">DASHBOARD</a>
               <SignOutButton />

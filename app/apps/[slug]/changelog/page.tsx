@@ -125,14 +125,14 @@ export default async function ChangelogPage({
   return (
     <>
       <nav className="nav">
-        <Link href="/" className="nav__logo">
+        {/* Use <a> tags to force full page navigation - vinext RSC fetch doesn't include credentials */}
+        <a href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </Link>
+        </a>
         <div className="nav__links">
-          <Link href="/apps">APPS</Link>
+          <a href="/apps">APPS</a>
           {user ? (
             <>
-              {/* Use <a> for auth routes - vinext RSC fetch doesn't send cookies */}
               {user.isAdmin && <a href="/admin">ADMIN</a>}
               <a href="/dashboard">DASHBOARD</a>
               <SignOutButton />
@@ -144,9 +144,9 @@ export default async function ChangelogPage({
       </nav>
 
       <main className="app-page">
-        <Link href={`/apps/${app.slug}`} className="app-page__back">
+        <a href={`/apps/${app.slug}`} className="app-page__back">
           ← BACK TO {app.name.toUpperCase()}
-        </Link>
+        </a>
 
         <header style={{ marginBottom: "2rem" }}>
           <h1 className="app-page__name">

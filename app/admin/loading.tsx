@@ -24,14 +24,15 @@ export default function AdminLoading() {
   return (
     <>
       <nav className="nav">
-        <Link href="/" className="nav__logo">
+        {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
+        <a href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </Link>
+        </a>
         <div className="nav__links">
-          <Link href="/admin" style={{ color: "#4ade80" }}>
+          <a href="/admin" style={{ color: "#4ade80" }}>
             ADMIN
-          </Link>
-          <Link href="/apps">STORE</Link>
+          </a>
+          <a href="/apps">STORE</a>
           <span style={{ color: "var(--gray)" }}>SIGN OUT</span>
         </div>
       </nav>

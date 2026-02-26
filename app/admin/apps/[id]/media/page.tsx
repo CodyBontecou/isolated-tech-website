@@ -63,9 +63,9 @@ export default async function MediaPage({ params }: { params: { id: string } }) 
   return (
     <>
       <header className="admin-header">
-        <Link href={`/admin/apps/${params.id}`} className="app-page__back">
+        <a href={`/admin/apps/${params.id}`} className="app-page__back">
           ← BACK TO {app.name.toUpperCase()}
-        </Link>
+        </a>
         <h1 className="admin-header__title">MEDIA SHOWCASE</h1>
         <p className="admin-header__subtitle">
           Add images and YouTube videos to showcase {app.name}

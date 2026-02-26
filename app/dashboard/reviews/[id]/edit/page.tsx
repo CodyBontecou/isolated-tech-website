@@ -66,21 +66,22 @@ export default async function EditReviewPage({
     return (
       <>
         <nav className="nav">
-          <Link href="/" className="nav__logo">
+          {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
+          <a href="/" className="nav__logo">
             ISOLATED<span className="dot">.</span>TECH
-          </Link>
+          </a>
           <div className="nav__links">
-            <Link href="/apps">APPS</Link>
-            {user.isAdmin && <Link href="/admin">ADMIN</Link>}
+            <a href="/apps">APPS</a>
+            {user.isAdmin && <a href="/admin">ADMIN</a>}
             <SignOutButton />
           </div>
         </nav>
 
         <main className="dashboard">
           <header className="dashboard__header">
-            <Link href="/dashboard/reviews" className="app-page__back">
+            <a href="/dashboard/reviews" className="app-page__back">
               ← BACK TO REVIEWS
-            </Link>
+            </a>
             <h1 className="dashboard__title">
               Access Denied<span className="dot">.</span>
             </h1>
@@ -117,21 +118,22 @@ export default async function EditReviewPage({
   return (
     <>
       <nav className="nav">
-        <Link href="/" className="nav__logo">
+        {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
+        <a href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </Link>
+        </a>
         <div className="nav__links">
-          <Link href="/apps">APPS</Link>
-          {user.isAdmin && <Link href="/admin">ADMIN</Link>}
+          <a href="/apps">APPS</a>
+          {user.isAdmin && <a href="/admin">ADMIN</a>}
           <SignOutButton />
         </div>
       </nav>
 
       <main className="dashboard">
         <header className="dashboard__header">
-          <Link href="/dashboard/reviews" className="app-page__back">
+          <a href="/dashboard/reviews" className="app-page__back">
             ← BACK TO REVIEWS
-          </Link>
+          </a>
           <h1 className="dashboard__title">
             Edit Review<span className="dot">.</span>
           </h1>

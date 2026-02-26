@@ -23,9 +23,9 @@ export default async function NewCodePage() {
   return (
     <>
       <header className="admin-header">
-        <Link href="/admin/codes" className="app-page__back">
+        <a href="/admin/codes" className="app-page__back">
           ← BACK TO CODES
-        </Link>
+        </a>
         <h1 className="admin-header__title">New Discount Code</h1>
         <p className="admin-header__subtitle">
           Create a promotional code for your apps

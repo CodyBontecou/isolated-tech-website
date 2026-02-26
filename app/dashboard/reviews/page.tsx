@@ -128,12 +128,12 @@ export default async function ReviewsPage({
     return (
       <>
         <nav className="nav">
-          <Link href="/" className="nav__logo">
+          <a href="/" className="nav__logo">
             ISOLATED<span className="dot">.</span>TECH
-          </Link>
+          </a>
           <div className="nav__links">
-            <Link href="/apps">APPS</Link>
-            <Link href="/auth/login">SIGN IN</Link>
+            <a href="/apps">APPS</a>
+            <a href="/auth/login">SIGN IN</a>
           </div>
         </nav>
         <main className="dashboard">
@@ -181,12 +181,13 @@ export default async function ReviewsPage({
   return (
     <>
       <nav className="nav">
-        <Link href="/" className="nav__logo">
+        {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
+        <a href="/" className="nav__logo">
           ISOLATED<span className="dot">.</span>TECH
-        </Link>
+        </a>
         <div className="nav__links">
-          <Link href="/apps">APPS</Link>
-          {user.isAdmin && <Link href="/admin">ADMIN</Link>}
+          <a href="/apps">APPS</a>
+          {user.isAdmin && <a href="/admin">ADMIN</a>}
           <SignOutButton />
         </div>
       </nav>
@@ -199,15 +200,15 @@ export default async function ReviewsPage({
           </h1>
 
           <nav className="dashboard__nav">
-            <Link href="/dashboard" className="dashboard__nav-link">
+            <a href="/dashboard" className="dashboard__nav-link">
               MY APPS
-            </Link>
-            <Link href="/dashboard/reviews" className="dashboard__nav-link dashboard__nav-link--active">
+            </a>
+            <a href="/dashboard/reviews" className="dashboard__nav-link dashboard__nav-link--active">
               REVIEWS
-            </Link>
-            <Link href="/dashboard/settings" className="dashboard__nav-link">
+            </a>
+            <a href="/dashboard/settings" className="dashboard__nav-link">
               SETTINGS
-            </Link>
+            </a>
           </nav>
         </header>
 
@@ -228,9 +229,9 @@ export default async function ReviewsPage({
             <p className="empty-state__text">
               You haven&apos;t written any reviews. Purchase an app to leave a review!
             </p>
-            <Link href="/apps" className="auth-btn" style={{ display: "inline-block" }}>
+            <a href="/apps" className="auth-btn" style={{ display: "inline-block" }}>
               BROWSE APPS
-            </Link>
+            </a>
           </div>
         ) : (
           <div style={{ maxWidth: "700px" }}>
