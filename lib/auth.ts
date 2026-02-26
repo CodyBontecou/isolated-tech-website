@@ -58,7 +58,7 @@ export function createAuth(env: Env) {
         },
         newsletterSubscribed: {
           type: "boolean",
-          defaultValue: true,
+          defaultValue: false,
           input: false,
         },
       },
