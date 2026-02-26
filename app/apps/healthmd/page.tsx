@@ -245,7 +245,7 @@ export default async function HealthMdPage() {
           <p className="hmd-cta__text">$5 one-time purchase. No subscription. No hidden costs.</p>
           <div className="hmd-cta__buttons">
             <a 
-              href="https://apps.apple.com/app/health-md/id6467169956" 
+              href="https://apps.apple.com/us/app/health-md/id6757763969" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hmd-cta__btn"

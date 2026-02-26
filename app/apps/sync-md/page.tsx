@@ -132,7 +132,7 @@ export default async function SyncMdPage() {
                 <span className="symd-appstore__label">AVAILABLE ON</span>
                 <h2 className="symd-appstore__title">App Store</h2>
                 <a 
-                  href="https://apps.apple.com/app/sync-md/id6502457567" 
+                  href="https://apps.apple.com/us/app/sync-md/id6502457567" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="symd-appstore__btn"
@@ -207,7 +207,7 @@ export default async function SyncMdPage() {
           </h2>
           <p className="symd-cta__text">Real Git. Real sync. No compromises.</p>
           <a 
-            href="https://apps.apple.com/app/sync-md/id6502457567" 
+            href="https://apps.apple.com/us/app/sync-md/id6502457567" 
             target="_blank" 
             rel="noopener noreferrer"
             className="symd-cta__btn"

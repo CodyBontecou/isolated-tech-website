@@ -131,7 +131,7 @@ export default async function ImghostPage() {
                 <span className="img-appstore__label">AVAILABLE ON</span>
                 <h2 className="img-appstore__title">App Store</h2>
                 <a 
-                  href="https://apps.apple.com/app/imghost/id6478843906" 
+                  href="https://apps.apple.com/us/app/imghost/id6478843906" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="img-appstore__btn"
@@ -202,7 +202,7 @@ export default async function ImghostPage() {
           </h2>
           <p className="img-cta__text">Start your 7-day free trial. No credit card required. Experience brutal image hosting.</p>
           <a 
-            href="https://apps.apple.com/app/imghost/id6478843906" 
+            href="https://apps.apple.com/us/app/imghost/id6478843906" 
             target="_blank" 
             rel="noopener noreferrer"
             className="img-cta__btn"
