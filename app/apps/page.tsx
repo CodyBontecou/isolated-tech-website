@@ -63,14 +63,20 @@ function getPlatforms(platformsJson: string): string[] {
   }
 }
 
-function formatPrice(minCents: number, suggestedCents: number | null): string {
-  if (minCents === 0 && (!suggestedCents || suggestedCents === 0)) {
-    return "Free";
+function formatPrice(minCents: number, suggestedCents: number | null, platforms?: string[]): string {
+  // iOS-only apps show "App Store" since pricing is handled there
+  const hasIOS = platforms?.includes("ios");
+  const hasMacOS = platforms?.includes("macos");
+  
+  if (hasIOS && !hasMacOS) {
+    return "App Store";
   }
+  
+  // macOS apps use "Name your price"
   if (minCents === 0) {
     return "Name your price";
   }
-  return `$${(minCents / 100).toFixed(2)}`;
+  return `From $${(minCents / 100).toFixed(2)}`;
 }
 
 function PlatformBadge({ platform }: { platform: string }) {
@@ -94,8 +100,7 @@ function StarRatingCompact({ rating, count }: { rating: number; count: number })
 
 function AppCard({ app, index }: { app: App; index: number }) {
   const platforms = getPlatforms(app.platforms);
-  const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
-  const price = formatPrice(app.min_price_cents, app.suggested_price_cents);
+  const price = formatPrice(app.min_price_cents, app.suggested_price_cents, platforms);
 
   return (
     <Link
@@ -124,7 +129,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
         )}
       </div>
       <div className="store-card__footer">
-        <span className={`store-card__price ${isFree ? "store-card__price--free" : ""}`}>
+        <span className="store-card__price">
           {price}
         </span>
         <span className="store-card__arrow">→</span>

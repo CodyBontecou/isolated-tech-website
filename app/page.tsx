@@ -83,14 +83,20 @@ function getPlatforms(platformsJson: string): string[] {
   }
 }
 
-function formatPrice(minCents: number, suggestedCents: number | null): string {
-  if (minCents === 0 && (!suggestedCents || suggestedCents === 0)) {
-    return "Free";
+function formatPrice(minCents: number, suggestedCents: number | null, platforms?: string[]): string {
+  // iOS-only apps show "App Store" since pricing is handled there
+  const hasIOS = platforms?.includes("ios");
+  const hasMacOS = platforms?.includes("macos");
+  
+  if (hasIOS && !hasMacOS) {
+    return "App Store";
   }
+  
+  // macOS apps use "Name your price"
   if (minCents === 0) {
     return "Name your price";
   }
-  return `$${(minCents / 100).toFixed(2)}`;
+  return `From $${(minCents / 100).toFixed(2)}`;
 }
 
 function PlatformBadge({ platform }: { platform: string }) {
@@ -114,7 +120,9 @@ function StarRatingCompact({ rating, count }: { rating: number; count: number })
 
 function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
   const platforms = getPlatforms(app.platforms);
-  const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
+  const hasIOS = platforms.includes("ios");
+  const hasMacOS = platforms.includes("macos");
+  const isIOSOnly = hasIOS && !hasMacOS;
 
   return (
     <section className="store-hero">
@@ -154,7 +162,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                   className="store-hero__btn store-hero__btn--primary"
                   heroIconId="hero-featured-icon"
                 >
-                  {isFree ? "GET — FREE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents)}`}
+                  {isIOSOnly ? "VIEW ON APP STORE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents, platforms)}`}
                 </HeroAppLink>
                 <HeroAppLink 
                   href={`/apps/${app.slug}`} 
@@ -199,7 +207,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                         </div>
                       </div>
                       <span className="store-hero__rail-tagline">
-                        {preview.tagline || formatPrice(preview.min_price_cents, preview.suggested_price_cents)}
+                        {preview.tagline || formatPrice(preview.min_price_cents, preview.suggested_price_cents, previewPlatforms)}
                       </span>
                     </div>
                   </ViewTransitionLink>
@@ -216,8 +224,10 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
 
 function AppCard({ app, index }: { app: App; index: number }) {
   const platforms = getPlatforms(app.platforms);
-  const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
-  const price = formatPrice(app.min_price_cents, app.suggested_price_cents);
+  const hasIOS = platforms.includes("ios");
+  const hasMacOS = platforms.includes("macos");
+  const isIOSOnly = hasIOS && !hasMacOS;
+  const price = formatPrice(app.min_price_cents, app.suggested_price_cents, platforms);
 
   return (
     <ViewTransitionLink
@@ -247,7 +257,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
         )}
       </div>
       <div className="store-card__footer">
-        <span className={`store-card__price ${isFree ? "store-card__price--free" : ""}`}>
+        <span className="store-card__price">
           {price}
         </span>
         <span className="store-card__arrow">→</span>
