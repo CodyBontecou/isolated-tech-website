@@ -17,7 +17,7 @@ interface Purchase {
   purchased_at: string;
   amount_cents: number;
   version: string;
-  version_id: string;
+  version_id: string | null;
   has_review: boolean;
   distribution_type: string;
 }
@@ -62,14 +62,20 @@ function PurchasedAppCard({
       </div>
 
       <div className="purchased-card__actions">
-        <a
-          href={`/api/download/${purchase.app_id}/${purchase.version_id}`}
-          className="purchased-card__btn"
-        >
-          {purchase.distribution_type === "source_code"
-            ? `↓ DOWNLOAD SOURCE v${purchase.version}`
-            : `↓ DOWNLOAD v${purchase.version}`}
-        </a>
+        {purchase.version_id ? (
+          <a
+            href={`/api/download/${purchase.app_id}/${purchase.version_id}`}
+            className="purchased-card__btn"
+          >
+            {purchase.distribution_type === "source_code"
+              ? `↓ DOWNLOAD SOURCE v${purchase.version}`
+              : `↓ DOWNLOAD v${purchase.version}`}
+          </a>
+        ) : (
+          <span className="purchased-card__btn purchased-card__btn--disabled">
+            Download unavailable
+          </span>
+        )}
 
         {purchase.has_review ? (
           <Link
@@ -158,12 +164,17 @@ export default async function DashboardPage({
           COALESCE(a.distribution_type, 'binary') as distribution_type,
           p.created_at as purchased_at,
           p.amount_cents,
-          v.version,
+          COALESCE(v.version, '1.0.0') as version,
           v.id as version_id,
           CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as has_review
         FROM purchases p
         JOIN apps a ON p.app_id = a.id
-        JOIN app_versions v ON v.app_id = a.id AND v.is_latest = 1
+        LEFT JOIN app_versions v ON v.id = (
+          SELECT id FROM app_versions 
+          WHERE app_id = a.id 
+          ORDER BY is_latest DESC, released_at DESC 
+          LIMIT 1
+        )
         LEFT JOIN reviews r ON r.user_id = p.user_id AND r.app_id = p.app_id
         WHERE p.user_id = ? AND p.status = 'completed'
         ORDER BY p.created_at DESC
