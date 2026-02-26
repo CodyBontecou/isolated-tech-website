@@ -422,7 +422,7 @@ export function PurchaseCard({
           Secure payment via Stripe. Instant access after purchase.
         </p>
 
-        {iosAppStoreUrl && (
+        {iosAppStoreUrl ? (
           <a
             href={iosAppStoreUrl}
             target="_blank"
@@ -432,7 +432,23 @@ export function PurchaseCard({
           >
             {iosAppStoreLabel}
           </a>
-        )}
+        ) : hasIOS ? (
+          <div
+            style={{
+              marginTop: "1rem",
+              padding: "0.75rem",
+              border: "1px solid var(--border)",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: "0.65rem", color: "var(--gray)", marginBottom: "0.25rem" }}>
+              iOS
+            </div>
+            <div style={{ fontSize: "0.85rem", color: "var(--foreground)" }}>
+              Coming Soon
+            </div>
+          </div>
+        ) : null}
       </div>
     );
   }
