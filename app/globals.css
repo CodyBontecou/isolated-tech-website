@@ -1565,6 +1565,26 @@ img {
   color: var(--white);
 }
 
+.app-page__description a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.app-page__description a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.app-page__description code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  color: var(--white);
+}
+
 /* Purchase Card */
 .purchase-card {
   position: sticky;
@@ -4080,6 +4100,30 @@ img {
 .changelog__text {
   font-size: 0.85rem;
   color: #aaa;
+}
+
+.changelog-entry__notes a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.changelog-entry__notes a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.changelog-entry__notes code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  color: var(--white);
+}
+
+.changelog-entry__notes strong {
+  color: var(--white);
 }
 
 /* ============================================

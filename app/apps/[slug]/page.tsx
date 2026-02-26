@@ -139,20 +139,27 @@ function getPageConfig(configJson: string | null): AppPageConfig | null {
 }
 
 function MarkdownContent({ content }: { content: string }) {
+  // Apply inline formatting: links and bold
+  const formatInline = (text: string) => {
+    return text
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/`([^`]+)`/g, "<code>$1</code>");
+  };
+
   // Simple markdown-to-HTML conversion
   const html = content
     .split("\n\n")
     .map((block) => {
       if (block.startsWith("## ")) {
-        return `<h2>${block.slice(3)}</h2>`;
+        return `<h2>${formatInline(block.slice(3))}</h2>`;
       }
       if (block.startsWith("- ")) {
         const items = block
           .split("\n")
           .map((line) => {
             if (line.startsWith("- ")) {
-              const text = line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-              return `<li>${text}</li>`;
+              return `<li>${formatInline(line.slice(2))}</li>`;
             }
             return "";
           })
@@ -165,14 +172,14 @@ function MarkdownContent({ content }: { content: string }) {
           .map((line) => {
             const match = line.match(/^\d\.\s*(.+)/);
             if (match) {
-              return `<li>${match[1]}</li>`;
+              return `<li>${formatInline(match[1])}</li>`;
             }
             return "";
           })
           .join("");
         return `<ol>${items}</ol>`;
       }
-      return `<p>${block.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</p>`;
+      return `<p>${formatInline(block)}</p>`;
     })
     .join("");
 

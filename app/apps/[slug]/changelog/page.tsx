@@ -56,20 +56,27 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function formatInline(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
 function renderMarkdown(text: string): string {
   return text
     .split("\n")
     .map((line) => {
       if (line.startsWith("### ")) {
-        return `<h4 class="changelog__heading">${line.slice(4)}</h4>`;
+        return `<h4 class="changelog__heading">${formatInline(line.slice(4))}</h4>`;
       }
       if (line.startsWith("- ")) {
-        return `<li class="changelog__item">${line.slice(2)}</li>`;
+        return `<li class="changelog__item">${formatInline(line.slice(2))}</li>`;
       }
       if (line.trim() === "") {
         return "";
       }
-      return `<p class="changelog__text">${line}</p>`;
+      return `<p class="changelog__text">${formatInline(line)}</p>`;
     })
     .join("\n");
 }
