@@ -5,6 +5,7 @@ import { ViewTransitionLink } from "./components/view-transition-link";
 import { HeroAppLink } from "./components/hero-app-link";
 import { queries } from "@/lib/db";
 import { SignOutButton } from "@/components/sign-out-button";
+import { AppFilters } from "./components/app-filters";
 
 interface App {
   id: string;
@@ -20,12 +21,19 @@ interface App {
   featured_order: number;
   avg_rating?: number | null;
   review_count?: number;
+  latest_release_at?: string | null;
+  created_at?: string;
 }
 
 interface ReviewStats {
   app_id: string;
   avg_rating: number | null;
   review_count: number;
+}
+
+interface LatestRelease {
+  app_id: string;
+  latest_release_at: string;
 }
 
 async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
@@ -36,7 +44,7 @@ async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
 
   // Get featured app (lowest featured_order where is_featured = 1)
   const featured = await env.DB.prepare(
-    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order, created_at
      FROM apps 
      WHERE is_published = 1 AND is_featured = 1
      ORDER BY featured_order ASC
@@ -45,7 +53,7 @@ async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
 
   // Get all published apps (excluding hero featured app)
   const result = await env.DB.prepare(
-    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, is_featured, featured_order, created_at
      FROM apps 
      WHERE is_published = 1 ${featured ? "AND id != ?" : ""}
      ORDER BY is_featured DESC, featured_order ASC, created_at DESC`
@@ -57,17 +65,32 @@ async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
   const reviewStats = await queries.getAllAppReviewStats(env) as ReviewStats[];
   const statsMap = new Map(reviewStats.map(s => [s.app_id, s]));
 
-  // Merge review stats with apps
+  // Get latest release dates for all apps (from app_updates table)
+  let releaseMap = new Map<string, string>();
+  try {
+    const latestReleases = await env.DB.prepare(
+      `SELECT app_id, MAX(released_at) as latest_release_at
+       FROM app_updates
+       GROUP BY app_id`
+    ).all<LatestRelease>();
+    releaseMap = new Map(latestReleases.results?.map(r => [r.app_id, r.latest_release_at]) || []);
+  } catch {
+    // app_updates table may not exist in some environments
+  }
+
+  // Merge review stats and release dates with apps
   const appsWithStats = (result.results || []).map(app => ({
     ...app,
     avg_rating: statsMap.get(app.id)?.avg_rating ?? null,
     review_count: statsMap.get(app.id)?.review_count ?? 0,
+    latest_release_at: releaseMap.get(app.id) ?? app.created_at ?? null,
   }));
 
   const featuredWithStats = featured ? {
     ...featured,
     avg_rating: statsMap.get(featured.id)?.avg_rating ?? null,
     review_count: statsMap.get(featured.id)?.review_count ?? 0,
+    latest_release_at: releaseMap.get(featured.id) ?? featured.created_at ?? null,
   } : null;
 
   return {
@@ -223,49 +246,6 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
   );
 }
 
-function AppCard({ app, index }: { app: App; index: number }) {
-  const platforms = getPlatforms(app.platforms);
-  const hasIOS = platforms.includes("ios");
-  const hasMacOS = platforms.includes("macos");
-  const isIOSOnly = hasIOS && !hasMacOS;
-  const price = formatPrice(app.min_price_cents, app.suggested_price_cents, platforms);
-
-  return (
-    <ViewTransitionLink
-      href={`/apps/${app.slug}`}
-      className="store-card"
-      style={{ animationDelay: `${index * 0.05}s` }}
-      transitionSelector="[data-transition-icon]"
-    >
-      <div className="store-card__icon" data-transition-icon>
-        {app.icon_url ? (
-          <img src={app.icon_url} alt={`${app.name} icon`} />
-        ) : (
-          <span>{app.name[0].toUpperCase()}</span>
-        )}
-      </div>
-      <div className="store-card__content">
-        <div className="store-card__badges">
-          {platforms.map((p) => (
-            <PlatformBadge key={p} platform={p} />
-          ))}
-        </div>
-        <h2 className="store-card__name">{app.name}</h2>
-        {app.tagline && <p className="store-card__tagline">{app.tagline}</p>}
-        {app.avg_rating && app.review_count && app.review_count > 0 && (
-          <StarRatingCompact rating={app.avg_rating} count={app.review_count} />
-        )}
-      </div>
-      <div className="store-card__footer">
-        <span className="store-card__price">
-          {price}
-        </span>
-        <span className="store-card__arrow">→</span>
-      </div>
-    </ViewTransitionLink>
-  );
-}
-
 export default async function HomePage() {
   const env = getEnv();
   const [user, { featured, apps }] = await Promise.all([
@@ -345,7 +325,6 @@ export default async function HomePage() {
       <section className="store-section" id="apps">
         <div className="store-section__header">
           <h2 className="store-section__title">ALL APPS</h2>
-          <span className="store-section__count">{allApps.length} available</span>
         </div>
 
         {allApps.length === 0 ? (
@@ -353,11 +332,7 @@ export default async function HomePage() {
             <p>No apps available yet. Check back soon.</p>
           </div>
         ) : (
-          <div className="store-grid">
-            {allApps.map((app, i) => (
-              <AppCard key={app.id} app={app} index={i} />
-            ))}
-          </div>
+          <AppFilters apps={allApps} showFeaturedSort={true} />
         )}
       </section>
 

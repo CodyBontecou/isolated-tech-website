@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
 import { SignOutButton } from "@/components/sign-out-button";
+import { AppFilters } from "@/app/components/app-filters";
 
 export const metadata: Metadata = {
   title: "Apps — ISOLATED.TECH",
@@ -24,6 +25,8 @@ interface App {
   is_featured: number;
   avg_rating?: number | null;
   review_count?: number;
+  latest_release_at?: string | null;
+  created_at?: string;
 }
 
 interface ReviewStats {
@@ -32,13 +35,18 @@ interface ReviewStats {
   review_count: number;
 }
 
+interface LatestRelease {
+  app_id: string;
+  latest_release_at: string;
+}
+
 async function getApps(): Promise<App[]> {
   const env = getEnv();
   if (!env?.DB) return [];
 
   const result = await env.DB.prepare(
     `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents,
-            COALESCE(is_featured, 0) as is_featured
+            COALESCE(is_featured, 0) as is_featured, created_at
      FROM apps 
      WHERE is_published = 1
      ORDER BY is_featured DESC, created_at DESC`
@@ -48,95 +56,26 @@ async function getApps(): Promise<App[]> {
   const reviewStats = await queries.getAllAppReviewStats(env) as ReviewStats[];
   const statsMap = new Map(reviewStats.map(s => [s.app_id, s]));
 
-  // Merge review stats with apps
+  // Get latest release dates for all apps (from app_updates table)
+  let releaseMap = new Map<string, string>();
+  try {
+    const latestReleases = await env.DB.prepare(
+      `SELECT app_id, MAX(released_at) as latest_release_at
+       FROM app_updates
+       GROUP BY app_id`
+    ).all<LatestRelease>();
+    releaseMap = new Map(latestReleases.results?.map(r => [r.app_id, r.latest_release_at]) || []);
+  } catch {
+    // app_updates table may not exist in some environments
+  }
+
+  // Merge review stats and release dates with apps
   return (result.results || []).map(app => ({
     ...app,
     avg_rating: statsMap.get(app.id)?.avg_rating ?? null,
     review_count: statsMap.get(app.id)?.review_count ?? 0,
+    latest_release_at: releaseMap.get(app.id) ?? app.created_at ?? null,
   }));
-}
-
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return platformsJson.split(",").map((p) => p.trim().replace(/"/g, ""));
-  }
-}
-
-function formatPrice(minCents: number, suggestedCents: number | null, platforms?: string[]): string {
-  // iOS-only apps show "App Store" since pricing is handled there
-  const hasIOS = platforms?.includes("ios");
-  const hasMacOS = platforms?.includes("macos");
-  
-  if (hasIOS && !hasMacOS) {
-    return "App Store";
-  }
-  
-  // macOS apps use "Name your price"
-  if (minCents === 0) {
-    return "Name your price";
-  }
-  return `From $${(minCents / 100).toFixed(2)}`;
-}
-
-function PlatformBadge({ platform }: { platform: string }) {
-  return (
-    <span className="store-badge">
-      {platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform.toUpperCase()}
-    </span>
-  );
-}
-
-function StarRatingCompact({ rating, count }: { rating: number; count: number }) {
-  if (count === 0) return null;
-  const roundedRating = Math.round(rating * 10) / 10;
-  return (
-    <div className="star-rating-compact" aria-label={`${roundedRating} out of 5 stars from ${count} reviews`}>
-      <span className="star-rating-compact__star">★</span>
-      <span className="star-rating-compact__value">{roundedRating.toFixed(1)}</span>
-    </div>
-  );
-}
-
-function AppCard({ app, index }: { app: App; index: number }) {
-  const platforms = getPlatforms(app.platforms);
-  const price = formatPrice(app.min_price_cents, app.suggested_price_cents, platforms);
-
-  return (
-    <Link
-      href={`/apps/${app.slug}`}
-      className="store-card"
-      style={{ animationDelay: `${index * 0.05}s` }}
-    >
-      <div className="store-card__icon">
-        {app.icon_url ? (
-          <img src={app.icon_url} alt={`${app.name} icon`} />
-        ) : (
-          <span>{app.name[0].toUpperCase()}</span>
-        )}
-      </div>
-      <div className="store-card__content">
-        <div className="store-card__badges">
-          {platforms.map((p) => (
-            <PlatformBadge key={p} platform={p} />
-          ))}
-          {app.is_featured === 1 && <span className="store-badge store-badge--featured">★</span>}
-        </div>
-        <h2 className="store-card__name">{app.name}</h2>
-        {app.tagline && <p className="store-card__tagline">{app.tagline}</p>}
-        {app.avg_rating && app.review_count && app.review_count > 0 && (
-          <StarRatingCompact rating={app.avg_rating} count={app.review_count} />
-        )}
-      </div>
-      <div className="store-card__footer">
-        <span className="store-card__price">
-          {price}
-        </span>
-        <span className="store-card__arrow">→</span>
-      </div>
-    </Link>
-  );
 }
 
 export default async function AppsPage() {
@@ -183,20 +122,9 @@ export default async function AppsPage() {
       <section className="store-section" id="apps">
         <div className="store-section__header">
           <h2 className="store-section__title">BROWSE</h2>
-          <span className="store-section__count">{apps.length} apps</span>
         </div>
 
-        {apps.length === 0 ? (
-          <div className="store-empty">
-            <p>No apps available yet. Check back soon.</p>
-          </div>
-        ) : (
-          <div className="store-grid">
-            {apps.map((app, i) => (
-              <AppCard key={app.id} app={app} index={i} />
-            ))}
-          </div>
-        )}
+        <AppFilters apps={apps} showFeaturedSort={true} />
       </section>
 
       <footer className="store-footer">
