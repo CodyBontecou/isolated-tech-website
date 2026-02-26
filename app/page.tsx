@@ -241,6 +241,7 @@ export default async function HomePage() {
           <a href="#apps">APPS</a>
           {user ? (
             <>
+              {user.isAdmin && <Link href="/admin">ADMIN</Link>}
               <Link href="/dashboard">DASHBOARD</Link>
               <Link href="/api/auth/logout">SIGN OUT</Link>
             </>

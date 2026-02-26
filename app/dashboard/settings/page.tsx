@@ -14,6 +14,7 @@ interface User {
   email: string;
   newsletterSubscribed: boolean;
   providers: string[];
+  isAdmin?: boolean;
 }
 
 const MOCK_USER: User | null = {
@@ -70,6 +71,7 @@ export default function SettingsPage() {
         </Link>
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
+          {user.isAdmin && <Link href="/admin">ADMIN</Link>}
           <Link href="/api/auth/logout">SIGN OUT</Link>
         </div>
       </nav>

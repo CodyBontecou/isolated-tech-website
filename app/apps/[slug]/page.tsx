@@ -24,6 +24,8 @@ interface App {
   github_url: string | null;
   required_xcode_version: string | null;
   min_ios_version: string | null;
+  allow_source_download: number;
+  allow_binary_download: number;
 }
 
 interface AppPageConfig {
@@ -37,7 +39,9 @@ async function getApp(slug: string): Promise<App | null> {
   
   const app = await env.DB.prepare(
     `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, custom_page_config, is_published,
-            COALESCE(distribution_type, 'binary') as distribution_type, build_instructions, github_url, required_xcode_version, min_ios_version
+            COALESCE(distribution_type, 'binary') as distribution_type, build_instructions, github_url, required_xcode_version, min_ios_version,
+            COALESCE(allow_source_download, 1) as allow_source_download,
+            COALESCE(allow_binary_download, 1) as allow_binary_download
      FROM apps WHERE slug = ? AND is_published = 1`
   )
     .bind(slug)
@@ -228,6 +232,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
           <Link href="/#about">ABOUT</Link>
           {user ? (
             <>
+              {user.isAdmin && <Link href="/admin">ADMIN</Link>}
               <Link href="/dashboard">DASHBOARD</Link>
               <Link href="/api/auth/logout">SIGN OUT</Link>
             </>
@@ -355,6 +360,8 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
               iosAppStoreUrl={iosAppStoreUrl}
               iosAppStoreLabel={iosAppStoreLabel}
               distributionType={app.distribution_type}
+              allowSourceDownload={app.allow_source_download === 1}
+              allowBinaryDownload={app.allow_binary_download === 1}
             />
           </aside>
         </div>

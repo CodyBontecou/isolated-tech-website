@@ -109,6 +109,8 @@ export async function PUT(
       github_url,
       required_xcode_version,
       min_ios_version,
+      allow_source_download,
+      allow_binary_download,
     } = body;
 
     // Check slug uniqueness if changed
@@ -219,6 +221,16 @@ export async function PUT(
     if (min_ios_version !== undefined) {
       updates.push("min_ios_version = ?");
       values.push(min_ios_version || null);
+    }
+
+    if (allow_source_download !== undefined) {
+      updates.push("allow_source_download = ?");
+      values.push(allow_source_download ? 1 : 0);
+    }
+
+    if (allow_binary_download !== undefined) {
+      updates.push("allow_binary_download = ?");
+      values.push(allow_binary_download ? 1 : 0);
     }
 
     if (updates.length === 0) {

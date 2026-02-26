@@ -122,6 +122,7 @@ export default async function AppsPage() {
           <Link href="/apps">APPS</Link>
           {user ? (
             <>
+              {user.isAdmin && <Link href="/admin">ADMIN</Link>}
               <Link href="/dashboard">DASHBOARD</Link>
               <Link href="/api/auth/logout">SIGN OUT</Link>
             </>

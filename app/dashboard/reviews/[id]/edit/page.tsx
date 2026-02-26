@@ -70,6 +70,7 @@ export default async function EditReviewPage({
           </Link>
           <div className="nav__links">
             <Link href="/apps">APPS</Link>
+            {user.isAdmin && <Link href="/admin">ADMIN</Link>}
             <Link href="/api/auth/logout">SIGN OUT</Link>
           </div>
         </nav>
@@ -120,6 +121,7 @@ export default async function EditReviewPage({
         </Link>
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
+          {user.isAdmin && <Link href="/admin">ADMIN</Link>}
           <Link href="/api/auth/logout">SIGN OUT</Link>
         </div>
       </nav>

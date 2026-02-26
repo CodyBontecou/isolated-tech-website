@@ -20,6 +20,8 @@ interface Purchase {
   version_id: string | null;
   has_review: boolean;
   distribution_type: string;
+  allow_source_download: boolean;
+  allow_binary_download: boolean;
 }
 
 function formatDate(dateStr: string): string {
@@ -43,6 +45,11 @@ function PurchasedAppCard({
   purchase: Purchase;
   isNew?: boolean;
 }) {
+  const isSourceCode = purchase.distribution_type === "source_code";
+  const canDownload = isSourceCode
+    ? purchase.allow_source_download
+    : purchase.allow_binary_download;
+
   return (
     <div className={`purchased-card ${isNew ? "purchased-card--new" : ""}`}>
       <div className="purchased-card__header">
@@ -62,12 +69,16 @@ function PurchasedAppCard({
       </div>
 
       <div className="purchased-card__actions">
-        {purchase.version_id ? (
+        {!canDownload ? (
+          <span className="purchased-card__btn purchased-card__btn--disabled">
+            {isSourceCode ? "Source download unavailable" : "Download unavailable"}
+          </span>
+        ) : purchase.version_id ? (
           <a
             href={`/api/download/${purchase.app_id}/${purchase.version_id}`}
             className="purchased-card__btn"
           >
-            {purchase.distribution_type === "source_code"
+            {isSourceCode
               ? `↓ DOWNLOAD SOURCE v${purchase.version}`
               : `↓ DOWNLOAD v${purchase.version}`}
           </a>
@@ -162,6 +173,8 @@ export default async function DashboardPage({
           a.slug as app_slug,
           a.icon_url as app_icon_url,
           COALESCE(a.distribution_type, 'binary') as distribution_type,
+          COALESCE(a.allow_source_download, 1) as allow_source_download,
+          COALESCE(a.allow_binary_download, 1) as allow_binary_download,
           p.created_at as purchased_at,
           p.amount_cents,
           COALESCE(v.version, '1.0.0') as version,
@@ -185,6 +198,8 @@ export default async function DashboardPage({
         app_slug: string;
         app_icon_url: string | null;
         distribution_type: string;
+        allow_source_download: number;
+        allow_binary_download: number;
         purchased_at: string;
         amount_cents: number;
         version: string;
@@ -194,7 +209,9 @@ export default async function DashboardPage({
       
       purchases = result.results.map(p => ({
         ...p,
-        has_review: p.has_review === 1
+        has_review: p.has_review === 1,
+        allow_source_download: p.allow_source_download === 1,
+        allow_binary_download: p.allow_binary_download === 1,
       }));
     } catch (err) {
       console.error("Failed to fetch purchases:", err);
@@ -210,6 +227,7 @@ export default async function DashboardPage({
         </Link>
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
+          {user.isAdmin && <Link href="/admin">ADMIN</Link>}
           <Link href="/api/auth/logout">SIGN OUT</Link>
         </div>
       </nav>

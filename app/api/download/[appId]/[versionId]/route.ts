@@ -21,6 +21,9 @@ interface App {
   id: string;
   name: string;
   slug: string;
+  distribution_type: string;
+  allow_source_download: number;
+  allow_binary_download: number;
 }
 
 export async function GET(
@@ -48,12 +51,37 @@ export async function GET(
     }
 
     // 2. Get app and version
-    const app = await env.DB.prepare(`SELECT id, name, slug FROM apps WHERE id = ?`)
+    const app = await env.DB.prepare(
+      `SELECT id, name, slug, 
+              COALESCE(distribution_type, 'binary') as distribution_type,
+              COALESCE(allow_source_download, 1) as allow_source_download,
+              COALESCE(allow_binary_download, 1) as allow_binary_download
+       FROM apps WHERE id = ?`
+    )
       .bind(params.appId)
       .first<App>();
 
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+
+    // Check download permissions (admins bypass this check)
+    if (!user.isAdmin) {
+      const isSourceCode = app.distribution_type === "source_code";
+      
+      if (isSourceCode && !app.allow_source_download) {
+        return NextResponse.json(
+          { error: "Source code download is not available for this app" },
+          { status: 403 }
+        );
+      }
+
+      if (!isSourceCode && !app.allow_binary_download) {
+        return NextResponse.json(
+          { error: "Binary download is not available for this app" },
+          { status: 403 }
+        );
+      }
     }
 
     const version = await env.DB.prepare(

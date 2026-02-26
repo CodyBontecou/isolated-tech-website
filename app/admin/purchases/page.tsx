@@ -176,7 +176,12 @@ export default async function AdminPurchasesPage() {
                     </td>
                     <td>
                       <div className="admin-table__actions">
-                        <button className="admin-table__btn">VIEW</button>
+                        <Link
+                          href={`/admin/purchases/${purchase.id}`}
+                          className="admin-table__btn"
+                        >
+                          VIEW
+                        </Link>
                         {purchase.status === "completed" &&
                           purchase.amount_cents > 0 && (
                             <button className="admin-table__btn admin-table__btn--danger">

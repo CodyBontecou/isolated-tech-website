@@ -28,6 +28,8 @@ interface AppData {
   github_url: string | null;
   required_xcode_version: string | null;
   min_ios_version: string | null;
+  allow_source_download: number;
+  allow_binary_download: number;
 }
 
 async function getApp(id: string): Promise<AppData | null> {
@@ -41,7 +43,9 @@ async function getApp(id: string): Promise<AppData | null> {
             COALESCE(featured_order, 0) as featured_order,
             custom_page_config,
             COALESCE(distribution_type, 'binary') as distribution_type,
-            build_instructions, github_url, required_xcode_version, min_ios_version
+            build_instructions, github_url, required_xcode_version, min_ios_version,
+            COALESCE(allow_source_download, 1) as allow_source_download,
+            COALESCE(allow_binary_download, 1) as allow_binary_download
      FROM apps WHERE id = ?`
   )
     .bind(id)
@@ -89,6 +93,8 @@ export default async function EditAppPage({ params }: { params: { id: string } }
     github_url: app.github_url || "",
     required_xcode_version: app.required_xcode_version || "",
     min_ios_version: app.min_ios_version || "18.0",
+    allow_source_download: app.allow_source_download === 1,
+    allow_binary_download: app.allow_binary_download === 1,
   };
 
   return (

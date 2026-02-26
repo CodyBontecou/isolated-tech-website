@@ -24,6 +24,8 @@ interface App {
   name: string;
   slug: string;
   distribution_type: string;
+  allow_source_download: number;
+  allow_binary_download: number;
 }
 
 interface AppVersion {
@@ -98,7 +100,10 @@ export async function GET(
 
     // 4. Get app info
     const app = await env.DB.prepare(
-      `SELECT id, name, slug, COALESCE(distribution_type, 'binary') as distribution_type 
+      `SELECT id, name, slug, 
+              COALESCE(distribution_type, 'binary') as distribution_type,
+              COALESCE(allow_source_download, 1) as allow_source_download,
+              COALESCE(allow_binary_download, 1) as allow_binary_download
        FROM apps WHERE id = ?`
     )
       .bind(downloadToken.app_id)
@@ -108,6 +113,23 @@ export async function GET(
       return NextResponse.json(
         { error: "App not found" },
         { status: 404 }
+      );
+    }
+
+    // Check download permissions
+    const isSourceCode = app.distribution_type === "source_code";
+    
+    if (isSourceCode && !app.allow_source_download) {
+      return NextResponse.json(
+        { error: "Source code download is not available for this app" },
+        { status: 403 }
+      );
+    }
+
+    if (!isSourceCode && !app.allow_binary_download) {
+      return NextResponse.json(
+        { error: "Binary download is not available for this app" },
+        { status: 403 }
       );
     }
 
@@ -146,7 +168,6 @@ export async function GET(
       .run();
 
     // 8. Determine filename
-    const isSourceCode = app.distribution_type === "source_code";
     const extension = isSourceCode ? "zip" : "zip";
     const filename = version.r2_key.split("/").pop() || 
       `${app.slug}-${version.version}-source.${extension}`;

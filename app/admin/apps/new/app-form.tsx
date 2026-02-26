@@ -24,6 +24,8 @@ interface AppFormProps {
     github_url: string;
     required_xcode_version: string;
     min_ios_version: string;
+    allow_source_download: boolean;
+    allow_binary_download: boolean;
   };
 }
 
@@ -80,6 +82,12 @@ export function AppForm({ existingApp }: AppFormProps) {
   );
   const [minIosVersion, setMinIosVersion] = useState(
     existingApp?.min_ios_version || "18.0"
+  );
+  const [allowSourceDownload, setAllowSourceDownload] = useState(
+    existingApp?.allow_source_download ?? true
+  );
+  const [allowBinaryDownload, setAllowBinaryDownload] = useState(
+    existingApp?.allow_binary_download ?? true
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -157,6 +165,8 @@ export function AppForm({ existingApp }: AppFormProps) {
           github_url: githubUrl.trim() || null,
           required_xcode_version: distributionType === "source_code" ? requiredXcodeVersion.trim() || null : null,
           min_ios_version: distributionType === "source_code" ? minIosVersion : null,
+          allow_source_download: allowSourceDownload,
+          allow_binary_download: allowBinaryDownload,
         }),
       });
 
@@ -542,7 +552,7 @@ export function AppForm({ existingApp }: AppFormProps) {
       </div>
 
       {/* Featured */}
-      <div style={{ marginBottom: "2rem" }}>
+      <div style={{ marginBottom: "1.5rem" }}>
         <label
           style={{
             display: "flex",
@@ -595,6 +605,75 @@ export function AppForm({ existingApp }: AppFormProps) {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Download Permissions */}
+      <div style={{ marginBottom: "2rem", padding: "1rem", border: "1px solid var(--border)", background: "rgba(255,255,255,0.02)" }}>
+        <label className="settings-label" style={{ marginBottom: "1rem", display: "block" }}>
+          DOWNLOAD PERMISSIONS
+        </label>
+        
+        <div style={{ marginBottom: "1rem" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              cursor: "crosshair",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={allowSourceDownload}
+              onChange={(e) => setAllowSourceDownload(e.target.checked)}
+              style={{ width: "1.25rem", height: "1.25rem" }}
+            />
+            <span style={{ fontSize: "0.85rem" }}>
+              ALLOW SOURCE CODE DOWNLOAD
+            </span>
+          </label>
+          <p
+            style={{
+              fontSize: "0.7rem",
+              color: "var(--gray)",
+              marginTop: "0.25rem",
+              marginLeft: "2rem",
+            }}
+          >
+            Users can download the Xcode project / source code
+          </p>
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              cursor: "crosshair",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={allowBinaryDownload}
+              onChange={(e) => setAllowBinaryDownload(e.target.checked)}
+              style={{ width: "1.25rem", height: "1.25rem" }}
+            />
+            <span style={{ fontSize: "0.85rem" }}>
+              ALLOW COMPILED APP DOWNLOAD
+            </span>
+          </label>
+          <p
+            style={{
+              fontSize: "0.7rem",
+              color: "var(--gray)",
+              marginTop: "0.25rem",
+              marginLeft: "2rem",
+            }}
+          >
+            Users can download the compiled app (.dmg, .zip)
+          </p>
+        </div>
       </div>
 
       {/* Submit */}

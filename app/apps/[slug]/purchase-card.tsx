@@ -14,6 +14,8 @@ interface PurchaseCardProps {
   iosAppStoreUrl?: string | null;
   iosAppStoreLabel?: string;
   distributionType?: string;
+  allowSourceDownload?: boolean;
+  allowBinaryDownload?: boolean;
 }
 
 interface DiscountResult {
@@ -38,8 +40,11 @@ export function PurchaseCard({
   iosAppStoreUrl = null,
   iosAppStoreLabel = "VIEW ON APP STORE",
   distributionType = "binary",
+  allowSourceDownload = true,
+  allowBinaryDownload = true,
 }: PurchaseCardProps) {
   const isSourceCode = distributionType === "source_code";
+  const canDownload = isSourceCode ? allowSourceDownload : allowBinaryDownload;
   const [price, setPrice] = useState(
     suggestedPriceCents ? (suggestedPriceCents / 100).toFixed(2) : "0.00"
   );
@@ -216,18 +221,28 @@ export function PurchaseCard({
           ✓ Owned
         </div>
 
-        <a
-          href="/dashboard"
-          className="purchase-card__btn"
-          style={{ display: "block", textAlign: "center", textDecoration: "none" }}
-        >
-          ↓ GO TO DASHBOARD
-        </a>
-        <p className="purchase-card__note">
-          {isSourceCode
-            ? "Download the source code from your dashboard."
-            : "Download your app from your dashboard."}
-        </p>
+        {canDownload ? (
+          <>
+            <a
+              href="/dashboard"
+              className="purchase-card__btn"
+              style={{ display: "block", textAlign: "center", textDecoration: "none" }}
+            >
+              ↓ GO TO DASHBOARD
+            </a>
+            <p className="purchase-card__note">
+              {isSourceCode
+                ? "Download the source code from your dashboard."
+                : "Download your app from your dashboard."}
+            </p>
+          </>
+        ) : (
+          <p className="purchase-card__note" style={{ color: "var(--gray)" }}>
+            {isSourceCode
+              ? "Source code download is currently unavailable."
+              : "App download is currently unavailable."}
+          </p>
+        )}
 
         {iosAppStoreUrl && (
           <a

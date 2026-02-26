@@ -92,6 +92,8 @@ export async function POST(request: NextRequest) {
       github_url,
       required_xcode_version,
       min_ios_version,
+      allow_source_download,
+      allow_binary_download,
     } = body;
 
     // Validate
@@ -142,8 +144,8 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     await env.DB.prepare(
-      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, is_featured, featured_order, custom_page_config, distribution_type, build_instructions, github_url, required_xcode_version, min_ios_version, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, is_featured, featured_order, custom_page_config, distribution_type, build_instructions, github_url, required_xcode_version, min_ios_version, allow_source_download, allow_binary_download, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         appId,
@@ -165,6 +167,8 @@ export async function POST(request: NextRequest) {
         github_url || null,
         required_xcode_version || null,
         min_ios_version || null,
+        allow_source_download !== false ? 1 : 0,
+        allow_binary_download !== false ? 1 : 0,
         now,
         now
       )

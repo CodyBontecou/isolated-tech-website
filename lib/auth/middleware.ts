@@ -8,7 +8,8 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createAuth } from "@/lib/auth";
-import { getEnv, type Env } from "@/lib/env";
+import { getEnv } from "@/lib/cloudflare-context";
+import type { Env } from "@/lib/env";
 
 export interface User {
   id: string;
