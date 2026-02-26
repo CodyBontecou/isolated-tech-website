@@ -37,7 +37,7 @@ export function PurchaseCard({
   isAuthenticated = false,
   hasPurchased = false,
   iosAppStoreUrl = null,
-  iosAppStoreLabel = "VIEW ON APP STORE",
+  iosAppStoreLabel = "DOWNLOAD ON APP STORE (iOS)",
   hasMacOS = false,
   hasIOS = false,
 }: PurchaseCardProps) {

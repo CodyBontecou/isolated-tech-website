@@ -194,7 +194,7 @@ export async function PUT(
     }
 
     if (page_config !== undefined) {
-      updates.push("page_config = ?");
+      updates.push("custom_page_config = ?");
       values.push(page_config ? JSON.stringify(page_config) : null);
     }
 

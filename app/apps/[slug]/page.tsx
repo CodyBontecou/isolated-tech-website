@@ -335,7 +335,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
   const pageConfig = getPageConfig(app.custom_page_config);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
   const iosAppStoreUrl = pageConfig?.ios_app_store_url?.trim() || null;
-  const iosAppStoreLabel = pageConfig?.ios_app_store_label?.trim() || "VIEW ON APP STORE";
+  const iosAppStoreLabel = pageConfig?.ios_app_store_label?.trim() || "DOWNLOAD ON APP STORE (iOS)";
   const hasMacOS = platforms.includes("macos");
   const hasIOS = platforms.includes("ios");
 

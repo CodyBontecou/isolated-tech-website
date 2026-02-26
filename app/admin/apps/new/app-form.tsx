@@ -90,6 +90,14 @@ export function AppForm({ existingApp }: AppFormProps) {
     existingApp?.allow_binary_download ?? true
   );
 
+  // iOS App Store URL (from page_config)
+  const [iosAppStoreUrl, setIosAppStoreUrl] = useState(
+    (existingApp?.page_config as { ios_app_store_url?: string })?.ios_app_store_url || ""
+  );
+  const [iosAppStoreLabel, setIosAppStoreLabel] = useState(
+    (existingApp?.page_config as { ios_app_store_label?: string })?.ios_app_store_label || ""
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -143,6 +151,15 @@ export function AppForm({ existingApp }: AppFormProps) {
         : "/api/admin/apps";
       const method = isEditing ? "PUT" : "POST";
 
+      // Build page_config object for iOS App Store settings
+      const pageConfig: Record<string, string> = {};
+      if (iosAppStoreUrl.trim()) {
+        pageConfig.ios_app_store_url = iosAppStoreUrl.trim();
+      }
+      if (iosAppStoreLabel.trim()) {
+        pageConfig.ios_app_store_label = iosAppStoreLabel.trim();
+      }
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -160,6 +177,7 @@ export function AppForm({ existingApp }: AppFormProps) {
           is_published: isPublished,
           is_featured: isFeatured,
           featured_order: parseInt(featuredOrder || "0", 10),
+          page_config: Object.keys(pageConfig).length > 0 ? pageConfig : null,
           distribution_type: distributionType,
           build_instructions: distributionType === "source_code" ? buildInstructions.trim() : null,
           github_url: githubUrl.trim() || null,
@@ -606,6 +624,55 @@ export function AppForm({ existingApp }: AppFormProps) {
           </div>
         )}
       </div>
+
+      {/* iOS App Store Link (shown when iOS platform selected) */}
+      {platforms.includes("ios") && (
+        <div style={{ marginBottom: "2rem", padding: "1rem", border: "1px solid var(--border)", background: "rgba(255,255,255,0.02)" }}>
+          <label className="settings-label" style={{ marginBottom: "1rem", display: "block" }}>
+            iOS APP STORE
+          </label>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label className="settings-label">APP STORE URL</label>
+            <input
+              type="url"
+              className="settings-input"
+              value={iosAppStoreUrl}
+              onChange={(e) => setIosAppStoreUrl(e.target.value)}
+              placeholder="https://apps.apple.com/app/..."
+            />
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              Link to the iOS app on the App Store
+            </p>
+          </div>
+
+          <div>
+            <label className="settings-label">BUTTON LABEL (OPTIONAL)</label>
+            <input
+              type="text"
+              className="settings-input"
+              value={iosAppStoreLabel}
+              onChange={(e) => setIosAppStoreLabel(e.target.value)}
+              placeholder="DOWNLOAD ON APP STORE (iOS)"
+            />
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              Custom button text (default: &quot;DOWNLOAD ON APP STORE (iOS)&quot;)
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Download Permissions */}
       <div style={{ marginBottom: "2rem", padding: "1rem", border: "1px solid var(--border)", background: "rgba(255,255,255,0.02)" }}>
