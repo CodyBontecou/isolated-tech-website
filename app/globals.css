@@ -1648,6 +1648,7 @@ img {
 
 .purchase-card__note {
   margin-top: 1.5rem;
+  margin-bottom: 1rem;
   padding-top: 1.5rem;
   border-top: var(--border);
   font-size: 0.7rem;
