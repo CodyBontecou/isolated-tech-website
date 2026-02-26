@@ -1624,7 +1624,7 @@ img {
 
 .purchase-card__input {
   flex: 1;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   font-family: var(--font-mono);
   font-size: 1.2rem;
   font-weight: 700;
@@ -1632,6 +1632,13 @@ img {
   color: var(--white);
   border: var(--border);
   outline: none;
+  -moz-appearance: textfield;
+}
+
+.purchase-card__input::-webkit-outer-spin-button,
+.purchase-card__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .purchase-card__input:focus {
