@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries, queryOne } from "@/lib/db";
+import { SignOutButton } from "@/components/sign-out-button";
 
 interface App {
   id: string;
@@ -134,7 +135,7 @@ export default async function ChangelogPage({
               {/* Use <a> for auth routes - vinext RSC fetch doesn't send cookies */}
               {user.isAdmin && <a href="/admin">ADMIN</a>}
               <a href="/dashboard">DASHBOARD</a>
-              <a href="/api/auth/logout">SIGN OUT</a>
+              <SignOutButton />
             </>
           ) : (
             <a href="/auth/login">SIGN IN</a>

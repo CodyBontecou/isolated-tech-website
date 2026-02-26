@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export const metadata: Metadata = {
   title: "Apps — ISOLATED.TECH",
@@ -158,7 +159,7 @@ export default async function AppsPage() {
               {/* Use <a> for auth routes - vinext RSC fetch doesn't send cookies */}
               {user.isAdmin && <a href="/admin">ADMIN</a>}
               <a href="/dashboard">DASHBOARD</a>
-              <a href="/api/auth/logout">SIGN OUT</a>
+              <SignOutButton />
             </>
           ) : (
             <a href="/auth/login">SIGN IN</a>

@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { SettingsForm } from "./settings-form";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export const metadata: Metadata = {
   title: "Settings — ISOLATED.TECH",
@@ -72,7 +73,7 @@ export default function SettingsPage() {
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
           {user.isAdmin && <Link href="/admin">ADMIN</Link>}
-          <Link href="/api/auth/logout">SIGN OUT</Link>
+          <SignOutButton />
         </div>
       </nav>
 

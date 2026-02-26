@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { DeleteReviewButton } from "./delete-button";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export const metadata: Metadata = {
   title: "My Reviews — ISOLATED.TECH",
@@ -186,7 +187,7 @@ export default async function ReviewsPage({
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
           {user.isAdmin && <Link href="/admin">ADMIN</Link>}
-          <Link href="/api/auth/logout">SIGN OUT</Link>
+          <SignOutButton />
         </div>
       </nav>
 

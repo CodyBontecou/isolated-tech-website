@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export default async function AdminLayout({
   children,
@@ -24,7 +25,7 @@ export default async function AdminLayout({
             ADMIN
           </Link>
           <Link href="/apps">STORE</Link>
-          <Link href="/api/auth/logout">SIGN OUT</Link>
+          <SignOutButton />
         </div>
       </nav>
 

@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth/middleware";
 import { ViewTransitionLink } from "./components/view-transition-link";
 import { HeroAppLink } from "./components/hero-app-link";
 import { queries } from "@/lib/db";
+import { SignOutButton } from "@/components/sign-out-button";
 
 interface App {
   id: string;
@@ -291,7 +292,7 @@ export default async function HomePage() {
                   during client-side navigation, causing auth to fail. */}
               {user.isAdmin && <a href="/admin">ADMIN</a>}
               <a href="/dashboard">DASHBOARD</a>
-              <a href="/api/auth/logout">SIGN OUT</a>
+              <SignOutButton />
             </>
           ) : (
             <a href="/auth/login">SIGN IN</a>

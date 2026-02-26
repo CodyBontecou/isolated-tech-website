@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ReviewForm } from "./review-form";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export const metadata: Metadata = {
   title: "Write a Review — ISOLATED.TECH",
@@ -85,7 +86,7 @@ export default async function NewReviewPage({
           <div className="nav__links">
             <Link href="/apps">APPS</Link>
             {user.isAdmin && <Link href="/admin">ADMIN</Link>}
-            <Link href="/api/auth/logout">SIGN OUT</Link>
+            <SignOutButton />
           </div>
         </nav>
 
@@ -137,7 +138,7 @@ export default async function NewReviewPage({
           <div className="nav__links">
             <Link href="/apps">APPS</Link>
             {user.isAdmin && <Link href="/admin">ADMIN</Link>}
-            <Link href="/api/auth/logout">SIGN OUT</Link>
+            <SignOutButton />
           </div>
         </nav>
 
@@ -189,7 +190,7 @@ export default async function NewReviewPage({
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
           {user.isAdmin && <Link href="/admin">ADMIN</Link>}
-          <Link href="/api/auth/logout">SIGN OUT</Link>
+          <SignOutButton />
         </div>
       </nav>
 
