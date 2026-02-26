@@ -6,13 +6,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { getSessionIdFromCookies, validateSession, updateUser } from "@/lib/auth";
+import { getSessionFromHeaders } from "@/lib/auth/middleware";
 
 export async function PUT(request: NextRequest) {
   try {
     const env = getEnv();
 
-    if (!env?.DB || !env?.AUTH_KV) {
+    if (!env?.DB) {
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }
@@ -20,14 +20,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get current user
-    const cookieHeader = request.headers.get("cookie");
-    const sessionId = getSessionIdFromCookies(cookieHeader);
-
-    if (!sessionId) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const { user } = await validateSession(sessionId, env);
+    const { user } = await getSessionFromHeaders(request.headers, env);
 
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -42,12 +35,22 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Invalid preference value" }, { status: 400 });
     }
 
-    // Update user preferences
-    await updateUser(
-      user.id,
-      { newsletterSubscribed: newsletter_subscribed },
-      env
-    );
+    const now = new Date().toISOString();
+    const newsletterValue = newsletter_subscribed ? 1 : 0;
+
+    // Update user in Better Auth table
+    await env.DB.prepare(
+      'UPDATE "user" SET "newsletterSubscribed" = ?, "updatedAt" = ? WHERE id = ?'
+    )
+      .bind(newsletterValue, now, user.id)
+      .run();
+
+    // Also update old users table for compatibility
+    await env.DB.prepare(
+      "UPDATE users SET newsletter_subscribed = ?, updated_at = ? WHERE id = ?"
+    )
+      .bind(newsletterValue, now, user.id)
+      .run();
 
     return NextResponse.json({
       success: true,

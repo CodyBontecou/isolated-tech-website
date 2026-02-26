@@ -41,6 +41,7 @@
   ]
 
   // Secrets (set via wrangler secret put):
+  // - BETTER_AUTH_SECRET (32+ char secret for Better Auth)
   // - STRIPE_SECRET_KEY
   // - STRIPE_WEBHOOK_SECRET
   // - AWS_ACCESS_KEY_ID

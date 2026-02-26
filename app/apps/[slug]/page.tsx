@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PurchaseCard } from "./purchase-card";
 import { MediaShowcase, MediaItem } from "./media-showcase";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
 
@@ -178,6 +178,11 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
     queries.getLatestUpdates(app.id, env || undefined),
   ]);
 
+  // Check if user already owns this app
+  const hasPurchased = user && env
+    ? !!(await queries.getPurchase(user.id, app.id, env))
+    : false;
+
   const platforms = getPlatforms(app.platforms);
   const pageConfig = getPageConfig(app.custom_page_config);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
@@ -264,34 +269,17 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
             </div>
             <h1 className="app-page__name">{app.name}</h1>
             {app.tagline && <p className="app-page__tagline">{app.tagline}</p>}
-
-            {latestUpdates.length > 0 && (
-              <div className="app-updates">
-                <span className="app-updates__label">LATEST UPDATE</span>
-                <div className="app-updates__list">
-                  {latestUpdates.map((u) => (
-                    <div key={u.id} className="app-updates__item">
-                      <span className="app-updates__platform">
-                        {u.platform === "ios" ? "iOS" : "macOS"}
-                      </span>
-                      <span className="app-updates__version">v{u.version}</span>
-                      <span className="app-updates__dot">·</span>
-                      <span className="app-updates__date">
-                        {new Date(u.released_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <Link href={`/apps/${app.slug}/changelog`} className="app-updates__changelog-link">
-                  VIEW CHANGELOG →
-                </Link>
-              </div>
-            )}
           </div>
+          {latestUpdates.length > 0 && (
+            <Link href={`/apps/${app.slug}/changelog`} className="app-version-pill">
+              {latestUpdates.map((u, i) => (
+                <span key={u.id} className="app-version-pill__item">
+                  {i > 0 && <span className="app-version-pill__sep">·</span>}
+                  <span className="app-version-pill__version">v{u.version}</span>
+                </span>
+              ))}
+            </Link>
+          )}
         </header>
 
         <div className="app-page__content">
@@ -363,6 +351,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
               suggestedPriceCents={app.suggested_price_cents}
               isFree={isFree}
               isAuthenticated={!!user}
+              hasPurchased={hasPurchased}
               iosAppStoreUrl={iosAppStoreUrl}
               iosAppStoreLabel={iosAppStoreLabel}
               distributionType={app.distribution_type}

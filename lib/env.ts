@@ -40,6 +40,9 @@ export interface Env {
 
   // Admin API Key (for CLI access)
   ADMIN_API_KEY?: string;
+
+  // Better Auth secret
+  BETTER_AUTH_SECRET: string;
 }
 
 /**

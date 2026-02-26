@@ -6,7 +6,7 @@
 
 import { NextRequest } from "next/server";
 import type { Env } from "@/lib/env";
-import { getSessionIdFromCookies, validateSession, type User } from "@/lib/auth";
+import { getSessionFromHeaders, type User } from "@/lib/auth/middleware";
 
 /**
  * Virtual admin user for API key access
@@ -15,11 +15,11 @@ const API_KEY_ADMIN_USER: User = {
   id: "api-key-admin",
   email: "api@isolated.tech",
   name: "API Key Admin",
-  avatarUrl: null,
+  image: null,
   isAdmin: true,
   newsletterSubscribed: false,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 /**
@@ -41,15 +41,9 @@ export async function requireAdmin(
     return null;
   }
 
-  // 2. Fall back to session-based auth
-  const cookieHeader = request.headers.get("cookie");
-  const sessionId = getSessionIdFromCookies(cookieHeader);
-
-  if (!sessionId) {
-    return null;
-  }
-
-  const { user } = await validateSession(sessionId, env);
+  // 2. Fall back to session-based auth using Better Auth
+  const { user } = await getSessionFromHeaders(request.headers, env);
+  
   if (!user || !user.isAdmin) {
     return null;
   }

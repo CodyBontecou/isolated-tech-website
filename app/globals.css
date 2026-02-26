@@ -1467,7 +1467,8 @@ img {
 
 .app-page__header {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
   gap: 2rem;
   margin-bottom: 3rem;
   padding-bottom: 2rem;
@@ -3889,6 +3890,51 @@ img {
 
 .app-updates__changelog-link:hover {
   color: var(--white);
+}
+
+/* Version pill - compact version display */
+.app-version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--gray);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+  margin-top: 0.5rem;
+}
+
+.app-version-pill:hover {
+  border-color: var(--accent);
+  color: var(--white);
+}
+
+.app-version-pill__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.app-version-pill__sep {
+  color: #444;
+}
+
+.app-version-pill__version {
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .app-version-pill {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 0;
+  }
 }
 
 /* ============================================================

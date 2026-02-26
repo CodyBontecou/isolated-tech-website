@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 
 export default async function AdminLayout({

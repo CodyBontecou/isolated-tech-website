@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { getSessionIdFromCookies, validateSession } from "@/lib/auth";
+import { getSessionFromHeaders } from "@/lib/auth/middleware";
 
 interface AppVersion {
   id: string;
@@ -38,17 +38,7 @@ export async function GET(
     }
 
     // 1. Authenticate user
-    const cookieHeader = request.headers.get("cookie");
-    const sessionId = getSessionIdFromCookies(cookieHeader);
-
-    if (!sessionId) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
-
-    const { user } = await validateSession(sessionId, env);
+    const { user } = await getSessionFromHeaders(request.headers, env);
 
     if (!user) {
       return NextResponse.json(

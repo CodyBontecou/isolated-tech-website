@@ -7,18 +7,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { getSessionIdFromCookies, validateSession } from "@/lib/auth";
+import { getSessionFromHeaders } from "@/lib/auth/middleware";
 import { nanoid } from "@/lib/db";
 
 async function requireAdmin(request: NextRequest, env: Env) {
-  const cookieHeader = request.headers.get("cookie");
-  const sessionId = getSessionIdFromCookies(cookieHeader);
-
-  if (!sessionId) return null;
-
-  const { user } = await validateSession(sessionId, env);
+  const { user } = await getSessionFromHeaders(request.headers, env);
   if (!user || !user.isAdmin) return null;
-
   return user;
 }
 
@@ -33,7 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     const env = getEnv();
 
-    if (!env?.DB || !env?.AUTH_KV) {
+    if (!env?.DB) {
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }

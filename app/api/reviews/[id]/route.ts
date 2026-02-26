@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { getSessionIdFromCookies, validateSession } from "@/lib/auth";
+import { getSessionFromHeaders } from "@/lib/auth/middleware";
 
 export async function PUT(
   request: NextRequest,
@@ -14,7 +14,7 @@ export async function PUT(
   try {
     const env = getEnv();
 
-    if (!env?.DB || !env?.AUTH_KV) {
+    if (!env?.DB) {
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }
@@ -22,14 +22,7 @@ export async function PUT(
     }
 
     // Get current user
-    const cookieHeader = request.headers.get("cookie");
-    const sessionId = getSessionIdFromCookies(cookieHeader);
-
-    if (!sessionId) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const { user } = await validateSession(sessionId, env);
+    const { user } = await getSessionFromHeaders(request.headers, env);
 
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -113,7 +106,7 @@ export async function DELETE(
   try {
     const env = getEnv();
 
-    if (!env?.DB || !env?.AUTH_KV) {
+    if (!env?.DB) {
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }
@@ -121,14 +114,7 @@ export async function DELETE(
     }
 
     // Get current user
-    const cookieHeader = request.headers.get("cookie");
-    const sessionId = getSessionIdFromCookies(cookieHeader);
-
-    if (!sessionId) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const { user } = await validateSession(sessionId, env);
+    const { user } = await getSessionFromHeaders(request.headers, env);
 
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

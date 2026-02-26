@@ -8,6 +8,7 @@ import type { Env } from "./env";
 /**
  * Create a Stripe client instance
  * Note: Must be created per-request with the env secret
+ * Uses Fetch HTTP client for Cloudflare Workers compatibility
  */
 export function createStripeClient(env: Env): Stripe | null {
   const secretKey = (env as unknown as { STRIPE_SECRET_KEY?: string }).STRIPE_SECRET_KEY;
@@ -18,8 +19,9 @@ export function createStripeClient(env: Env): Stripe | null {
   }
 
   return new Stripe(secretKey, {
-    apiVersion: "2023-10-16",
     typescript: true,
+    // Use fetch-based HTTP client for Cloudflare Workers compatibility
+    httpClient: Stripe.createFetchHttpClient(),
   });
 }
 

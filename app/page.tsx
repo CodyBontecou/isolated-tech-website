@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getEnv } from "@/lib/cloudflare-context";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth/middleware";
 import { ViewTransitionLink } from "./components/view-transition-link";
 import { HeroAppLink } from "./components/hero-app-link";
 

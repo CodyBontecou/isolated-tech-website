@@ -6,18 +6,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import {
-  getSessionIdFromCookies,
-  validateSession,
-  invalidateAllUserSessions,
-  createBlankSessionCookie,
-} from "@/lib/auth";
+import { getSessionFromHeaders } from "@/lib/auth/middleware";
 
 export async function DELETE(request: NextRequest) {
   try {
     const env = getEnv();
 
-    if (!env?.DB || !env?.AUTH_KV) {
+    if (!env?.DB) {
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }
@@ -25,14 +20,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get current user
-    const cookieHeader = request.headers.get("cookie");
-    const sessionId = getSessionIdFromCookies(cookieHeader);
-
-    if (!sessionId) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const { user } = await validateSession(sessionId, env);
+    const { user } = await getSessionFromHeaders(request.headers, env);
 
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -46,41 +34,51 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Invalidate all sessions first
-    await invalidateAllUserSessions(user.id, env);
+    // Delete Better Auth sessions for this user
+    await env.DB.prepare('DELETE FROM "session" WHERE "userId" = ?')
+      .bind(user.id)
+      .run();
 
-    // Delete in order (respect foreign key constraints):
-    // 1. Reviews
+    // Delete Better Auth accounts for this user
+    await env.DB.prepare('DELETE FROM "account" WHERE "userId" = ?')
+      .bind(user.id)
+      .run();
+
+    // Delete reviews
     await env.DB.prepare("DELETE FROM reviews WHERE user_id = ?")
       .bind(user.id)
       .run();
 
-    // 2. OAuth accounts
+    // Delete from old oauth_accounts table (if still exists)
     await env.DB.prepare("DELETE FROM oauth_accounts WHERE user_id = ?")
       .bind(user.id)
       .run();
 
-    // 3. Email log entries (optional - keep for audit trail)
-    // await env.DB.prepare("DELETE FROM email_log WHERE user_id = ?")
-    //   .bind(user.id)
-    //   .run();
-
-    // 4. Anonymize purchases (keep for tax/legal records)
-    // We keep the purchase but remove the user association
+    // Anonymize purchases (keep for tax/legal records)
     await env.DB.prepare(
       "UPDATE purchases SET user_id = 'deleted_user' WHERE user_id = ?"
     )
       .bind(user.id)
       .run();
 
-    // 5. Delete the user
+    // Delete from old users table
     await env.DB.prepare("DELETE FROM users WHERE id = ?")
       .bind(user.id)
       .run();
 
-    // Clear session cookie
+    // Delete the Better Auth user
+    await env.DB.prepare('DELETE FROM "user" WHERE id = ?')
+      .bind(user.id)
+      .run();
+
+    // Create response with cleared cookie
     const response = NextResponse.json({ success: true });
-    response.headers.set("Set-Cookie", createBlankSessionCookie());
+    
+    // Clear the session cookie
+    response.headers.set(
+      "Set-Cookie",
+      "isolated.session_token=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0"
+    );
 
     return response;
   } catch (error) {

@@ -1,6 +1,6 @@
 /**
  * Email utilities for ISOLATED.TECH App Store
- * Uses AWS SES for sending emails
+ * Uses AWS SES for sending emails with proper Signature V4 authentication
  */
 
 import type { Env } from "./env";
@@ -13,56 +13,169 @@ interface EmailOptions {
   text: string;
 }
 
-interface SESCredentials {
-  AWS_SES_ACCESS_KEY?: string;
-  AWS_SES_SECRET_KEY?: string;
-  AWS_SES_REGION?: string;
-}
-
 const FROM_EMAIL = "ISOLATED.TECH <noreply@isolated.tech>";
+const SES_REGION = "us-east-1";
 
 /**
- * Send an email via AWS SES
+ * Create HMAC-SHA256 signature using Web Crypto API
+ */
+async function hmacSha256(key: ArrayBuffer | Uint8Array, message: string): Promise<ArrayBuffer> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    key,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  return crypto.subtle.sign("HMAC", cryptoKey, new TextEncoder().encode(message));
+}
+
+/**
+ * Create SHA-256 hash
+ */
+async function sha256(message: string): Promise<string> {
+  const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Convert ArrayBuffer to hex string
+ */
+function toHex(buffer: ArrayBuffer): string {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Get AWS Signature V4 signing key
+ */
+async function getSigningKey(
+  secretKey: string,
+  dateStamp: string,
+  region: string,
+  service: string
+): Promise<ArrayBuffer> {
+  const kDate = await hmacSha256(new TextEncoder().encode("AWS4" + secretKey), dateStamp);
+  const kRegion = await hmacSha256(kDate, region);
+  const kService = await hmacSha256(kRegion, service);
+  return hmacSha256(kService, "aws4_request");
+}
+
+/**
+ * Send an email via AWS SES using Signature V4
  */
 export async function sendEmail(
   options: EmailOptions,
   env: Env
 ): Promise<{ messageId: string } | null> {
-  const credentials = env as unknown as SESCredentials;
+  const accessKeyId = (env as unknown as { AWS_ACCESS_KEY_ID?: string }).AWS_ACCESS_KEY_ID;
+  const secretAccessKey = (env as unknown as { AWS_SECRET_ACCESS_KEY?: string }).AWS_SECRET_ACCESS_KEY;
 
-  if (!credentials.AWS_SES_ACCESS_KEY || !credentials.AWS_SES_SECRET_KEY) {
-    console.log("Email sending skipped (SES not configured):", options.subject);
+  if (!accessKeyId || !secretAccessKey) {
+    console.error("Email sending skipped - AWS credentials not configured");
+    console.error("Missing:", !accessKeyId ? "AWS_ACCESS_KEY_ID" : "", !secretAccessKey ? "AWS_SECRET_ACCESS_KEY" : "");
     return null;
   }
 
-  const region = credentials.AWS_SES_REGION || "us-east-1";
+  const service = "ses";
+  const host = `email.${SES_REGION}.amazonaws.com`;
+  const endpoint = `https://${host}`;
+
+  // Build the request body
+  const params = new URLSearchParams({
+    Action: "SendEmail",
+    Source: FROM_EMAIL,
+    "Destination.ToAddresses.member.1": options.to,
+    "Message.Subject.Data": options.subject,
+    "Message.Subject.Charset": "UTF-8",
+    "Message.Body.Html.Data": options.html,
+    "Message.Body.Html.Charset": "UTF-8",
+    "Message.Body.Text.Data": options.text,
+    "Message.Body.Text.Charset": "UTF-8",
+    Version: "2010-12-01",
+  });
+
+  const body = params.toString();
+  const method = "POST";
+  const contentType = "application/x-www-form-urlencoded; charset=utf-8";
+
+  // Create date strings
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const dateStamp = amzDate.slice(0, 8);
+
+  // Create canonical request
+  const canonicalUri = "/";
+  const canonicalQuerystring = "";
+  const payloadHash = await sha256(body);
+  
+  const canonicalHeaders = [
+    `content-type:${contentType}`,
+    `host:${host}`,
+    `x-amz-date:${amzDate}`,
+  ].join("\n") + "\n";
+  
+  const signedHeaders = "content-type;host;x-amz-date";
+
+  const canonicalRequest = [
+    method,
+    canonicalUri,
+    canonicalQuerystring,
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+
+  // Create string to sign
+  const algorithm = "AWS4-HMAC-SHA256";
+  const credentialScope = `${dateStamp}/${SES_REGION}/${service}/aws4_request`;
+  const stringToSign = [
+    algorithm,
+    amzDate,
+    credentialScope,
+    await sha256(canonicalRequest),
+  ].join("\n");
+
+  // Create signature
+  const signingKey = await getSigningKey(secretAccessKey, dateStamp, SES_REGION, service);
+  const signature = toHex(await hmacSha256(signingKey, stringToSign));
+
+  // Create authorization header
+  const authorizationHeader = [
+    `${algorithm} Credential=${accessKeyId}/${credentialScope}`,
+    `SignedHeaders=${signedHeaders}`,
+    `Signature=${signature}`,
+  ].join(", ");
 
   try {
-    // SES API call using fetch (no SDK needed for basic sending)
-    const endpoint = `https://email.${region}.amazonaws.com`;
-    const action = "SendEmail";
-    const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, "");
-
-    const params = new URLSearchParams({
-      Action: action,
-      "Source": FROM_EMAIL,
-      "Destination.ToAddresses.member.1": options.to,
-      "Message.Subject.Data": options.subject,
-      "Message.Subject.Charset": "UTF-8",
-      "Message.Body.Html.Data": options.html,
-      "Message.Body.Html.Charset": "UTF-8",
-      "Message.Body.Text.Data": options.text,
-      "Message.Body.Text.Charset": "UTF-8",
-      Version: "2010-12-01",
+    console.log(`Sending email to ${options.to}: ${options.subject}`);
+    
+    const response = await fetch(endpoint, {
+      method,
+      headers: {
+        "Content-Type": contentType,
+        "X-Amz-Date": amzDate,
+        Authorization: authorizationHeader,
+      },
+      body,
     });
 
-    // AWS Signature V4 would be needed here for production
-    // For now, log and return mock
-    console.log(`Would send email to ${options.to}: ${options.subject}`);
+    const responseText = await response.text();
 
-    // In production, implement AWS Signature V4 or use @aws-sdk/client-ses
-    // Return mock message ID for logging
-    return { messageId: `mock_${nanoid()}` };
+    if (!response.ok) {
+      console.error("SES API error:", response.status, responseText);
+      return null;
+    }
+
+    // Parse message ID from XML response
+    const messageIdMatch = responseText.match(/<MessageId>([^<]+)<\/MessageId>/);
+    const messageId = messageIdMatch ? messageIdMatch[1] : `ses_${nanoid()}`;
+
+    console.log(`Email sent successfully. MessageId: ${messageId}`);
+    return { messageId };
   } catch (error) {
     console.error("Email send error:", error);
     return null;

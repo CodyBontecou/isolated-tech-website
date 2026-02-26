@@ -1,52 +1,89 @@
 /**
- * Auth middleware helpers for ISOLATED.TECH App Store
+ * Auth middleware helpers for ISOLATED.TECH
+ *
+ * Server-side utilities for checking authentication in
+ * Server Components and Route Handlers.
  */
 
-import { cookies } from "next/headers";
-import type { Env } from "@/lib/env";
-import {
-  SESSION_COOKIE_NAME,
-  validateSession,
-  type User,
-  type Session,
-} from "./session";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { createAuth } from "@/lib/auth";
+import { getEnv, type Env } from "@/lib/env";
+
+export interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  isAdmin: boolean;
+  newsletterSubscribed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Session {
+  id: string;
+  userId: string;
+  expiresAt: Date;
+}
+
+export interface SessionResult {
+  session: Session | null;
+  user: User | null;
+}
 
 /**
- * Get the current user from the session cookie
- * Call this in Server Components or Route Handlers
+ * Get the current session and user from request headers
+ * For use in API route handlers
  */
-export async function getCurrentUser(env: Env): Promise<User | null> {
+export async function getSessionFromHeaders(
+  requestHeaders: Headers,
+  env?: Env
+): Promise<SessionResult> {
   try {
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    const e = env || getEnv();
+    const auth = createAuth(e);
 
-    if (!sessionId) {
-      return null;
+    const session = await auth.api.getSession({
+      headers: requestHeaders,
+    });
+
+    if (!session) {
+      return { session: null, user: null };
     }
 
-    const { user } = await validateSession(sessionId, env);
-    return user;
+    return {
+      session: {
+        id: session.session.id,
+        userId: session.session.userId,
+        expiresAt: session.session.expiresAt,
+      },
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        image: session.user.image,
+        isAdmin: (session.user as Record<string, unknown>).isAdmin === true,
+        newsletterSubscribed:
+          (session.user as Record<string, unknown>).newsletterSubscribed !== false,
+        createdAt: session.user.createdAt,
+        updatedAt: session.user.updatedAt,
+      },
+    };
   } catch (error) {
-    console.error("Error getting current user:", error);
-    return null;
+    console.error("Error getting session from headers:", error);
+    return { session: null, user: null };
   }
 }
 
 /**
  * Get the current session and user
+ * For use in Server Components (uses next/headers)
  */
-export async function getCurrentSession(
-  env: Env
-): Promise<{ session: Session | null; user: User | null }> {
+export async function getCurrentSession(env?: Env): Promise<SessionResult> {
   try {
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-
-    if (!sessionId) {
-      return { session: null, user: null };
-    }
-
-    return validateSession(sessionId, env);
+    const requestHeaders = await headers();
+    return getSessionFromHeaders(requestHeaders, env);
   } catch (error) {
     console.error("Error getting current session:", error);
     return { session: null, user: null };
@@ -54,14 +91,20 @@ export async function getCurrentSession(
 }
 
 /**
- * Require authentication - throws redirect if not authenticated
+ * Get the current user (convenience wrapper)
  */
-export async function requireAuth(env: Env): Promise<User> {
+export async function getCurrentUser(env?: Env): Promise<User | null> {
+  const { user } = await getCurrentSession(env);
+  return user;
+}
+
+/**
+ * Require authentication - redirects to login if not authenticated
+ */
+export async function requireAuth(env?: Env): Promise<User> {
   const user = await getCurrentUser(env);
 
   if (!user) {
-    // Import redirect dynamically to avoid issues
-    const { redirect } = await import("next/navigation");
     redirect("/auth/login");
   }
 
@@ -71,11 +114,10 @@ export async function requireAuth(env: Env): Promise<User> {
 /**
  * Require admin authentication
  */
-export async function requireAdmin(env: Env): Promise<User> {
+export async function requireAdmin(env?: Env): Promise<User> {
   const user = await requireAuth(env);
 
   if (!user.isAdmin) {
-    const { redirect } = await import("next/navigation");
     redirect("/dashboard");
   }
 
@@ -85,7 +127,18 @@ export async function requireAdmin(env: Env): Promise<User> {
 /**
  * Check if user is authenticated (for conditional rendering)
  */
-export async function isAuthenticated(env: Env): Promise<boolean> {
+export async function isAuthenticated(env?: Env): Promise<boolean> {
   const user = await getCurrentUser(env);
   return user !== null;
+}
+
+/**
+ * Validate session from request (for API routes)
+ * This is a compatibility wrapper for existing code
+ */
+export async function validateSessionFromRequest(
+  request: Request,
+  env?: Env
+): Promise<SessionResult> {
+  return getSessionFromHeaders(request.headers, env);
 }

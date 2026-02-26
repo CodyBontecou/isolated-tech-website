@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { getSessionIdFromCookies, validateSession } from "@/lib/auth";
+import { getSessionFromHeaders } from "@/lib/auth/middleware";
 import { createStripeClient, getBaseUrl } from "@/lib/stripe";
 import { nanoid } from "@/lib/db";
 import { sendEmail, generateSourceCodeEmail } from "@/lib/email";
@@ -53,17 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Authenticate user
-    const cookieHeader = request.headers.get("cookie");
-    const sessionId = getSessionIdFromCookies(cookieHeader);
-
-    if (!sessionId) {
-      return NextResponse.json(
-        { error: "Please sign in to purchase" },
-        { status: 401 }
-      );
-    }
-
-    const { user } = await validateSession(sessionId, env);
+    const { user } = await getSessionFromHeaders(request.headers, env);
 
     if (!user) {
       return NextResponse.json(
@@ -232,14 +222,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe checkout session
+    console.log("Creating Stripe client...");
     const stripe = createStripeClient(env);
 
     if (!stripe) {
+      console.error("Stripe client is null - STRIPE_SECRET_KEY not configured");
       return NextResponse.json(
         { error: "Payment processing not configured" },
         { status: 503 }
       );
     }
+
+    console.log("Stripe client created, creating checkout session...");
+    console.log("Session params:", {
+      user_email: user.email,
+      app_name: app.name,
+      finalPriceCents,
+      baseUrl,
+    });
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -280,8 +280,19 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Checkout error:", error);
+    // Log full error details for Stripe errors
+    if (error && typeof error === 'object') {
+      console.error("Error type:", error.constructor?.name);
+      console.error("Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    }
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { 
+        error: "Failed to create checkout session", 
+        details: errorMessage,
+        stack: errorStack,
+      },
       { status: 500 }
     );
   }

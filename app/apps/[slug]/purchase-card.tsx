@@ -10,6 +10,7 @@ interface PurchaseCardProps {
   suggestedPriceCents: number | null;
   isFree: boolean;
   isAuthenticated?: boolean;
+  hasPurchased?: boolean;
   iosAppStoreUrl?: string | null;
   iosAppStoreLabel?: string;
   distributionType?: string;
@@ -33,11 +34,13 @@ export function PurchaseCard({
   suggestedPriceCents,
   isFree,
   isAuthenticated = false,
+  hasPurchased = false,
   iosAppStoreUrl = null,
   iosAppStoreLabel = "VIEW ON APP STORE",
   distributionType = "binary",
 }: PurchaseCardProps) {
   const isSourceCode = distributionType === "source_code";
+  const [isRequestingDownload, setIsRequestingDownload] = useState(false);
   const [price, setPrice] = useState(
     suggestedPriceCents ? (suggestedPriceCents / 100).toFixed(2) : "0.00"
   );
@@ -204,6 +207,85 @@ export function PurchaseCard({
 
     void startCheckout(checkoutPriceCents, resumeDiscountCode);
   }, [appId, finalPriceCents, startCheckout]);
+
+  // Request a new download link for source code
+  const requestDownloadLink = async () => {
+    setIsRequestingDownload(true);
+    try {
+      const res = await fetch(`/api/download/${appId}/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to request download link");
+        return;
+      }
+
+      alert(data.message || "Check your email for the download link!");
+    } catch (error) {
+      console.error("Download request error:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsRequestingDownload(false);
+    }
+  };
+
+  // Show owned state - user has already purchased this app
+  if (hasPurchased) {
+    return (
+      <div className="purchase-card">
+        <div className="purchase-card__price-label">STATUS</div>
+        <div className="purchase-card__price" style={{ color: "#4ade80", marginBottom: "1rem" }}>
+          ✓ Owned
+        </div>
+
+        {isSourceCode ? (
+          <>
+            <p className="purchase-card__note" style={{ marginBottom: "1rem" }}>
+              You own this source code. Request a new download link below.
+            </p>
+            <button
+              className="purchase-card__btn"
+              onClick={requestDownloadLink}
+              disabled={isRequestingDownload}
+            >
+              {isRequestingDownload ? "SENDING..." : "↓ REQUEST DOWNLOAD LINK"}
+            </button>
+            <p className="purchase-card__note">
+              A one-time download link will be sent to your email.
+            </p>
+          </>
+        ) : (
+          <>
+            <a
+              href="/dashboard"
+              className="purchase-card__btn"
+              style={{ display: "block", textAlign: "center", textDecoration: "none" }}
+            >
+              ↓ GO TO DASHBOARD
+            </a>
+            <p className="purchase-card__note">
+              Download your app from your dashboard.
+            </p>
+          </>
+        )}
+
+        {iosAppStoreUrl && (
+          <a
+            href={iosAppStoreUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="purchase-card__btn purchase-card__btn--secondary"
+          >
+            {iosAppStoreLabel}
+          </a>
+        )}
+      </div>
+    );
+  }
 
   // For source code: Always show name-your-price UI (even when free) to capture email + allow optional payment
   // For regular free apps: Show simple free download

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
 
 interface LoginFormProps {
   redirect?: string;
@@ -24,16 +25,13 @@ export function LoginForm({ redirect }: LoginFormProps) {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, redirect }),
+      const { error: authError } = await authClient.signIn.magicLink({
+        email,
+        callbackURL: redirect || "/dashboard",
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to send magic link. Please try again.");
+      if (authError) {
+        setError(authError.message || "Failed to send magic link. Please try again.");
         return;
       }
 

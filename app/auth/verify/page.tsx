@@ -5,12 +5,18 @@ export const metadata: Metadata = {
   title: "Verifying... — ISOLATED.TECH",
 };
 
+/**
+ * Magic link verification page
+ *
+ * Better Auth handles the actual verification at /api/auth/magic-link/verify
+ * This page shows a loading state while the redirect happens.
+ */
 export default function VerifyPage({
   searchParams,
 }: {
-  searchParams: { token?: string; error?: string };
+  searchParams: { token?: string; error?: string; callbackURL?: string };
 }) {
-  // If no token, redirect to login
+  // If no token and no error, redirect to login
   if (!searchParams.token && !searchParams.error) {
     redirect("/auth/login");
   }
@@ -32,14 +38,20 @@ export default function VerifyPage({
           </div>
 
           <div className="auth-message auth-message--error">
-            {searchParams.error === "invalid_token"
+            {searchParams.error === "invalid_token" ||
+            searchParams.error === "INVALID_TOKEN"
               ? "This magic link is invalid or has expired."
-              : searchParams.error === "expired"
+              : searchParams.error === "expired" ||
+                  searchParams.error === "TOKEN_EXPIRED"
                 ? "This magic link has expired."
                 : "Something went wrong during verification."}
           </div>
 
-          <a href="/auth/login" className="auth-btn" style={{ display: "block", textAlign: "center" }}>
+          <a
+            href="/auth/login"
+            className="auth-btn"
+            style={{ display: "block", textAlign: "center" }}
+          >
             TRY AGAIN
           </a>
         </div>
@@ -47,7 +59,14 @@ export default function VerifyPage({
     );
   }
 
-  // Show loading state (actual verification happens via API route that sets cookie)
+  // Build the verification URL for Better Auth
+  const verifyUrl = `/api/auth/magic-link/verify?token=${encodeURIComponent(searchParams.token!)}${
+    searchParams.callbackURL
+      ? `&callbackURL=${encodeURIComponent(searchParams.callbackURL)}`
+      : "&callbackURL=/dashboard"
+  }`;
+
+  // Show loading state (actual verification happens via Better Auth)
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -63,28 +82,19 @@ export default function VerifyPage({
 
         <div className="auth-message auth-message--info">
           If you are not redirected automatically,{" "}
-          <a
-            href={`/api/auth/verify?token=${searchParams.token}`}
-            className="auth-footer__link"
-          >
+          <a href={verifyUrl} className="auth-footer__link">
             click here
           </a>
           .
         </div>
 
-        {/* Client-side redirect */}
-        <VerifyClient token={searchParams.token!} />
+        {/* Client-side redirect to Better Auth verification endpoint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.location.href = "${verifyUrl}";`,
+          }}
+        />
       </div>
     </div>
-  );
-}
-
-function VerifyClient({ token }: { token: string }) {
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `window.location.href = "/api/auth/verify?token=${encodeURIComponent(token)}";`,
-      }}
-    />
   );
 }
