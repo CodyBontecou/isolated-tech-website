@@ -9,7 +9,7 @@ export default function NotFound() {
         </Link>
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
-          <Link href="/#about">ABOUT</Link>
+
         </div>
       </nav>
 

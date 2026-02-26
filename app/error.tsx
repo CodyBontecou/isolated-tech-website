@@ -23,7 +23,7 @@ export default function Error({
         </Link>
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
-          <Link href="/#about">ABOUT</Link>
+
         </div>
       </nav>
 

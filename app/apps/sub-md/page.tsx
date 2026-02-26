@@ -73,7 +73,6 @@ export default async function SubMdPage() {
         </a>
         <div className="nav__links">
           <a href="/apps">APPS</a>
-          <a href="/#about">ABOUT</a>
           {user ? (
             <>
               {user.isAdmin && <a href="/admin">ADMIN</a>}
