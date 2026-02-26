@@ -59,25 +59,25 @@ async function getBroadcastStats(): Promise<BroadcastStats> {
     env
   );
 
-  // Recent broadcasts (from email_log where email_type starts with 'broadcast:')
+  // Recent broadcasts (from email_log where event_type starts with 'broadcast:')
   const recentBroadcasts = await query<{
     id: string;
     subject: string;
-    email_type: string;
+    event_type: string;
     sent_at: string;
   }>(
-    `SELECT id, subject, email_type, sent_at
+    `SELECT id, subject, event_type, sent_at
      FROM email_log
-     WHERE email_type LIKE 'broadcast:%'
+     WHERE event_type LIKE 'broadcast:%'
      ORDER BY sent_at DESC
      LIMIT 10`,
     [],
     env
   );
 
-  // Map email_type to audience format
+  // Map event_type to audience format
   const formattedBroadcasts = recentBroadcasts.map((b) => {
-    const audienceType = b.email_type.replace("broadcast:", "");
+    const audienceType = b.event_type.replace("broadcast:", "");
     return {
       id: b.id,
       subject: b.subject || "No subject",

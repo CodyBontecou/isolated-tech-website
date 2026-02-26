@@ -1,25 +1,26 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth/middleware";
-import { getEnv } from "@/lib/cloudflare-context";
 
 function AppCardSkeleton() {
   return (
-    <div className="app-card-skeleton">
-      <div className="skeleton app-card-skeleton__icon" />
-      <div className="skeleton app-card-skeleton__title" />
-      <div className="skeleton app-card-skeleton__desc" />
-      <div className="app-card-skeleton__badges">
-        <div className="skeleton app-card-skeleton__badge" />
-        <div className="skeleton app-card-skeleton__badge" />
+    <div className="store-card" style={{ pointerEvents: 'none' }}>
+      <div className="store-card__icon">
+        <div className="skeleton" style={{ width: '100%', height: '100%', borderRadius: 'inherit' }} />
+      </div>
+      <div className="store-card__content">
+        <div className="store-card__badges">
+          <div className="skeleton" style={{ width: '50px', height: '20px' }} />
+        </div>
+        <div className="skeleton" style={{ width: '70%', height: '1.5rem', marginBottom: '0.5rem' }} />
+        <div className="skeleton" style={{ width: '90%', height: '1rem' }} />
+      </div>
+      <div className="store-card__footer">
+        <div className="skeleton" style={{ width: '60px', height: '1rem' }} />
       </div>
     </div>
   );
 }
 
-export default async function AppsLoading() {
-  const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
-
+export default function AppsLoading() {
   return (
     <>
       <nav className="nav">
@@ -28,33 +29,46 @@ export default async function AppsLoading() {
         </Link>
         <div className="nav__links">
           <Link href="/apps">APPS</Link>
-          <Link href="/#about">ABOUT</Link>
-          {user ? (
-            <>
-              <Link href="/dashboard">DASHBOARD</Link>
-              <Link href="/api/auth/logout">SIGN OUT</Link>
-            </>
-          ) : (
-            <Link href="/auth/login">SIGN IN</Link>
-          )}
+          {/* Show neutral state during loading - actual auth state comes from the page */}
+          <span style={{ color: "var(--gray)" }}>...</span>
         </div>
       </nav>
 
-      <main className="catalog">
-        <header className="catalog__header">
-          <p className="catalog__label">CATALOG</p>
-          <h1 className="catalog__title">
+      <section className="store-hero store-hero--empty" style={{ minHeight: "40vh" }}>
+        <div className="store-hero__content">
+          <div className="store-hero__label">ALL APPS</div>
+          <h1 className="store-hero__title" style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)" }}>
             Apps<span className="dot">.</span>
           </h1>
-        </header>
+          <p className="store-hero__subtitle">
+            Privacy-first iOS and macOS apps. On-device processing, no cloud dependencies.
+          </p>
+        </div>
+        <div className="store-hero__grid" />
+      </section>
 
-        <div className="catalog__grid">
+      <section className="store-section" id="apps">
+        <div className="store-section__header">
+          <div className="skeleton" style={{ width: '80px', height: '1rem' }} />
+          <div className="skeleton" style={{ width: '60px', height: '1rem' }} />
+        </div>
+
+        <div className="store-grid">
           <AppCardSkeleton />
           <AppCardSkeleton />
           <AppCardSkeleton />
           <AppCardSkeleton />
         </div>
-      </main>
+      </section>
+
+      <footer className="store-footer">
+        <div className="store-footer__brand">
+          <span className="store-footer__logo">
+            ISOLATED<span className="dot">.</span>TECH
+          </span>
+          <span className="store-footer__tagline">Software that ships.</span>
+        </div>
+      </footer>
     </>
   );
 }

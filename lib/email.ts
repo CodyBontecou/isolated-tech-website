@@ -199,7 +199,7 @@ export async function logEmail(
   const now = new Date().toISOString();
 
   await env.DB.prepare(
-    `INSERT INTO email_log (id, user_id, email_type, subject, ses_message_id, sent_at)
+    `INSERT INTO email_log (id, user_id, event_type, subject, ses_message_id, sent_at)
      VALUES (?, ?, ?, ?, ?, ?)`
   )
     .bind(nanoid(), userId, emailType, subject, messageId, now)

@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
 
     // Log the broadcast record
     await env.DB.prepare(
-      `INSERT INTO email_log (id, user_id, email_type, subject, sent_at)
+      `INSERT INTO email_log (id, user_id, event_type, subject, sent_at)
        VALUES (?, ?, ?, ?, ?)`
     )
       .bind(broadcastId, user.id, `broadcast:${audience}`, subject, now)

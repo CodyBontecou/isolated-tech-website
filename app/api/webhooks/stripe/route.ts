@@ -140,7 +140,7 @@ async function handleCheckoutComplete(
 
   // Log purchase
   await env.DB.prepare(
-    `INSERT INTO email_log (id, user_id, email_type, subject, sent_at)
+    `INSERT INTO email_log (id, user_id, event_type, subject, sent_at)
      VALUES (?, ?, 'purchase_receipt', ?, ?)`
   )
     .bind(nanoid(), user_id, `Purchase completed`, now)
