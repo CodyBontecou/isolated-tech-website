@@ -21,7 +21,6 @@ interface App {
   min_price_cents: number;
   suggested_price_cents: number | null;
   is_featured: number;
-  distribution_type: string;
   avg_rating?: number | null;
   review_count?: number;
 }
@@ -38,8 +37,7 @@ async function getApps(): Promise<App[]> {
 
   const result = await env.DB.prepare(
     `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents,
-            COALESCE(is_featured, 0) as is_featured,
-            COALESCE(distribution_type, 'binary') as distribution_type
+            COALESCE(is_featured, 0) as is_featured
      FROM apps 
      WHERE is_published = 1
      ORDER BY is_featured DESC, created_at DESC`
@@ -98,7 +96,6 @@ function AppCard({ app, index }: { app: App; index: number }) {
   const platforms = getPlatforms(app.platforms);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
   const price = formatPrice(app.min_price_cents, app.suggested_price_cents);
-  const isSourceCode = app.distribution_type === "source_code";
 
   return (
     <Link
@@ -118,7 +115,6 @@ function AppCard({ app, index }: { app: App; index: number }) {
           {platforms.map((p) => (
             <PlatformBadge key={p} platform={p} />
           ))}
-          {isSourceCode && <span className="store-badge store-badge--source">SOURCE</span>}
           {app.is_featured === 1 && <span className="store-badge store-badge--featured">★</span>}
         </div>
         <h2 className="store-card__name">{app.name}</h2>

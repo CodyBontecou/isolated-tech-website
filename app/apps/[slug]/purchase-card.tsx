@@ -13,9 +13,8 @@ interface PurchaseCardProps {
   hasPurchased?: boolean;
   iosAppStoreUrl?: string | null;
   iosAppStoreLabel?: string;
-  distributionType?: string;
-  allowSourceDownload?: boolean;
-  allowBinaryDownload?: boolean;
+  hasMacOS?: boolean;
+  hasIOS?: boolean;
 }
 
 interface DiscountResult {
@@ -39,12 +38,9 @@ export function PurchaseCard({
   hasPurchased = false,
   iosAppStoreUrl = null,
   iosAppStoreLabel = "VIEW ON APP STORE",
-  distributionType = "binary",
-  allowSourceDownload = true,
-  allowBinaryDownload = true,
+  hasMacOS = false,
+  hasIOS = false,
 }: PurchaseCardProps) {
-  const isSourceCode = distributionType === "source_code";
-  const canDownload = isSourceCode ? allowSourceDownload : allowBinaryDownload;
   const [price, setPrice] = useState(
     suggestedPriceCents ? (suggestedPriceCents / 100).toFixed(2) : "0.00"
   );
@@ -82,7 +78,6 @@ export function PurchaseCard({
         const data = await res.json();
 
         if (!res.ok) {
-          // Handle auth redirect and preserve attempted action
           if (res.status === 401) {
             const resumeParams = new URLSearchParams({
               postAuthAction: "checkout",
@@ -103,17 +98,11 @@ export function PurchaseCard({
           return;
         }
 
-        // Handle free purchase
         if (data.free && data.redirectUrl) {
-          // For source code, show email confirmation before redirect
-          if (data.sourceCode && data.message) {
-            alert(data.message);
-          }
           window.location.href = data.redirectUrl;
           return;
         }
 
-        // Redirect to Stripe
         if (data.url) {
           window.location.href = data.url;
         } else {
@@ -212,7 +201,7 @@ export function PurchaseCard({
     void startCheckout(checkoutPriceCents, resumeDiscountCode);
   }, [appId, finalPriceCents, startCheckout]);
 
-  // Show owned state - user has already purchased this app
+  // Already purchased - show download options
   if (hasPurchased) {
     return (
       <div className="purchase-card">
@@ -221,27 +210,19 @@ export function PurchaseCard({
           ✓ Owned
         </div>
 
-        {canDownload ? (
+        {hasMacOS && (
           <>
             <a
               href="/dashboard"
               className="purchase-card__btn"
               style={{ display: "block", textAlign: "center", textDecoration: "none" }}
             >
-              ↓ GO TO DASHBOARD
+              ↓ DOWNLOAD FOR MAC
             </a>
             <p className="purchase-card__note">
-              {isSourceCode
-                ? "Download the source code from your dashboard."
-                : "Download your app from your dashboard."}
+              Download the macOS app from your dashboard.
             </p>
           </>
-        ) : (
-          <p className="purchase-card__note" style={{ color: "var(--gray)" }}>
-            {isSourceCode
-              ? "Source code download is currently unavailable."
-              : "App download is currently unavailable."}
-          </p>
         )}
 
         {iosAppStoreUrl && (
@@ -250,6 +231,7 @@ export function PurchaseCard({
             target="_blank"
             rel="noopener noreferrer"
             className="purchase-card__btn purchase-card__btn--secondary"
+            style={{ display: "block", textAlign: "center", textDecoration: "none" }}
           >
             {iosAppStoreLabel}
           </a>
@@ -258,9 +240,34 @@ export function PurchaseCard({
     );
   }
 
-  // For source code: Always show name-your-price UI (even when free) to capture email + allow optional payment
-  // For regular free apps: Show simple free download
-  if (isFree && !isSourceCode) {
+  // iOS-only app - just show App Store link
+  if (hasIOS && !hasMacOS && iosAppStoreUrl) {
+    return (
+      <div className="purchase-card">
+        <div className="purchase-card__price-label">AVAILABLE ON</div>
+        <div className="purchase-card__price" style={{ marginBottom: "1rem" }}>
+          App Store
+        </div>
+
+        <a
+          href={iosAppStoreUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="purchase-card__btn"
+          style={{ display: "block", textAlign: "center", textDecoration: "none" }}
+        >
+          {iosAppStoreLabel}
+        </a>
+
+        <p className="purchase-card__note">
+          Download from the iOS App Store.
+        </p>
+      </div>
+    );
+  }
+
+  // Free macOS app
+  if (isFree && hasMacOS) {
     return (
       <div className="purchase-card">
         <div className="purchase-card__price-label">PRICE</div>
@@ -273,7 +280,7 @@ export function PurchaseCard({
           onClick={handlePurchase}
           disabled={isLoading}
         >
-          {isLoading ? "LOADING..." : "GET FREE"}
+          {isLoading ? "LOADING..." : "↓ GET FOR MAC — FREE"}
         </button>
 
         {iosAppStoreUrl && (
@@ -282,6 +289,7 @@ export function PurchaseCard({
             target="_blank"
             rel="noopener noreferrer"
             className="purchase-card__btn purchase-card__btn--secondary"
+            style={{ display: "block", textAlign: "center", textDecoration: "none" }}
           >
             {iosAppStoreLabel}
           </a>
@@ -294,216 +302,184 @@ export function PurchaseCard({
     );
   }
 
-  return (
-    <div className="purchase-card">
-      <div className="purchase-card__price-label">DISTRIBUTION</div>
-      {isSourceCode && (
-        <div className="purchase-card__price" style={{ color: "#4ade80", marginBottom: "1rem" }}>
-          Source Code
-        </div>
-      )}
+  // Paid macOS app
+  if (hasMacOS) {
+    return (
+      <div className="purchase-card">
+        <div className="purchase-card__price-label">NAME YOUR PRICE</div>
 
-      <div className="purchase-card__price-label" style={{ marginBottom: "0.5rem" }}>
-        {isSourceCode ? "PAY WHAT YOU WANT" : "NAME YOUR PRICE"}
-      </div>
-
-      <div className="purchase-card__input-wrapper">
-        <span className="purchase-card__currency">$</span>
-        <input
-          type="number"
-          className="purchase-card__input"
-          value={price}
-          onChange={(e) => {
-            setPrice(e.target.value);
-            // Clear discount when price changes
-            if (discountResult?.valid) {
-              setDiscountResult(null);
-            }
-          }}
-          min={minPrice}
-          step="0.01"
-          placeholder={minPrice}
-        />
-      </div>
-
-      {isSourceCode && isFree ? (
-        <p className="purchase-card__suggested">
-          {suggestedPriceCents && suggestedPriceCents > 0
-            ? `Suggested: $${(suggestedPriceCents / 100).toFixed(2)} • `
-            : ""}
-          $0 minimum — pay what it's worth to you
-        </p>
-      ) : suggestedPriceCents && suggestedPriceCents > 0 ? (
-        <p className="purchase-card__suggested">
-          Suggested: ${(suggestedPriceCents / 100).toFixed(2)}
-          {minPriceCents > 0 && ` • Minimum: $${minPrice}`}
-        </p>
-      ) : null}
-
-      {!isValidPrice && priceInCents > 0 && (
-        <p style={{ color: "#f87171", fontSize: "0.75rem", marginBottom: "1rem" }}>
-          Minimum price is ${minPrice}
-        </p>
-      )}
-
-      {/* Discount Section */}
-      {showDiscount ? (
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
-            <input
-              type="text"
-              className="auth-input"
-              placeholder="DISCOUNT CODE"
-              value={discountCode}
-              onChange={(e) => {
-                setDiscountCode(e.target.value.toUpperCase());
+        <div className="purchase-card__input-wrapper">
+          <span className="purchase-card__currency">$</span>
+          <input
+            type="number"
+            className="purchase-card__input"
+            value={price}
+            onChange={(e) => {
+              setPrice(e.target.value);
+              if (discountResult?.valid) {
                 setDiscountResult(null);
-              }}
-              disabled={discountResult?.valid}
-              style={{ flex: 1, padding: "0.6rem" }}
-            />
-            {!discountResult?.valid ? (
-              <button
-                type="button"
-                className="purchase-card__btn"
-                onClick={validateDiscount}
-                disabled={isValidatingDiscount || !discountCode.trim()}
-                style={{ width: "auto", padding: "0.6rem 1rem" }}
+              }
+            }}
+            min={minPrice}
+            step="0.01"
+            placeholder={minPrice}
+          />
+        </div>
+
+        {suggestedPriceCents && suggestedPriceCents > 0 ? (
+          <p className="purchase-card__suggested">
+            Suggested: ${(suggestedPriceCents / 100).toFixed(2)}
+            {minPriceCents > 0 && ` • Minimum: $${minPrice}`}
+          </p>
+        ) : null}
+
+        {!isValidPrice && priceInCents > 0 && (
+          <p style={{ color: "#f87171", fontSize: "0.75rem", marginBottom: "1rem" }}>
+            Minimum price is ${minPrice}
+          </p>
+        )}
+
+        {showDiscount ? (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+              <input
+                type="text"
+                className="auth-input"
+                placeholder="DISCOUNT CODE"
+                value={discountCode}
+                onChange={(e) => {
+                  setDiscountCode(e.target.value.toUpperCase());
+                  setDiscountResult(null);
+                }}
+                disabled={discountResult?.valid}
+                style={{ flex: 1, padding: "0.6rem" }}
+              />
+              {!discountResult?.valid ? (
+                <button
+                  type="button"
+                  className="purchase-card__btn"
+                  onClick={validateDiscount}
+                  disabled={isValidatingDiscount || !discountCode.trim()}
+                  style={{ width: "auto", padding: "0.6rem 1rem" }}
+                >
+                  {isValidatingDiscount ? "..." : "APPLY"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="purchase-card__btn purchase-card__btn--secondary"
+                  onClick={clearDiscount}
+                  style={{ width: "auto", padding: "0.6rem 1rem" }}
+                >
+                  CLEAR
+                </button>
+              )}
+            </div>
+
+            {discountResult && (
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: discountResult.valid ? "#4ade80" : "#f87171",
+                  marginTop: "0.5rem",
+                }}
               >
-                {isValidatingDiscount ? "..." : "APPLY"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="purchase-card__btn purchase-card__btn--secondary"
-                onClick={clearDiscount}
-                style={{ width: "auto", padding: "0.6rem 1rem" }}
-              >
-                CLEAR
-              </button>
+                {discountResult.valid
+                  ? `✓ ${discountResult.message} (-$${((discountResult.discountAmountCents || 0) / 100).toFixed(2)})`
+                  : `✗ ${discountResult.error}`}
+              </p>
             )}
           </div>
-
-          {discountResult && (
-            <p
-              style={{
-                fontSize: "0.75rem",
-                color: discountResult.valid ? "#4ade80" : "#f87171",
-                marginTop: "0.5rem",
-              }}
-            >
-              {discountResult.valid
-                ? `✓ ${discountResult.message} (-$${((discountResult.discountAmountCents || 0) / 100).toFixed(2)})`
-                : `✗ ${discountResult.error}`}
-            </p>
-          )}
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowDiscount(true)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "var(--gray)",
-            fontSize: "0.7rem",
-            cursor: "crosshair",
-            marginBottom: "1rem",
-            textDecoration: "underline",
-            textUnderlineOffset: "2px",
-          }}
-        >
-          Have a discount code?
-        </button>
-      )}
-
-      {/* Final Price Display (if discounted) */}
-      {discountResult?.valid && finalPriceCents !== priceInCents && (
-        <div
-          style={{
-            marginBottom: "1rem",
-            padding: "0.75rem",
-            background: "rgba(74, 222, 128, 0.1)",
-            border: "1px solid #4ade80",
-          }}
-        >
-          <div style={{ fontSize: "0.65rem", color: "#4ade80", marginBottom: "0.25rem" }}>
-            DISCOUNTED PRICE
-          </div>
-          <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#4ade80" }}>
-            ${(finalPriceCents / 100).toFixed(2)}
-          </div>
-          <div style={{ fontSize: "0.7rem", color: "var(--gray)", textDecoration: "line-through" }}>
-            Was ${price}
-          </div>
-        </div>
-      )}
-
-      {/* For source code: Require sign-in before any action */}
-      {isSourceCode && !isAuthenticated ? (
-        <>
+        ) : (
           <button
-            className="purchase-card__btn"
+            type="button"
+            onClick={() => setShowDiscount(true)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--gray)",
+              fontSize: "0.7rem",
+              cursor: "crosshair",
+              marginBottom: "1rem",
+              textDecoration: "underline",
+              textUnderlineOffset: "2px",
+            }}
+          >
+            Have a discount code?
+          </button>
+        )}
+
+        {discountResult?.valid && finalPriceCents !== priceInCents && (
+          <div
+            style={{
+              marginBottom: "1rem",
+              padding: "0.75rem",
+              background: "rgba(74, 222, 128, 0.1)",
+              border: "1px solid #4ade80",
+            }}
+          >
+            <div style={{ fontSize: "0.65rem", color: "#4ade80", marginBottom: "0.25rem" }}>
+              DISCOUNTED PRICE
+            </div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#4ade80" }}>
+              ${(finalPriceCents / 100).toFixed(2)}
+            </div>
+            <div style={{ fontSize: "0.7rem", color: "var(--gray)", textDecoration: "line-through" }}>
+              Was ${price}
+            </div>
+          </div>
+        )}
+
+        <button
+          className="purchase-card__btn"
+          onClick={handlePurchase}
+          disabled={isLoading || !isValidPrice}
+        >
+          {isLoading
+            ? "LOADING..."
+            : finalPriceCents === 0
+              ? "↓ GET FOR MAC — FREE"
+              : `↓ GET FOR MAC — $${(finalPriceCents / 100).toFixed(2)}`}
+        </button>
+
+        {!isAuthenticated && (
+          <button
+            className="purchase-card__btn purchase-card__btn--secondary"
             onClick={() => {
               const redirectPath = `/apps/${appSlug}`;
               window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
             }}
           >
-            SIGN IN TO DOWNLOAD
+            SIGN IN FIRST
           </button>
-          <p className="purchase-card__note">
-            Sign in with your email to access the source code.
-            {finalPriceCents > 0 && " Payment processed securely via Stripe."}
-          </p>
-        </>
-      ) : (
-        <>
-          <button
-            className="purchase-card__btn"
-            onClick={handlePurchase}
-            disabled={isLoading || !isValidPrice}
+        )}
+
+        <p className="purchase-card__note">
+          Secure payment via Stripe. Instant access after purchase.
+        </p>
+
+        {iosAppStoreUrl && (
+          <a
+            href={iosAppStoreUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="purchase-card__btn purchase-card__btn--secondary"
+            style={{ display: "block", textAlign: "center", textDecoration: "none" }}
           >
-            {isLoading
-              ? "LOADING..."
-              : finalPriceCents === 0
-                ? isSourceCode ? "↓ GET SOURCE CODE" : "GET FREE"
-                : isSourceCode
-                  ? `↓ GET SOURCE — $${(finalPriceCents / 100).toFixed(2)}`
-                  : `PAY $${(finalPriceCents / 100).toFixed(2)}`}
-          </button>
+            {iosAppStoreLabel}
+          </a>
+        )}
+      </div>
+    );
+  }
 
-          {!isAuthenticated && (
-            <button
-              className="purchase-card__btn purchase-card__btn--secondary"
-              onClick={() => {
-                const redirectPath = `/apps/${appSlug}`;
-                window.location.href = `/auth/login?redirect=${encodeURIComponent(redirectPath)}`;
-              }}
-            >
-              SIGN IN FIRST
-            </button>
-          )}
-
-          <p className="purchase-card__note">
-            {isSourceCode
-              ? finalPriceCents > 0
-                ? "Secure payment via Stripe. You'll get instant access to download the Xcode project source code."
-                : "Download the Xcode project source code and build on your device."
-              : "Secure payment via Stripe. You'll get instant access to download after purchase. All prices in USD."}
-          </p>
-        </>
-      )}
-
-      {iosAppStoreUrl && (
-        <a
-          href={iosAppStoreUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="purchase-card__btn purchase-card__btn--secondary"
-        >
-          {iosAppStoreLabel}
-        </a>
-      )}
+  // Fallback: iOS-only with no App Store URL configured
+  return (
+    <div className="purchase-card">
+      <div className="purchase-card__price-label">COMING SOON</div>
+      <p className="purchase-card__note">
+        This app will be available on the App Store soon.
+      </p>
     </div>
   );
 }
