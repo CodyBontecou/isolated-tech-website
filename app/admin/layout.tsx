@@ -44,7 +44,7 @@ export default async function AdminLayout({
             <div className="admin-sidebar__label">CATALOG</div>
             <nav className="admin-sidebar__nav">
               <Link href="/admin/apps" className="admin-sidebar__link">
-                <span className="admin-sidebar__icon">□</span>
+                <span className="admin-sidebar__icon">☎</span>
                 <span>Apps</span>
               </Link>
               <Link href="/admin/codes" className="admin-sidebar__link">
