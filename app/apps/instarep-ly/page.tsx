@@ -116,7 +116,7 @@ export default async function InstarepLyPage() {
               
               <div className="instarep__ctas">
                 <a 
-                  href="https://apps.apple.com/app/instarep-ly/id6739800953" 
+                  href="https://apps.apple.com/us/app/instarep-ly/id6754865693" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="instarep__cta instarep__cta--primary"
@@ -244,7 +244,7 @@ export default async function InstarepLyPage() {
           <h2 className="instarep__cta-headline">Stop typing.<br /><span>Start creating.</span></h2>
           <p className="instarep__cta-text">Join thousands of creators who've reclaimed their time.</p>
           <a 
-            href="https://apps.apple.com/app/instarep-ly/id6739800953" 
+            href="https://apps.apple.com/us/app/instarep-ly/id6754865693" 
             target="_blank" 
             rel="noopener noreferrer"
             className="instarep__cta instarep__cta--light"
