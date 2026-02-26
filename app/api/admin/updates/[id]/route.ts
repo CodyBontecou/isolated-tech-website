@@ -1,8 +1,12 @@
 /**
- * /api/admin/updates/[id]
+ * GET /api/admin/updates/[id]
+ * PATCH /api/admin/updates/[id]
  *
- * PUT    — Update an existing update record
- * DELETE — Delete an update record
+ * Get or update an app update's metadata (e.g., release notes).
+ * 
+ * The [id] can be either:
+ * - A direct update ID
+ * - A composite key: "appSlug:platform:version" (e.g., "time-md:macos:1.1.0")
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -10,12 +14,46 @@ import { getEnv } from "@/lib/cloudflare-context";
 import { requireAdmin } from "@/lib/admin-auth";
 import { execute } from "@/lib/db";
 
-export async function PUT(
+interface AppUpdate {
+  id: string;
+  app_id: string;
+  version: string;
+  platform: string;
+  release_notes: string | null;
+}
+
+async function resolveUpdate(id: string, env: { DB: D1Database }): Promise<AppUpdate | null> {
+  // Check if it's a composite key (slug:platform:version)
+  if (id.includes(":")) {
+    const [slug, platform, version] = id.split(":");
+    if (slug && platform && version) {
+      return env.DB.prepare(
+        `SELECT u.id, u.app_id, u.version, u.platform, u.release_notes
+         FROM app_updates u
+         JOIN apps a ON u.app_id = a.id
+         WHERE a.slug = ? AND u.platform = ? AND u.version = ?`
+      )
+        .bind(slug, platform, version)
+        .first<AppUpdate>();
+    }
+  }
+  
+  // Otherwise treat as direct ID
+  return env.DB.prepare(
+    `SELECT id, app_id, version, platform, release_notes FROM app_updates WHERE id = ?`
+  )
+    .bind(id)
+    .first<AppUpdate>();
+}
+
+export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const env = getEnv();
+    const { id } = await params;
+
     if (!env?.DB || !env?.AUTH_KV) {
       return NextResponse.json(
         { error: "Server configuration error" },
@@ -28,56 +66,29 @@ export async function PUT(
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { version, buildNumber, releaseNotes, releasedAt } = body;
-
-    const sets: string[] = [];
-    const values: unknown[] = [];
-
-    if (version !== undefined) {
-      sets.push("version = ?");
-      values.push(version);
-    }
-    if (buildNumber !== undefined) {
-      sets.push("build_number = ?");
-      values.push(buildNumber);
-    }
-    if (releaseNotes !== undefined) {
-      sets.push("release_notes = ?");
-      values.push(releaseNotes);
-    }
-    if (releasedAt !== undefined) {
-      sets.push("released_at = ?");
-      values.push(releasedAt);
+    const update = await resolveUpdate(id, env);
+    if (!update) {
+      return NextResponse.json({ error: "Update not found" }, { status: 404 });
     }
 
-    if (sets.length === 0) {
-      return NextResponse.json({ error: "No fields to update" }, { status: 400 });
-    }
-
-    values.push(params.id);
-    await execute(
-      `UPDATE app_updates SET ${sets.join(", ")} WHERE id = ?`,
-      values,
-      env
-    );
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ update });
   } catch (error) {
-    console.error("Update error:", error);
+    console.error("Get app_updates error:", error);
     return NextResponse.json(
-      { error: "Failed to update" },
+      { error: "Failed to get update" },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const env = getEnv();
+    const { id } = await params;
+
     if (!env?.DB || !env?.AUTH_KV) {
       return NextResponse.json(
         { error: "Server configuration error" },
@@ -90,17 +101,42 @@ export async function DELETE(
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
+    // Resolve update (supports both direct ID and slug:platform:version)
+    const update = await resolveUpdate(id, env);
+    if (!update) {
+      return NextResponse.json({ error: "Update not found" }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const { releaseNotes } = body;
+
+    if (releaseNotes === undefined) {
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 }
+      );
+    }
+
+    // Update release notes
     await execute(
-      `DELETE FROM app_updates WHERE id = ?`,
-      [params.id],
+      `UPDATE app_updates SET release_notes = ? WHERE id = ?`,
+      [releaseNotes, id],
       env
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      update: {
+        id: update.id,
+        version: update.version,
+        platform: update.platform,
+        releaseNotes,
+      },
+    });
   } catch (error) {
-    console.error("Delete update error:", error);
+    console.error("Update app_updates error:", error);
     return NextResponse.json(
-      { error: "Failed to delete update" },
+      { error: "Failed to update" },
       { status: 500 }
     );
   }
