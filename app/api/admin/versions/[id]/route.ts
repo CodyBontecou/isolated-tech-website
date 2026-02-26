@@ -1,7 +1,7 @@
 /**
  * PATCH /api/admin/versions/[id]
  *
- * Update a version's metadata (e.g., release notes).
+ * Update a version's metadata (e.g., release notes, macOS binary).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -40,20 +40,45 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { notes } = body;
+    const { notes, macosR2Key, macosFileSize, macosMinOsVersion } = body;
 
-    if (notes === undefined) {
+    // Build update query dynamically
+    const updates: string[] = [];
+    const values: (string | number | null)[] = [];
+
+    if (notes !== undefined) {
+      updates.push("release_notes = ?");
+      values.push(notes);
+    }
+
+    if (macosR2Key !== undefined) {
+      updates.push("macos_r2_key = ?");
+      values.push(macosR2Key);
+    }
+
+    if (macosFileSize !== undefined) {
+      updates.push("macos_file_size_bytes = ?");
+      values.push(macosFileSize);
+    }
+
+    if (macosMinOsVersion !== undefined) {
+      updates.push("macos_min_os_version = ?");
+      values.push(macosMinOsVersion);
+    }
+
+    if (updates.length === 0) {
       return NextResponse.json(
         { error: "No fields to update" },
         { status: 400 }
       );
     }
 
-    // Update release notes
+    // Execute update
+    values.push(id);
     await env.DB.prepare(
-      `UPDATE app_versions SET release_notes = ? WHERE id = ?`
+      `UPDATE app_versions SET ${updates.join(", ")} WHERE id = ?`
     )
-      .bind(notes, id)
+      .bind(...values)
       .run();
 
     return NextResponse.json({
@@ -61,7 +86,7 @@ export async function PATCH(
       version: {
         id: version.id,
         version: version.version,
-        notes,
+        updated: Object.keys(body),
       },
     });
   } catch (error) {

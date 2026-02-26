@@ -180,7 +180,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
           <aside className="store-hero__rail" aria-label="More apps">
             <div className="store-hero__rail-label">MORE APPS</div>
             <div className="store-hero__rail-list">
-              {previewApps.slice(0, 4).map((preview) => {
+              {previewApps.slice(0, 6).map((preview) => {
                 const previewPlatforms = getPlatforms(preview.platforms);
 
                 return (
