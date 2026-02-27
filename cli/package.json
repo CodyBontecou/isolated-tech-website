@@ -1,0 +1,43 @@
+{
+  "name": "@isolated/cli",
+  "version": "0.1.0",
+  "description": "CLI for isolated.tech - publish macOS apps with Sparkle auto-updates",
+  "type": "module",
+  "bin": {
+    "isolated": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "lint": "eslint src",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "macos",
+    "sparkle",
+    "app-distribution",
+    "cli",
+    "isolated"
+  ],
+  "author": "Cody Bontecou",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codybontecou/isolated.tech"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^2.2.3",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "open": "^10.1.0",
+    "ora": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3"
+  }
+}
