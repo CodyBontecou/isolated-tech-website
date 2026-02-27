@@ -2,14 +2,15 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { SettingsForm } from "./settings-form";
 import { SignOutButton } from "@/components/sign-out-button";
+import { getCurrentUser } from "@/lib/auth/middleware";
+import { getEnv } from "@/lib/cloudflare-context";
 
 export const metadata: Metadata = {
   title: "Settings — ISOLATED.TECH",
   description: "Manage your account settings.",
 };
 
-// Mock user for now
-interface User {
+interface SettingsUser {
   id: string;
   name: string | null;
   email: string;
@@ -18,17 +19,31 @@ interface User {
   isAdmin?: boolean;
 }
 
-const MOCK_USER: User | null = {
-  id: "user_001",
-  name: "Cody",
-  email: "cody@isolated.tech",
-  newsletterSubscribed: true,
-  providers: ["github"],
-};
+export default async function SettingsPage() {
+  const env = getEnv();
+  const authUser = env ? await getCurrentUser(env) : null;
 
-export default function SettingsPage() {
-  // TODO: Replace with actual auth check
-  const user = MOCK_USER;
+  // Fetch user's linked providers from database
+  let providers: string[] = [];
+  if (env?.DB && authUser) {
+    try {
+      const result = await env.DB.prepare(`
+        SELECT provider_id FROM accounts WHERE user_id = ?
+      `).bind(authUser.id).all<{ provider_id: string }>();
+      providers = result.results.map(r => r.provider_id);
+    } catch (err) {
+      console.error("Failed to fetch providers:", err);
+    }
+  }
+
+  const user: SettingsUser | null = authUser ? {
+    id: authUser.id,
+    name: authUser.name,
+    email: authUser.email,
+    newsletterSubscribed: authUser.newsletterSubscribed,
+    providers,
+    isAdmin: authUser.isAdmin,
+  } : null;
 
   if (!user) {
     return (
