@@ -10,9 +10,43 @@ export interface Review {
   user_image: string | null;
 }
 
+export interface AppStoreReview {
+  id: string;
+  app_id: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  reviewer_nickname: string;
+  territory: string;
+  app_store_version: string | null;
+  review_created_at: string;
+  synced_at: string;
+}
+
+// Unified review type for display
+export interface UnifiedReview {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  created_at: string;
+  author_name: string | null;
+  author_image: string | null;
+  source: "site" | "app_store";
+  territory?: string;
+  app_version?: string | null;
+}
+
 export interface ReviewStats {
   avg_rating: number | null;
   review_count: number;
+}
+
+export interface CombinedReviewStats {
+  avg_rating: number | null;
+  review_count: number;
+  site_count: number;
+  app_store_count: number;
 }
 
 export interface App {

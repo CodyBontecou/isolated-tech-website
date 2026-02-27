@@ -248,4 +248,138 @@ export const queries = {
       [appId, platform],
       env
     ),
+
+  // App Store Reviews (synced from App Store Connect)
+  getAppStoreReviews: (appId: string, env?: Env) =>
+    query<{
+      id: string;
+      app_id: string;
+      rating: number;
+      title: string | null;
+      body: string | null;
+      reviewer_nickname: string;
+      territory: string;
+      app_store_version: string | null;
+      review_created_at: string;
+      synced_at: string;
+    }>(
+      `SELECT * FROM app_store_reviews
+       WHERE app_id = ?
+       ORDER BY review_created_at DESC`,
+      [appId],
+      env
+    ),
+
+  getAppStoreReviewStats: (appId: string, env?: Env) =>
+    queryOne<{
+      avg_rating: number | null;
+      review_count: number;
+    }>(
+      `SELECT 
+         AVG(CAST(rating AS REAL)) as avg_rating, 
+         COUNT(*) as review_count 
+       FROM app_store_reviews 
+       WHERE app_id = ?`,
+      [appId],
+      env
+    ),
+
+  // Combined review stats (site + App Store)
+  getCombinedReviewStats: (appId: string, env?: Env) =>
+    queryOne<{
+      avg_rating: number | null;
+      review_count: number;
+      site_count: number;
+      app_store_count: number;
+    }>(
+      `SELECT 
+         AVG(rating) as avg_rating,
+         COUNT(*) as review_count,
+         SUM(CASE WHEN source = 'site' THEN 1 ELSE 0 END) as site_count,
+         SUM(CASE WHEN source = 'app_store' THEN 1 ELSE 0 END) as app_store_count
+       FROM (
+         SELECT rating, 'site' as source FROM reviews WHERE app_id = ? AND is_approved = 1
+         UNION ALL
+         SELECT rating, 'app_store' as source FROM app_store_reviews WHERE app_id = ?
+       )`,
+      [appId, appId],
+      env
+    ),
+
+  // Combined stats for all apps (for homepage)
+  getAllCombinedReviewStats: (env?: Env) =>
+    query<{
+      app_id: string;
+      avg_rating: number | null;
+      review_count: number;
+    }>(
+      `SELECT 
+         app_id,
+         AVG(rating) as avg_rating, 
+         COUNT(*) as review_count 
+       FROM (
+         SELECT app_id, rating FROM reviews WHERE is_approved = 1
+         UNION ALL
+         SELECT app_id, rating FROM app_store_reviews
+       )
+       GROUP BY app_id`,
+      [],
+      env
+    ),
+
+  upsertAppStoreReview: async (
+    review: {
+      id: string;
+      app_id: string;
+      rating: number;
+      title: string | null;
+      body: string | null;
+      reviewer_nickname: string;
+      territory: string;
+      app_store_version: string | null;
+      review_created_at: string;
+    },
+    env?: Env
+  ) =>
+    execute(
+      `INSERT INTO app_store_reviews (id, app_id, rating, title, body, reviewer_nickname, territory, app_store_version, review_created_at, synced_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+       ON CONFLICT(id) DO UPDATE SET
+         rating = excluded.rating,
+         title = excluded.title,
+         body = excluded.body,
+         reviewer_nickname = excluded.reviewer_nickname,
+         territory = excluded.territory,
+         app_store_version = excluded.app_store_version,
+         synced_at = datetime('now')`,
+      [
+        review.id,
+        review.app_id,
+        review.rating,
+        review.title,
+        review.body,
+        review.reviewer_nickname,
+        review.territory,
+        review.app_store_version,
+        review.review_created_at,
+      ],
+      env
+    ),
+
+  updateAppStoreSyncLog: async (
+    appId: string,
+    reviewsFetched: number,
+    errorMessage: string | null,
+    env?: Env
+  ) =>
+    execute(
+      `INSERT INTO app_store_sync_log (app_id, last_synced_at, reviews_fetched, error_message)
+       VALUES (?, datetime('now'), ?, ?)
+       ON CONFLICT(app_id) DO UPDATE SET
+         last_synced_at = datetime('now'),
+         reviews_fetched = excluded.reviews_fetched,
+         error_message = excluded.error_message`,
+      [appId, reviewsFetched, errorMessage],
+      env
+    ),
 };
