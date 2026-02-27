@@ -6,26 +6,8 @@ import { MediaShowcase, MediaItem } from "./media-showcase";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
-import { SignOutButton } from "@/components/sign-out-button";
-
-interface App {
-  id: string;
-  slug: string;
-  name: string;
-  tagline: string | null;
-  description: string | null;
-  icon_url: string | null;
-  platforms: string;
-  min_price_cents: number;
-  suggested_price_cents: number | null;
-  custom_page_config: string | null;
-  is_published: number;
-}
-
-interface AppPageConfig {
-  ios_app_store_url?: string;
-  ios_app_store_label?: string;
-}
+import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
+import type { App, AppPageConfig, Review, ReviewStats } from "@/components/app-page";
 
 async function getApp(slug: string): Promise<App | null> {
   const env = getEnv();
@@ -55,22 +37,6 @@ async function getAppMedia(appId: string): Promise<MediaItem[]> {
     .all<{ id: string; type: "image" | "youtube"; url: string; title: string | null }>();
   
   return result.results || [];
-}
-
-interface Review {
-  id: string;
-  user_id: string;
-  app_id: string;
-  rating: number;
-  title: string | null;
-  body: string | null;
-  created_at: string;
-  user_name: string | null;
-}
-
-interface ReviewStats {
-  avg_rating: number | null;
-  review_count: number;
 }
 
 export async function generateMetadata({
@@ -234,82 +200,6 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
-function StarRating({ rating, size = "md" }: { rating: number; size?: "sm" | "md" | "lg" }) {
-  const sizeClass = size === "sm" ? "star-rating--sm" : size === "lg" ? "star-rating--lg" : "";
-  return (
-    <div className={`star-rating ${sizeClass}`} aria-label={`${rating} out of 5 stars`}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          className={`star-rating__star ${star <= rating ? "star-rating__star--filled" : ""}`}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? "s" : ""} ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? "s" : ""} ago`;
-  return `${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? "s" : ""} ago`;
-}
-
-function ReviewCard({ review }: { review: Review }) {
-  return (
-    <article className="review-card">
-      <header className="review-card__header">
-        <StarRating rating={review.rating} size="sm" />
-        <time className="review-card__date" dateTime={review.created_at}>
-          {formatRelativeTime(review.created_at)}
-        </time>
-      </header>
-      {review.title && <h4 className="review-card__title">{review.title}</h4>}
-      {review.body && <p className="review-card__body">{review.body}</p>}
-      <footer className="review-card__footer">
-        <span className="review-card__author">{review.user_name || "Anonymous"}</span>
-      </footer>
-    </article>
-  );
-}
-
-function ReviewsSection({ reviews, stats }: { reviews: Review[]; stats: ReviewStats | null }) {
-  if (!reviews.length) return null;
-
-  const avgRating = stats?.avg_rating ? Math.round(stats.avg_rating * 10) / 10 : 0;
-
-  return (
-    <section className="reviews-section">
-      <header className="reviews-section__header">
-        <h2 className="reviews-section__title">REVIEWS</h2>
-        {stats && stats.review_count > 0 && (
-          <div className="reviews-section__summary">
-            <span className="reviews-section__avg">{avgRating.toFixed(1)}</span>
-            <StarRating rating={Math.round(avgRating)} size="md" />
-            <span className="reviews-section__count">
-              {stats.review_count} review{stats.review_count !== 1 ? "s" : ""}
-            </span>
-          </div>
-        )}
-      </header>
-      <div className="reviews-section__list">
-        {reviews.map((review) => (
-          <ReviewCard key={review.id} review={review} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export default async function AppPage({ params }: { params: { slug: string } }) {
   const app = await getApp(params.slug);
 
@@ -368,24 +258,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="nav">
-        {/* Use <a> tags to force full page navigation - vinext RSC fetch doesn't include credentials */}
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href={`/auth/login?redirect=/apps/${app.slug}`}>SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <AppNav user={user} redirectPath={`/apps/${app.slug}`} />
 
       <main className="app-page">
         <a href="/apps" className="app-page__back">
@@ -457,12 +330,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
         </div>
       </main>
 
-      <footer className="footer">
-        <div className="footer__left">
-          <span>© 2026 ISOLATED.TECH</span>
-        </div>
-        <div className="footer__right" />
-      </footer>
+      <AppFooter />
     </>
   );
 }

@@ -1,34 +1,11 @@
 import { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { SignOutButton } from "@/components/sign-out-button";
 import { PurchaseCard } from "../[slug]/purchase-card";
-import { queries } from "@/lib/db";
+import { getAppPageData, getPurchaseCardProps } from "@/lib/app-data";
+import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
 import "./sub-md.css";
 
 const APP_SLUG = "sub-md";
-
-interface AppPageConfig {
-  ios_app_store_url?: string;
-  ios_app_store_label?: string;
-}
-
-function getPageConfig(configJson: string | null): AppPageConfig | null {
-  if (!configJson) return null;
-  try {
-    return JSON.parse(configJson) as AppPageConfig;
-  } catch {
-    return null;
-  }
-}
-
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return [];
-  }
-}
 
 export const metadata: Metadata = {
   title: "sub.md — Reddit Usage Analytics",
@@ -49,36 +26,12 @@ export const metadata: Metadata = {
 };
 
 const FEATURES = [
-  {
-    emoji: "📊",
-    title: "Subreddit Stats",
-    description: "See which communities consume your time",
-  },
-  {
-    emoji: "⏱️",
-    title: "Time Tracking",
-    description: "Track time spent scrolling and engaging",
-  },
-  {
-    emoji: "📝",
-    title: "Markdown Export",
-    description: "Export stats to your PKM system",
-  },
-  {
-    emoji: "🔔",
-    title: "Usage Alerts",
-    description: "Get notified when you exceed limits",
-  },
-  {
-    emoji: "📈",
-    title: "Weekly Reports",
-    description: "Automated weekly usage summaries",
-  },
-  {
-    emoji: "🔒",
-    title: "Privacy First",
-    description: "All data stays on your Mac",
-  },
+  { emoji: "📊", title: "Subreddit Stats", description: "See which communities consume your time" },
+  { emoji: "⏱️", title: "Time Tracking", description: "Track time spent scrolling and engaging" },
+  { emoji: "📝", title: "Markdown Export", description: "Export stats to your PKM system" },
+  { emoji: "🔔", title: "Usage Alerts", description: "Get notified when you exceed limits" },
+  { emoji: "📈", title: "Weekly Reports", description: "Automated weekly usage summaries" },
+  { emoji: "🔒", title: "Privacy First", description: "All data stays on your Mac" },
 ];
 
 const INSIGHTS = [
@@ -89,54 +42,13 @@ const INSIGHTS = [
 
 export default async function SubMdPage() {
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const { app, user, hasPurchased, reviews, reviewStats } = await getAppPageData(APP_SLUG, env);
 
-  // Fetch app data from database
-  const app = env?.DB ? await env.DB.prepare(
-    `SELECT id, slug, name, platforms, min_price_cents, suggested_price_cents, custom_page_config
-     FROM apps WHERE slug = ? AND is_published = 1`
-  ).bind(APP_SLUG).first<{
-    id: string;
-    slug: string;
-    name: string;
-    platforms: string;
-    min_price_cents: number;
-    suggested_price_cents: number | null;
-    custom_page_config: string | null;
-  }>() : null;
-
-  // Check if user already owns this app
-  const hasPurchased = user && app && env
-    ? !!(await queries.getPurchase(user.id, app.id, env))
-    : false;
-
-  const platforms = app ? getPlatforms(app.platforms) : ["macos"];
-  const pageConfig = app ? getPageConfig(app.custom_page_config) : null;
-  const isFree = app ? (app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0)) : false;
-  const iosAppStoreUrl = pageConfig?.ios_app_store_url?.trim() || null;
-  const iosAppStoreLabel = pageConfig?.ios_app_store_label?.trim() || "DOWNLOAD ON APP STORE (iOS)";
-  const hasMacOS = platforms.includes("macos");
-  const hasIOS = platforms.includes("ios");
+  const purchaseCardProps = app ? getPurchaseCardProps(app, user, hasPurchased) : null;
 
   return (
     <div className="smd-page">
-      <nav className="nav smd-nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login?redirect=/apps/sub-md">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <AppNav user={user} redirectPath="/apps/sub-md" className="smd-nav" />
 
       <main className="smd-main">
         {/* Hero Section */}
@@ -169,7 +81,6 @@ export default async function SubMdPage() {
                 Track time spent on Reddit, analyze which subreddits consume your attention, and export insights to Markdown. Built for Mac users who want to understand their browsing patterns.
               </p>
 
-              {/* Stats */}
               <div className="smd-stats">
                 <div className="smd-stats__item">
                   <span className="smd-stats__value">∞</span>
@@ -186,23 +97,9 @@ export default async function SubMdPage() {
               </div>
             </div>
 
-            {/* Purchase Card */}
             <aside className="smd-purchase">
-              {app ? (
-                <PurchaseCard
-                  appId={app.id}
-                  appSlug={app.slug}
-                  appName={app.name}
-                  minPriceCents={app.min_price_cents}
-                  suggestedPriceCents={app.suggested_price_cents}
-                  isFree={isFree}
-                  isAuthenticated={!!user}
-                  hasPurchased={hasPurchased}
-                  iosAppStoreUrl={iosAppStoreUrl}
-                  iosAppStoreLabel={iosAppStoreLabel}
-                  hasMacOS={hasMacOS}
-                  hasIOS={hasIOS}
-                />
+              {purchaseCardProps ? (
+                <PurchaseCard {...purchaseCardProps} />
               ) : (
                 <div className="smd-purchase__card">
                   <span className="smd-purchase__label">NAME YOUR PRICE</span>
@@ -270,6 +167,14 @@ export default async function SubMdPage() {
           </div>
         </section>
 
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <section className="smd-section">
+            <span className="smd-section__num">004</span>
+            <ReviewsSection reviews={reviews} stats={reviewStats} />
+          </section>
+        )}
+
         {/* Final CTA */}
         <section className="smd-cta">
           <h2 className="smd-cta__headline">
@@ -277,28 +182,11 @@ export default async function SubMdPage() {
             <span className="smd-cta__highlight">scrolling habits.</span>
           </h2>
           <p className="smd-cta__text">Start tracking today. Zero configuration required.</p>
-          {app && (
-            <PurchaseCard
-              appId={app.id}
-              appSlug={app.slug}
-              appName={app.name}
-              minPriceCents={app.min_price_cents}
-              suggestedPriceCents={app.suggested_price_cents}
-              isFree={isFree}
-              isAuthenticated={!!user}
-              hasPurchased={hasPurchased}
-              iosAppStoreUrl={iosAppStoreUrl}
-              iosAppStoreLabel={iosAppStoreLabel}
-              hasMacOS={hasMacOS}
-              hasIOS={hasIOS}
-            />
-          )}
+          {purchaseCardProps && <PurchaseCard {...purchaseCardProps} />}
         </section>
       </main>
 
-      <footer className="smd-footer">
-        <span>© 2026 ISOLATED.TECH</span>
-      </footer>
+      <AppFooter className="smd-footer" />
     </div>
   );
 }

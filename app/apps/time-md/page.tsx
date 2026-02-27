@@ -1,34 +1,11 @@
 import { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { SignOutButton } from "@/components/sign-out-button";
 import { PurchaseCard } from "../[slug]/purchase-card";
-import { queries } from "@/lib/db";
+import { getAppPageData, getPurchaseCardProps } from "@/lib/app-data";
+import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
 import "./time-md.css";
 
 const APP_SLUG = "time-md";
-
-interface AppPageConfig {
-  ios_app_store_url?: string;
-  ios_app_store_label?: string;
-}
-
-function getPageConfig(configJson: string | null): AppPageConfig | null {
-  if (!configJson) return null;
-  try {
-    return JSON.parse(configJson) as AppPageConfig;
-  } catch {
-    return null;
-  }
-}
-
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return [];
-  }
-}
 
 export const metadata: Metadata = {
   title: "time.md — Brutal Screen Time Analytics",
@@ -49,88 +26,23 @@ export const metadata: Metadata = {
 };
 
 const FEATURES = [
-  {
-    emoji: "📊",
-    title: "Daily Reports",
-    description: "Automatic daily summaries of your app usage",
-  },
-  {
-    emoji: "📝",
-    title: "Markdown Export",
-    description: "Export your data to Markdown for your PKM system",
-  },
-  {
-    emoji: "⏰",
-    title: "Time Blocking",
-    description: "Set focus sessions and track deep work",
-  },
-  {
-    emoji: "🔔",
-    title: "Smart Alerts",
-    description: "Get notified when you exceed time limits",
-  },
-  {
-    emoji: "📈",
-    title: "Trends & Insights",
-    description: "Weekly and monthly usage trends",
-  },
-  {
-    emoji: "🔒",
-    title: "100% Private",
-    description: "All data stays on your device",
-  },
+  { emoji: "📊", title: "Daily Reports", description: "Automatic daily summaries of your app usage" },
+  { emoji: "📝", title: "Markdown Export", description: "Export your data to Markdown for your PKM system" },
+  { emoji: "⏰", title: "Time Blocking", description: "Set focus sessions and track deep work" },
+  { emoji: "🔔", title: "Smart Alerts", description: "Get notified when you exceed time limits" },
+  { emoji: "📈", title: "Trends & Insights", description: "Weekly and monthly usage trends" },
+  { emoji: "🔒", title: "100% Private", description: "All data stays on your device" },
 ];
 
 export default async function TimeMdPage() {
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const { app, user, hasPurchased, reviews, reviewStats } = await getAppPageData(APP_SLUG, env);
 
-  // Fetch app data from database
-  const app = env?.DB ? await env.DB.prepare(
-    `SELECT id, slug, name, platforms, min_price_cents, suggested_price_cents, custom_page_config
-     FROM apps WHERE slug = ? AND is_published = 1`
-  ).bind(APP_SLUG).first<{
-    id: string;
-    slug: string;
-    name: string;
-    platforms: string;
-    min_price_cents: number;
-    suggested_price_cents: number | null;
-    custom_page_config: string | null;
-  }>() : null;
-
-  // Check if user already owns this app
-  const hasPurchased = user && app && env
-    ? !!(await queries.getPurchase(user.id, app.id, env))
-    : false;
-
-  const platforms = app ? getPlatforms(app.platforms) : ["macos", "ios"];
-  const pageConfig = app ? getPageConfig(app.custom_page_config) : null;
-  const isFree = app ? (app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0)) : false;
-  const iosAppStoreUrl = pageConfig?.ios_app_store_url?.trim() || null;
-  const iosAppStoreLabel = pageConfig?.ios_app_store_label?.trim() || "DOWNLOAD ON APP STORE (iOS)";
-  const hasMacOS = platforms.includes("macos");
-  const hasIOS = platforms.includes("ios");
+  const purchaseCardProps = app ? getPurchaseCardProps(app, user, hasPurchased) : null;
 
   return (
     <div className="tmd-page">
-      <nav className="nav tmd-nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login?redirect=/apps/time-md">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <AppNav user={user} redirectPath="/apps/time-md" className="tmd-nav" />
 
       <main className="tmd-main">
         {/* Hero Section */}
@@ -170,7 +82,6 @@ export default async function TimeMdPage() {
                 Track and analyze your screen time with brutal honesty. Export to Markdown for your personal knowledge management system. Native macOS app with menu bar integration.
               </p>
 
-              {/* Stats */}
               <div className="tmd-stats">
                 <div className="tmd-stats__item">
                   <span className="tmd-stats__value">24/7</span>
@@ -187,23 +98,9 @@ export default async function TimeMdPage() {
               </div>
             </div>
 
-            {/* Purchase Card */}
             <aside className="tmd-purchase">
-              {app ? (
-                <PurchaseCard
-                  appId={app.id}
-                  appSlug={app.slug}
-                  appName={app.name}
-                  minPriceCents={app.min_price_cents}
-                  suggestedPriceCents={app.suggested_price_cents}
-                  isFree={isFree}
-                  isAuthenticated={!!user}
-                  hasPurchased={hasPurchased}
-                  iosAppStoreUrl={iosAppStoreUrl}
-                  iosAppStoreLabel={iosAppStoreLabel}
-                  hasMacOS={hasMacOS}
-                  hasIOS={hasIOS}
-                />
+              {purchaseCardProps ? (
+                <PurchaseCard {...purchaseCardProps} />
               ) : (
                 <div className="tmd-purchase__card">
                   <span className="tmd-purchase__label">NAME YOUR PRICE</span>
@@ -276,6 +173,14 @@ export default async function TimeMdPage() {
           </div>
         </section>
 
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <section className="tmd-section">
+            <span className="tmd-section__num">004</span>
+            <ReviewsSection reviews={reviews} stats={reviewStats} />
+          </section>
+        )}
+
         {/* Final CTA */}
         <section className="tmd-cta">
           <h2 className="tmd-cta__headline">
@@ -283,28 +188,11 @@ export default async function TimeMdPage() {
             <span className="tmd-cta__highlight">time.</span>
           </h2>
           <p className="tmd-cta__text">Start tracking today. Export forever.</p>
-          {app && (
-            <PurchaseCard
-              appId={app.id}
-              appSlug={app.slug}
-              appName={app.name}
-              minPriceCents={app.min_price_cents}
-              suggestedPriceCents={app.suggested_price_cents}
-              isFree={isFree}
-              isAuthenticated={!!user}
-              hasPurchased={hasPurchased}
-              iosAppStoreUrl={iosAppStoreUrl}
-              iosAppStoreLabel={iosAppStoreLabel}
-              hasMacOS={hasMacOS}
-              hasIOS={hasIOS}
-            />
-          )}
+          {purchaseCardProps && <PurchaseCard {...purchaseCardProps} />}
         </section>
       </main>
 
-      <footer className="tmd-footer">
-        <span>© 2026 ISOLATED.TECH</span>
-      </footer>
+      <AppFooter className="tmd-footer" />
     </div>
   );
 }

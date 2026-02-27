@@ -1,8 +1,11 @@
 import { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { SignOutButton } from "@/components/sign-out-button";
+import { PurchaseCard } from "../[slug]/purchase-card";
+import { getAppPageData, getPurchaseCardProps } from "@/lib/app-data";
+import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
 import "./imghost.css";
+
+const APP_SLUG = "imghost";
 
 export const metadata: Metadata = {
   title: "imghost — Brutal Image Hosting",
@@ -23,22 +26,10 @@ export const metadata: Metadata = {
 };
 
 const FEATURES = [
-  {
-    title: "High Contrast UI",
-    description: "Pure black. Pure white. Nothing in between. Designed for focus.",
-  },
-  {
-    title: "Monospace Typography",
-    description: "Technical. Precise. Every character counts.",
-  },
-  {
-    title: "Zero Decoration",
-    description: "No gradients. No shadows. No rounded corners. Just content.",
-  },
-  {
-    title: "Precision-Inspired",
-    description: "Built for people who appreciate raw, utilitarian design.",
-  },
+  { title: "High Contrast UI", description: "Pure black. Pure white. Nothing in between. Designed for focus." },
+  { title: "Monospace Typography", description: "Technical. Precise. Every character counts." },
+  { title: "Zero Decoration", description: "No gradients. No shadows. No rounded corners. Just content." },
+  { title: "Precision-Inspired", description: "Built for people who appreciate raw, utilitarian design." },
 ];
 
 const STEPS = [
@@ -49,27 +40,15 @@ const STEPS = [
 
 export default async function ImghostPage() {
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const { app, user, hasPurchased, reviews, reviewStats } = await getAppPageData(APP_SLUG, env);
+
+  const purchaseCardProps = app ? getPurchaseCardProps(app, user, hasPurchased, {
+    ios_app_store_url: "https://apps.apple.com/us/app/imghost/id6478843906",
+  }) : null;
 
   return (
     <div className="img-page">
-      <nav className="nav img-nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login?redirect=/apps/imghost">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <AppNav user={user} redirectPath="/apps/imghost" className="img-nav" />
 
       <main className="img-main">
         {/* Hero Section */}
@@ -103,7 +82,6 @@ export default async function ImghostPage() {
                 No fluff. No friction. Just brutal efficiency. Share images from anywhere on iOS and get instant, direct links.
               </p>
 
-              {/* Stats */}
               <div className="img-stats">
                 <div className="img-stats__item">
                   <span className="img-stats__value">7</span>
@@ -124,21 +102,24 @@ export default async function ImghostPage() {
               </div>
             </div>
 
-            {/* App Store Card */}
             <aside className="img-appstore">
-              <div className="img-appstore__card">
-                <span className="img-appstore__label">AVAILABLE ON</span>
-                <h2 className="img-appstore__title">App Store</h2>
-                <a 
-                  href="https://apps.apple.com/us/app/imghost/id6478843906" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="img-appstore__btn"
-                >
-                  DOWNLOAD ON APP STORE
-                </a>
-                <p className="img-appstore__note">Download from the iOS App Store.</p>
-              </div>
+              {purchaseCardProps ? (
+                <PurchaseCard {...purchaseCardProps} />
+              ) : (
+                <div className="img-appstore__card">
+                  <span className="img-appstore__label">AVAILABLE ON</span>
+                  <h2 className="img-appstore__title">App Store</h2>
+                  <a 
+                    href="https://apps.apple.com/us/app/imghost/id6478843906" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="img-appstore__btn"
+                  >
+                    DOWNLOAD ON APP STORE
+                  </a>
+                  <p className="img-appstore__note">Download from the iOS App Store.</p>
+                </div>
+              )}
             </aside>
           </div>
         </section>
@@ -193,6 +174,14 @@ export default async function ImghostPage() {
           <p className="img-section__subtitle">No credit card required to try.</p>
         </section>
 
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <section className="img-section">
+            <span className="img-section__num">005</span>
+            <ReviewsSection reviews={reviews} stats={reviewStats} />
+          </section>
+        )}
+
         {/* Final CTA */}
         <section className="img-cta">
           <h2 className="img-cta__headline">
@@ -211,9 +200,7 @@ export default async function ImghostPage() {
         </section>
       </main>
 
-      <footer className="img-footer">
-        <span>© 2026 ISOLATED.TECH</span>
-      </footer>
+      <AppFooter className="img-footer" />
     </div>
   );
 }

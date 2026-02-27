@@ -1,8 +1,11 @@
 import { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { SignOutButton } from "@/components/sign-out-button";
+import { PurchaseCard } from "../[slug]/purchase-card";
+import { getAppPageData, getPurchaseCardProps } from "@/lib/app-data";
+import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
 import "./instareply.css";
+
+const APP_SLUG = "instareply";
 
 export const metadata: Metadata = {
   title: "instarep.ly — Instant Replies for Creators",
@@ -23,62 +26,25 @@ export const metadata: Metadata = {
 };
 
 const FEATURES = [
-  {
-    emoji: "⚡",
-    title: "Lightning Fast",
-    description: "Responses in under 200ms",
-  },
-  {
-    emoji: "🦜",
-    title: "On-brand Voice",
-    description: "Train it with your style",
-  },
-  {
-    emoji: "🔒",
-    title: "Privacy First",
-    description: "Clipboard data never leaves your device",
-  },
-  {
-    emoji: "😏",
-    title: "Emoji Intelligence",
-    description: "Matches the energy of comments",
-  },
-  {
-    emoji: "🌍",
-    title: "Multi-language",
-    description: "Automatic detection, no setup required",
-  },
-  {
-    emoji: "📊",
-    title: "Engagement Analytics",
-    description: "Track your response patterns",
-  },
+  { emoji: "⚡", title: "Lightning Fast", description: "Responses in under 200ms" },
+  { emoji: "🦜", title: "On-brand Voice", description: "Train it with your style" },
+  { emoji: "🔒", title: "Privacy First", description: "Clipboard data never leaves your device" },
+  { emoji: "😏", title: "Emoji Intelligence", description: "Matches the energy of comments" },
+  { emoji: "🌍", title: "Multi-language", description: "Automatic detection, no setup required" },
+  { emoji: "📊", title: "Engagement Analytics", description: "Track your response patterns" },
 ];
 
 export default async function InstaReplyPage() {
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const { app, user, hasPurchased, reviews, reviewStats } = await getAppPageData(APP_SLUG, env);
+
+  const purchaseCardProps = app ? getPurchaseCardProps(app, user, hasPurchased, {
+    ios_app_store_url: "https://apps.apple.com/us/app/instarep-ly/id6754865693",
+  }) : null;
 
   return (
     <div className="ir-page">
-      {/* Navigation - matches isolated.tech style */}
-      <nav className="nav ir-nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login?redirect=/apps/instareply">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <AppNav user={user} redirectPath="/apps/instareply" className="ir-nav" />
 
       <main className="ir-main">
         {/* Hero Section */}
@@ -110,7 +76,6 @@ export default async function InstaReplyPage() {
                 The iOS keyboard built for UGC creators. Generate contextual responses from your clipboard instantly. Reply to TikTok, Instagram, and YouTube comments without the burnout.
               </p>
 
-              {/* Stats */}
               <div className="ir-stats">
                 <div className="ir-stats__item">
                   <span className="ir-stats__value">10×</span>
@@ -127,21 +92,24 @@ export default async function InstaReplyPage() {
               </div>
             </div>
 
-            {/* App Store Card */}
             <aside className="ir-appstore">
-              <div className="ir-appstore__card">
-                <span className="ir-appstore__label">AVAILABLE ON</span>
-                <h2 className="ir-appstore__title">App Store</h2>
-                <a 
-                  href="https://apps.apple.com/us/app/instarep-ly/id6754865693" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="ir-appstore__btn"
-                >
-                  DOWNLOAD ON APP STORE
-                </a>
-                <p className="ir-appstore__note">Download from the iOS App Store.</p>
-              </div>
+              {purchaseCardProps ? (
+                <PurchaseCard {...purchaseCardProps} />
+              ) : (
+                <div className="ir-appstore__card">
+                  <span className="ir-appstore__label">AVAILABLE ON</span>
+                  <h2 className="ir-appstore__title">App Store</h2>
+                  <a 
+                    href="https://apps.apple.com/us/app/instarep-ly/id6754865693" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="ir-appstore__btn"
+                  >
+                    DOWNLOAD ON APP STORE
+                  </a>
+                  <p className="ir-appstore__note">Download from the iOS App Store.</p>
+                </div>
+              )}
             </aside>
           </div>
         </section>
@@ -214,6 +182,14 @@ export default async function InstaReplyPage() {
           </div>
         </section>
 
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <section className="ir-section">
+            <span className="ir-section__num">004</span>
+            <ReviewsSection reviews={reviews} stats={reviewStats} />
+          </section>
+        )}
+
         {/* Final CTA */}
         <section className="ir-cta">
           <h2 className="ir-cta__headline">
@@ -232,9 +208,7 @@ export default async function InstaReplyPage() {
         </section>
       </main>
 
-      <footer className="ir-footer">
-        <span>© 2026 ISOLATED.TECH</span>
-      </footer>
+      <AppFooter className="ir-footer" />
     </div>
   );
 }

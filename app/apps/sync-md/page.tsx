@@ -1,8 +1,11 @@
 import { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { SignOutButton } from "@/components/sign-out-button";
+import { PurchaseCard } from "../[slug]/purchase-card";
+import { getAppPageData, getPurchaseCardProps } from "@/lib/app-data";
+import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
 import "./sync-md.css";
+
+const APP_SLUG = "sync-md";
 
 export const metadata: Metadata = {
   title: "Sync.md — Git on your iPhone",
@@ -23,36 +26,12 @@ export const metadata: Metadata = {
 };
 
 const FEATURES = [
-  {
-    emoji: "📂",
-    title: "Real Git Operations",
-    description: "Clone, pull, commit, push — all from your iPhone",
-  },
-  {
-    emoji: "✍️",
-    title: "Markdown Editor",
-    description: "Native editing with syntax highlighting",
-  },
-  {
-    emoji: "🔄",
-    title: "Auto Sync",
-    description: "Automatic commits and pushes on save",
-  },
-  {
-    emoji: "🔒",
-    title: "SSH Keys",
-    description: "Secure authentication with GitHub, GitLab, etc.",
-  },
-  {
-    emoji: "📱",
-    title: "Native iOS",
-    description: "Built for iPhone, not a web wrapper",
-  },
-  {
-    emoji: "⚡",
-    title: "Instant Access",
-    description: "Your notes are always up to date",
-  },
+  { emoji: "📂", title: "Real Git Operations", description: "Clone, pull, commit, push — all from your iPhone" },
+  { emoji: "✍️", title: "Markdown Editor", description: "Native editing with syntax highlighting" },
+  { emoji: "🔄", title: "Auto Sync", description: "Automatic commits and pushes on save" },
+  { emoji: "🔒", title: "SSH Keys", description: "Secure authentication with GitHub, GitLab, etc." },
+  { emoji: "📱", title: "Native iOS", description: "Built for iPhone, not a web wrapper" },
+  { emoji: "⚡", title: "Instant Access", description: "Your notes are always up to date" },
 ];
 
 const WORKFLOWS = [
@@ -64,27 +43,15 @@ const WORKFLOWS = [
 
 export default async function SyncMdPage() {
   const env = getEnv();
-  const user = env ? await getCurrentUser(env) : null;
+  const { app, user, hasPurchased, reviews, reviewStats } = await getAppPageData(APP_SLUG, env);
+
+  const purchaseCardProps = app ? getPurchaseCardProps(app, user, hasPurchased, {
+    ios_app_store_url: "https://apps.apple.com/us/app/sync-md/id6502457567",
+  }) : null;
 
   return (
     <div className="symd-page">
-      <nav className="nav symd-nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login?redirect=/apps/sync-md">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <AppNav user={user} redirectPath="/apps/sync-md" className="symd-nav" />
 
       <main className="symd-main">
         {/* Hero Section */}
@@ -116,7 +83,6 @@ export default async function SyncMdPage() {
                 Real Git on your iPhone. Clone, pull, commit & push any repo. No terminals, no browser. Just Markdown synced with Git.
               </p>
 
-              {/* Feature Pills */}
               <div className="symd-pills">
                 <span className="symd-pill">📂 100 File Operations</span>
                 <span className="symd-pill">✏️ Markdown + Git-Sync</span>
@@ -125,21 +91,24 @@ export default async function SyncMdPage() {
               </div>
             </div>
 
-            {/* App Store Card */}
             <aside className="symd-appstore">
-              <div className="symd-appstore__card">
-                <span className="symd-appstore__label">AVAILABLE ON</span>
-                <h2 className="symd-appstore__title">App Store</h2>
-                <a 
-                  href="https://apps.apple.com/us/app/sync-md/id6502457567" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="symd-appstore__btn"
-                >
-                  DOWNLOAD ON APP STORE
-                </a>
-                <p className="symd-appstore__note">Download from the iOS App Store.</p>
-              </div>
+              {purchaseCardProps ? (
+                <PurchaseCard {...purchaseCardProps} />
+              ) : (
+                <div className="symd-appstore__card">
+                  <span className="symd-appstore__label">AVAILABLE ON</span>
+                  <h2 className="symd-appstore__title">App Store</h2>
+                  <a 
+                    href="https://apps.apple.com/us/app/sync-md/id6502457567" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="symd-appstore__btn"
+                  >
+                    DOWNLOAD ON APP STORE
+                  </a>
+                  <p className="symd-appstore__note">Download from the iOS App Store.</p>
+                </div>
+              )}
             </aside>
           </div>
         </section>
@@ -198,6 +167,14 @@ export default async function SyncMdPage() {
           </div>
         </section>
 
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <section className="symd-section">
+            <span className="symd-section__num">004</span>
+            <ReviewsSection reviews={reviews} stats={reviewStats} />
+          </section>
+        )}
+
         {/* Final CTA */}
         <section className="symd-cta">
           <h2 className="symd-cta__headline">
@@ -216,9 +193,7 @@ export default async function SyncMdPage() {
         </section>
       </main>
 
-      <footer className="symd-footer">
-        <span>© 2026 ISOLATED.TECH</span>
-      </footer>
+      <AppFooter className="symd-footer" />
     </div>
   );
 }
