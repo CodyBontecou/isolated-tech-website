@@ -42,7 +42,20 @@ export function ReviewCard({ review }: { review: Review }) {
       {review.title && <h4 className="review-card__title">{review.title}</h4>}
       {review.body && <p className="review-card__body">{review.body}</p>}
       <footer className="review-card__footer">
-        <span className="review-card__author">{review.user_name || "Anonymous"}</span>
+        <div className="review-card__author">
+          {review.user_image ? (
+            <img 
+              src={review.user_image} 
+              alt="" 
+              className="review-card__avatar"
+            />
+          ) : (
+            <span className="review-card__avatar review-card__avatar--placeholder">
+              {(review.user_name || "A")[0].toUpperCase()}
+            </span>
+          )}
+          <span className="review-card__name">{review.user_name || "Anonymous"}</span>
+        </div>
       </footer>
     </article>
   );

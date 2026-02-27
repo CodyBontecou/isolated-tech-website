@@ -45,7 +45,7 @@ function PurchasedAppCard({
 }) {
   return (
     <div className={`purchased-card ${isNew ? "purchased-card--new" : ""}`}>
-      <div className="purchased-card__header">
+      <Link href={`/apps/${purchase.app_slug}`} className="purchased-card__header purchased-card__header--clickable">
         <div className="purchased-card__icon">
           {purchase.app_icon_url ? (
             <img src={purchase.app_icon_url} alt={`${purchase.app_name} icon`} />
@@ -59,7 +59,7 @@ function PurchasedAppCard({
             v{purchase.version} • Purchased {formatDate(purchase.purchased_at)}
           </p>
         </div>
-      </div>
+      </Link>
 
       <div className="purchased-card__actions">
         {!purchase.version_id ? (

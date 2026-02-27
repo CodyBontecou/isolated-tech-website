@@ -7,6 +7,7 @@ export interface Review {
   body: string | null;
   created_at: string;
   user_name: string | null;
+  user_image: string | null;
 }
 
 export interface ReviewStats {

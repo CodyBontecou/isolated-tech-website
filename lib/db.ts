@@ -136,10 +136,11 @@ export const queries = {
       body: string | null;
       created_at: string;
       user_name: string | null;
+      user_image: string | null;
     }>(
-      `SELECT r.*, u.name as user_name 
+      `SELECT r.*, u.name as user_name, u.image as user_image 
        FROM reviews r 
-       JOIN users u ON r.user_id = u.id 
+       JOIN "user" u ON r.user_id = u.id 
        WHERE r.app_id = ? AND r.is_approved = 1
        ORDER BY r.created_at DESC`,
       [appId],

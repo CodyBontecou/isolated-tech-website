@@ -1912,6 +1912,24 @@ img {
   margin-bottom: 1rem;
 }
 
+.purchased-card__header--clickable {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  margin-bottom: 0.5rem;
+  transition: background 0.15s ease;
+}
+
+.purchased-card__header--clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.purchased-card__header--clickable:hover .purchased-card__name {
+  color: var(--white);
+}
+
 .purchased-card__icon {
   width: 48px;
   height: 48px;
@@ -4711,6 +4729,29 @@ img {
 }
 
 .review-card__author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.review-card__avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.review-card__avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.review-card__name {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-muted);
