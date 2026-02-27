@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { query } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
+import { PurchasesTable } from "./purchases-table";
 
 export const metadata: Metadata = {
   title: "Purchases — Admin — ISOLATED.TECH",
@@ -51,43 +51,6 @@ function formatMoney(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function StatusBadge({ status }: { status: string }) {
-  if (status === "refunded") {
-    return (
-      <span
-        style={{
-          color: "#f87171",
-          fontSize: "0.7rem",
-          fontWeight: 700,
-        }}
-      >
-        REFUNDED
-      </span>
-    );
-  }
-  return (
-    <span
-      style={{
-        color: "#4ade80",
-        fontSize: "0.7rem",
-        fontWeight: 700,
-      }}
-    >
-      COMPLETED
-    </span>
-  );
-}
-
 export default async function AdminPurchasesPage() {
   const purchases = await getPurchases();
 
@@ -132,69 +95,7 @@ export default async function AdminPurchasesPage() {
 
       {purchases.length > 0 ? (
         <>
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>CUSTOMER</th>
-                  <th>APP</th>
-                  <th>AMOUNT</th>
-                  <th>STATUS</th>
-                  <th>DATE</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {purchases.map((purchase) => (
-                  <tr key={purchase.id}>
-                    <td>
-                      <div className="admin-table__user">
-                        <span className="admin-table__user-name">
-                          {purchase.user_name || "Anonymous"}
-                        </span>
-                        <span className="admin-table__user-email">
-                          {purchase.user_email}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <Link
-                        href={`/admin/apps/${purchase.app_id}`}
-                        style={{ color: "var(--white)" }}
-                      >
-                        {purchase.app_name}
-                      </Link>
-                    </td>
-                    <td className="admin-table__money">
-                      {formatMoney(purchase.amount_cents)}
-                    </td>
-                    <td>
-                      <StatusBadge status={purchase.status} />
-                    </td>
-                    <td className="admin-table__date">
-                      {formatDate(purchase.created_at)}
-                    </td>
-                    <td>
-                      <div className="admin-table__actions">
-                        <Link
-                          href={`/admin/purchases/${purchase.id}`}
-                          className="admin-table__btn"
-                        >
-                          VIEW
-                        </Link>
-                        {purchase.status === "completed" &&
-                          purchase.amount_cents > 0 && (
-                            <button className="admin-table__btn admin-table__btn--danger">
-                              REFUND
-                            </button>
-                          )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PurchasesTable purchases={purchases} />
 
           {/* Pagination */}
           <div

@@ -44,10 +44,11 @@ export async function GET(
     }
 
     // Verify purchase (admins bypass)
+    // Allow 'completed' and 'refunded_with_access' statuses
     if (!user.isAdmin) {
       const purchase = await env.DB.prepare(
         `SELECT id FROM purchases 
-         WHERE user_id = ? AND app_id = ? AND status = 'completed'`
+         WHERE user_id = ? AND app_id = ? AND status IN ('completed', 'refunded_with_access')`
       )
         .bind(user.id, appId)
         .first<{ id: string }>();

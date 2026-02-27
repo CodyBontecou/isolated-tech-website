@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { queryOne } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
+import { RefundButton } from "@/components/refund-modal";
 
 export const metadata: Metadata = {
   title: "Purchase Details — Admin — ISOLATED.TECH",
@@ -114,17 +115,22 @@ export default async function PurchaseDetailPage({
           >
             <span
               style={{
-                color: purchase.status === "refunded" ? "#f87171" : "#4ade80",
+                color: purchase.status === "completed" ? "#4ade80" : "#f87171",
                 fontWeight: 700,
                 fontSize: "0.9rem",
               }}
             >
-              {purchase.status.toUpperCase()}
+              {purchase.status === "refunded_with_access"
+                ? "REFUNDED (KEPT ACCESS)"
+                : purchase.status.toUpperCase()}
             </span>
             {purchase.status === "completed" && purchase.amount_cents > 0 && (
-              <button className="admin-table__btn admin-table__btn--danger">
-                REFUND
-              </button>
+              <RefundButton
+                purchaseId={purchase.id}
+                customerEmail={purchase.user_email}
+                appName={purchase.app_name}
+                amount={formatMoney(purchase.amount_cents)}
+              />
             )}
           </div>
         </div>

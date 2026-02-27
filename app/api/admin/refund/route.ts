@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { purchaseId } = body;
+    const { purchaseId, keepAccess } = body;
 
     if (!purchaseId) {
       return NextResponse.json(
@@ -97,11 +97,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Update purchase status
+    // Use 'refunded_with_access' if customer should keep access, otherwise 'refunded'
     const now = new Date().toISOString();
+    const newStatus = keepAccess ? "refunded_with_access" : "refunded";
     await env.DB.prepare(
-      `UPDATE purchases SET status = 'refunded', refunded_at = ? WHERE id = ?`
+      `UPDATE purchases SET status = ?, refunded_at = ? WHERE id = ?`
     )
-      .bind(now, purchaseId)
+      .bind(newStatus, now, purchaseId)
       .run();
 
     // Get user info for notification (Better Auth 'user' table)

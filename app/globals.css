@@ -5428,6 +5428,185 @@ html.light .hero__image-overlay {
 }
 
 /* ============================================
+   REFUND MODAL
+   ============================================ */
+
+.refund-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.refund-modal {
+  background: #1a1a1a;
+  border: 1px solid #444;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.refund-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #333;
+}
+
+.refund-modal__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin: 0;
+}
+
+.refund-modal__close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  transition: color 0.15s;
+}
+
+.refund-modal__close:hover {
+  color: var(--text);
+}
+
+.refund-modal__body {
+  padding: 1.5rem;
+}
+
+.refund-modal__info {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #333;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.refund-modal__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+}
+
+.refund-modal__row:not(:last-child) {
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.refund-modal__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.refund-modal__value {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.refund-modal__value--amount {
+  font-weight: 700;
+  color: #f87171;
+}
+
+.refund-modal__option {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid #333;
+}
+
+.refund-modal__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.refund-modal__checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #4ade80;
+  cursor: pointer;
+}
+
+.refund-modal__checkbox-text {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.refund-modal__option-hint {
+  margin: 0.75rem 0 0 0;
+  padding-left: 1.75rem;
+  font-size: 0.75rem;
+  color: #888;
+  line-height: 1.4;
+}
+
+.refund-modal__error {
+  padding: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+
+.refund-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #333;
+}
+
+.refund-modal__btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.refund-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refund-modal__btn--cancel {
+  background: transparent;
+  border: 1px solid #444;
+  color: #999;
+}
+
+.refund-modal__btn--cancel:hover:not(:disabled) {
+  border-color: #666;
+  color: #f0f0f0;
+}
+
+.refund-modal__btn--confirm {
+  background: #f87171;
+  color: #000;
+}
+
+.refund-modal__btn--confirm:hover:not(:disabled) {
+  background: #ef4444;
+}
+
+/* ============================================
    PUBLIC FEEDBACK SYSTEM (Featurebase-style)
    ============================================ */
 
