@@ -5606,6 +5606,81 @@ html.light .hero__image-overlay {
   background: #ef4444;
 }
 
+/* Refund Modal - Light Mode */
+html.light .refund-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+html.light .refund-modal {
+  background: #ffffff;
+  border-color: #e5e5e5;
+}
+
+html.light .refund-modal__header {
+  border-bottom-color: #e5e5e5;
+}
+
+html.light .refund-modal__title {
+  color: #171717;
+}
+
+html.light .refund-modal__close {
+  color: #737373;
+}
+
+html.light .refund-modal__close:hover {
+  color: #171717;
+}
+
+html.light .refund-modal__info {
+  background: #fafafa;
+  border-color: #e5e5e5;
+}
+
+html.light .refund-modal__row:not(:last-child) {
+  border-bottom-color: #e5e5e5;
+}
+
+html.light .refund-modal__label {
+  color: #737373;
+}
+
+html.light .refund-modal__value {
+  color: #171717;
+}
+
+html.light .refund-modal__option {
+  background: #fafafa;
+  border-color: #e5e5e5;
+}
+
+html.light .refund-modal__checkbox-text {
+  color: #171717;
+}
+
+html.light .refund-modal__option-hint {
+  color: #737373;
+}
+
+html.light .refund-modal__error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+html.light .refund-modal__actions {
+  border-top-color: #e5e5e5;
+}
+
+html.light .refund-modal__btn--cancel {
+  border-color: #d4d4d4;
+  color: #525252;
+}
+
+html.light .refund-modal__btn--cancel:hover:not(:disabled) {
+  border-color: #a3a3a3;
+  color: #171717;
+}
+
 /* ============================================
    PUBLIC FEEDBACK SYSTEM (Featurebase-style)
    ============================================ */
