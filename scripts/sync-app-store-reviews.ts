@@ -5,7 +5,9 @@
  * Usage:
  *   npx tsx scripts/sync-app-store-reviews.ts
  *   
- * No authentication required - uses public RSS feed
+ * Environment variables:
+ *   - CLOUDFLARE_API_TOKEN (required for GitHub Actions)
+ *   - CLOUDFLARE_ACCOUNT_ID (optional, defaults to wrangler.jsonc value)
  */
 
 import { readFileSync, existsSync } from "fs";
@@ -33,6 +35,9 @@ function loadEnvFile(path: string) {
 }
 
 loadEnvFile(join(process.cwd(), ".env.local"));
+
+const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "e4265f322e6380ee832b83ad45e3e8c0";
+const DATABASE_ID = "32793cc4-3186-48c0-a2ca-74b071510ce1";
 
 interface AppConfig {
   id: string;
@@ -62,12 +67,9 @@ interface RSSReviewEntry {
 
 /**
  * Fetch reviews from Apple RSS feed (public, no auth required)
- * Limited to ~50 most recent reviews per country
  */
 async function fetchAppStoreReviewsRSS(appStoreId: string): Promise<Review[]> {
   const reviews: Review[] = [];
-  
-  // Fetch from multiple countries
   const countries = ["us", "gb", "ca", "au", "de", "fr", "jp"];
   
   for (const country of countries) {
@@ -81,16 +83,22 @@ async function fetchAppStoreReviewsRSS(appStoreId: string): Promise<Review[]> {
         continue;
       }
       
-      const data = await response.json() as { feed?: { entry?: RSSReviewEntry[] } };
-      const entries = data.feed?.entry || [];
+      const data = await response.json() as { feed?: { entry?: RSSReviewEntry | RSSReviewEntry[] } };
+      let entries = data.feed?.entry;
       
-      // First entry is sometimes app info, skip if no rating
+      // Handle single entry or array
+      if (!entries) {
+        console.log(`    No entries found`);
+        continue;
+      }
+      if (!Array.isArray(entries)) {
+        entries = [entries];
+      }
+      
       const reviewEntries = entries.filter((e: RSSReviewEntry) => e["im:rating"]);
       
       for (const entry of reviewEntries) {
         const reviewId = entry.id?.label || `${appStoreId}-${country}-${Date.now()}-${Math.random()}`;
-        
-        // Skip if we already have this review
         if (reviews.some(r => r.id === reviewId)) continue;
         
         reviews.push({
@@ -105,7 +113,6 @@ async function fetchAppStoreReviewsRSS(appStoreId: string): Promise<Review[]> {
       }
       
       console.log(`    Found ${reviewEntries.length} reviews`);
-      
     } catch (e) {
       console.log(`    Error: ${e instanceof Error ? e.message : e}`);
     }
@@ -115,24 +122,42 @@ async function fetchAppStoreReviewsRSS(appStoreId: string): Promise<Review[]> {
 }
 
 /**
- * Execute D1 query via wrangler CLI
+ * Execute D1 query via Cloudflare API (for GitHub Actions) or wrangler CLI (local)
  */
-function executeD1Query(sql: string): string {
-  const escaped = sql.replace(/'/g, "'\"'\"'");
-  const cmd = `npx wrangler d1 execute isolated-tech-store --remote --command '${escaped}' --json 2>/dev/null`;
+async function executeD1Query(sql: string): Promise<unknown[]> {
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
   
-  try {
-    const result = execSync(cmd, { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 });
-    return result;
-  } catch (error) {
-    console.error("D1 query failed");
-    throw error;
+  if (apiToken) {
+    // Use Cloudflare API directly
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/d1/database/${DATABASE_ID}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sql }),
+      }
+    );
+    
+    const result = await response.json() as { success: boolean; errors?: unknown[]; result?: unknown[] };
+    
+    if (!result.success) {
+      throw new Error(`D1 API error: ${JSON.stringify(result.errors)}`);
+    }
+    
+    return result.result || [];
+  } else {
+    // Fall back to wrangler CLI for local dev
+    const escaped = sql.replace(/'/g, "'\"'\"'");
+    const cmd = `npx wrangler d1 execute isolated-tech-store --remote --command '${escaped}' --json 2>/dev/null`;
+    
+    const output = execSync(cmd, { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 });
+    return JSON.parse(output);
   }
 }
 
-/**
- * Escape SQL string value
- */
 function sqlEscape(value: string | null): string {
   if (value === null) return "NULL";
   return `'${value.replace(/'/g, "''")}'`;
@@ -144,15 +169,13 @@ async function main() {
   // Get apps with app_store_id configured
   console.log("📱 Fetching apps with App Store IDs...\n");
   
-  const appsResult = executeD1Query(
+  const appsResult = await executeD1Query(
     `SELECT id, slug, name, custom_page_config FROM apps WHERE is_published = 1`
-  );
-  
-  const appsData = JSON.parse(appsResult) as Array<{ results: Array<{ id: string; slug: string; name: string; custom_page_config: string | null }> }>;
+  ) as Array<{ results: Array<{ id: string; slug: string; name: string; custom_page_config: string | null }> }>;
   
   const apps: AppConfig[] = [];
   
-  for (const row of appsData[0]?.results || []) {
+  for (const row of appsResult[0]?.results || []) {
     if (row.custom_page_config) {
       try {
         const config = JSON.parse(row.custom_page_config) as { app_store_id?: string };
@@ -184,15 +207,11 @@ async function main() {
     console.log(`   App Store ID: ${app.app_store_id}`);
 
     try {
-      // Fetch reviews from RSS feed
       const reviews = await fetchAppStoreReviewsRSS(app.app_store_id);
       console.log(`   Total unique reviews: ${reviews.length}`);
 
-      if (reviews.length === 0) {
-        continue;
-      }
+      if (reviews.length === 0) continue;
 
-      // Upsert reviews to D1
       let synced = 0;
       for (const review of reviews) {
         const sql = `INSERT INTO app_store_reviews (id, app_id, rating, title, body, reviewer_nickname, territory, app_store_version, review_created_at, synced_at)
@@ -206,15 +225,14 @@ async function main() {
              synced_at = datetime('now')`;
         
         try {
-          executeD1Query(sql);
+          await executeD1Query(sql);
           synced++;
         } catch (e) {
-          console.error(`   ⚠️  Failed to insert review ${review.id}`);
+          console.error(`   ⚠️  Failed to insert review ${review.id}: ${e}`);
         }
       }
 
-      // Update sync log
-      executeD1Query(
+      await executeD1Query(
         `INSERT INTO app_store_sync_log (app_id, last_synced_at, reviews_fetched, error_message)
          VALUES (${sqlEscape(app.id)}, datetime('now'), ${synced}, NULL)
          ON CONFLICT(app_id) DO UPDATE SET
