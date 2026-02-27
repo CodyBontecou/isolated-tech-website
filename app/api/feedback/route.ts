@@ -1,7 +1,161 @@
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { nanoid, queryOne, execute } from "@/lib/db";
+import { nanoid, queryOne, execute, query } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+
+const PAGE_SIZE = 20;
+
+interface FeatureRequest {
+  id: string;
+  user_id: string;
+  user_name: string | null;
+  user_image: string | null;
+  app_id: string | null;
+  app_name: string | null;
+  app_slug: string | null;
+  app_icon: string | null;
+  type: "feature" | "bug" | "improvement";
+  title: string;
+  body: string;
+  status: "open" | "planned" | "in_progress" | "completed" | "closed";
+  vote_count: number;
+  comment_count: number;
+  created_at: string;
+  user_voted: number;
+}
+
+/**
+ * GET /api/feedback - List feature requests with cursor-based pagination
+ * Query params:
+ *   - cursor: ID of last item from previous page
+ *   - sort: 'votes' | 'newest' | 'comments' (default: votes)
+ */
+export async function GET(request: Request) {
+  const env = getEnv();
+  const user = env ? await getCurrentUser(env) : null;
+  const userId = user?.id || "";
+
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get("cursor");
+  const sort = url.searchParams.get("sort") || "votes";
+
+  try {
+    // Build the ORDER BY clause based on sort
+    let orderBy: string;
+    let cursorCondition = "";
+    const params: unknown[] = [userId];
+
+    switch (sort) {
+      case "newest":
+        orderBy = "fr.created_at DESC, fr.id DESC";
+        if (cursor) {
+          // Get cursor item's created_at
+          const cursorItem = await queryOne<{ created_at: string }>(
+            `SELECT created_at FROM feature_requests WHERE id = ?`,
+            [cursor],
+            env
+          );
+          if (cursorItem) {
+            cursorCondition = `AND (fr.created_at < ? OR (fr.created_at = ? AND fr.id < ?))`;
+            params.push(cursorItem.created_at, cursorItem.created_at, cursor);
+          }
+        }
+        break;
+      case "comments":
+        orderBy = "fr.comment_count DESC, fr.created_at DESC, fr.id DESC";
+        if (cursor) {
+          const cursorItem = await queryOne<{ comment_count: number; created_at: string }>(
+            `SELECT comment_count, created_at FROM feature_requests WHERE id = ?`,
+            [cursor],
+            env
+          );
+          if (cursorItem) {
+            cursorCondition = `AND (fr.comment_count < ? OR (fr.comment_count = ? AND fr.created_at < ?) OR (fr.comment_count = ? AND fr.created_at = ? AND fr.id < ?))`;
+            params.push(
+              cursorItem.comment_count,
+              cursorItem.comment_count,
+              cursorItem.created_at,
+              cursorItem.comment_count,
+              cursorItem.created_at,
+              cursor
+            );
+          }
+        }
+        break;
+      case "votes":
+      default:
+        orderBy = "fr.vote_count DESC, fr.created_at DESC, fr.id DESC";
+        if (cursor) {
+          const cursorItem = await queryOne<{ vote_count: number; created_at: string }>(
+            `SELECT vote_count, created_at FROM feature_requests WHERE id = ?`,
+            [cursor],
+            env
+          );
+          if (cursorItem) {
+            cursorCondition = `AND (fr.vote_count < ? OR (fr.vote_count = ? AND fr.created_at < ?) OR (fr.vote_count = ? AND fr.created_at = ? AND fr.id < ?))`;
+            params.push(
+              cursorItem.vote_count,
+              cursorItem.vote_count,
+              cursorItem.created_at,
+              cursorItem.vote_count,
+              cursorItem.created_at,
+              cursor
+            );
+          }
+        }
+        break;
+    }
+
+    params.push(PAGE_SIZE + 1); // Fetch one extra to check if there's more
+
+    const items = await query<FeatureRequest>(
+      `SELECT 
+         fr.id,
+         fr.user_id,
+         u.name as user_name,
+         u.image as user_image,
+         fr.app_id,
+         a.name as app_name,
+         a.slug as app_slug,
+         a.icon_url as app_icon,
+         fr.type,
+         fr.title,
+         fr.body,
+         fr.status,
+         fr.vote_count,
+         fr.comment_count,
+         fr.created_at,
+         COALESCE((SELECT 1 FROM feature_votes fv WHERE fv.request_id = fr.id AND fv.user_id = ?), 0) as user_voted
+       FROM feature_requests fr
+       JOIN "user" u ON fr.user_id = u.id
+       LEFT JOIN apps a ON fr.app_id = a.id
+       WHERE fr.status != 'closed' ${cursorCondition}
+       ORDER BY ${orderBy}
+       LIMIT ?`,
+      params,
+      env
+    );
+
+    const hasMore = items.length > PAGE_SIZE;
+    const results = hasMore ? items.slice(0, PAGE_SIZE) : items;
+    const nextCursor = hasMore && results.length > 0 ? results[results.length - 1].id : null;
+
+    return new Response(
+      JSON.stringify({
+        items: results,
+        nextCursor,
+        hasMore,
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("List feedback error:", error);
+    return new Response(
+      JSON.stringify({ error: "Failed to fetch feedback" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+}
 
 export async function POST(request: Request) {
   const env = getEnv();

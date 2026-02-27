@@ -10,6 +10,7 @@ import { whoamiCommand } from './commands/whoami.js';
 import { initCommand } from './commands/init.js';
 import { publishCommand } from './commands/publish.js';
 import { appsCommand } from './commands/apps.js';
+import { ntfyCommand } from './commands/ntfy.js';
 
 const program = new Command();
 
@@ -40,6 +41,9 @@ program.addCommand(appsCommand);
 
 // Publishing
 program.addCommand(publishCommand);
+
+// Alerting
+program.addCommand(ntfyCommand);
 
 // Default action (no command) - show status
 program.action(async () => {

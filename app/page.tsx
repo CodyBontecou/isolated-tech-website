@@ -267,6 +267,8 @@ export default async function HomePage() {
         </a>
         <div className="nav__links">
           <a href="#apps">APPS</a>
+          <a href="/feedback">FEEDBACK</a>
+          <a href="/roadmap">ROADMAP</a>
           {user ? (
             <>
               {user.isAdmin && <a href="/admin">ADMIN</a>}
@@ -345,6 +347,8 @@ export default async function HomePage() {
           <span className="store-footer__tagline">Software that ships.</span>
         </div>
         <div className="store-footer__links">
+          <a href="/feedback">FEEDBACK</a>
+          <a href="/roadmap">ROADMAP</a>
           <a href="https://instagram.com/isolated.tech" target="_blank" rel="noopener">
             INSTAGRAM
           </a>

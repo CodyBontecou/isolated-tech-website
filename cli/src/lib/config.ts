@@ -10,6 +10,7 @@ export const API_URL = process.env.ISOLATED_API_URL || 'https://isolated.tech';
 
 export interface Config {
   apiUrl?: string;
+  ntfyTopic?: string;
 }
 
 export interface Credentials {

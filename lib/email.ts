@@ -301,6 +301,209 @@ Questions? Contact support@isolated.tech
 /**
  * Generate update notification email HTML
  */
+/**
+ * Generate feedback status change email HTML
+ */
+export function generateFeedbackStatusEmail(
+  requestTitle: string,
+  oldStatus: string,
+  newStatus: string,
+  adminResponse: string | null,
+  userName: string | null,
+  feedbackUrl: string
+): { html: string; text: string } {
+  const greeting = userName ? `Hi ${userName},` : "Hi,";
+  const statusLabel = newStatus.replace("_", " ").toUpperCase();
+  const statusColors: Record<string, string> = {
+    open: "#3b82f6",
+    planned: "#f59e0b",
+    in_progress: "#8b5cf6",
+    completed: "#22c55e",
+    closed: "#6b7280",
+  };
+  const statusColor = statusColors[newStatus] || "#3b82f6";
+
+  const responseHtml = adminResponse
+    ? `<div style="margin: 20px 0; padding: 15px; background: #0a0a0a; border-left: 2px solid ${statusColor};">
+        <p style="margin: 0 0 8px 0; color: #666; font-size: 11px; letter-spacing: 1px;">OFFICIAL RESPONSE</p>
+        <p style="margin: 0; color: #f0f0f0; font-size: 13px; line-height: 1.6;">${adminResponse.replace(/\n/g, "<br>")}</p>
+      </div>`
+    : "";
+
+  const responseText = adminResponse ? `\nOfficial Response:\n${adminResponse}\n` : "";
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status Update</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: 'Courier New', monospace;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; border: 1px solid #333;">
+          <tr>
+            <td style="padding: 30px;">
+              <h1 style="margin: 0 0 30px 0; font-size: 14px; color: #666; letter-spacing: 2px;">
+                ISOLATED<span style="color: #fff;">.</span>TECH
+              </h1>
+              
+              <p style="margin: 0 0 20px 0; color: #f0f0f0; font-size: 14px;">${greeting}</p>
+              
+              <p style="margin: 0 0 20px 0; color: #f0f0f0; font-size: 14px;">
+                Your feedback request has been updated:
+              </p>
+              
+              <table width="100%" style="border-top: 1px solid #333; border-bottom: 1px solid #333; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 15px 0;">
+                    <span style="color: #666; font-size: 11px; letter-spacing: 1px;">REQUEST</span><br>
+                    <span style="color: #f0f0f0; font-size: 14px; font-weight: bold;">${requestTitle}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 0 15px 0;">
+                    <span style="color: #666; font-size: 11px; letter-spacing: 1px;">STATUS</span><br>
+                    <span style="color: ${statusColor}; font-size: 14px; font-weight: bold;">${statusLabel}</span>
+                  </td>
+                </tr>
+              </table>
+              
+              ${responseHtml}
+              
+              <a href="${feedbackUrl}" style="display: inline-block; background: #f0f0f0; color: #0a0a0a; padding: 12px 24px; font-size: 12px; font-weight: bold; text-decoration: none; letter-spacing: 1px; margin-top: 15px;">
+                VIEW REQUEST →
+              </a>
+              
+              <p style="margin: 40px 0 0 0; color: #666; font-size: 11px;">
+                You're receiving this because you submitted this feedback request.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+  const text = `
+ISOLATED.TECH
+
+${greeting}
+
+Your feedback request has been updated:
+
+REQUEST: ${requestTitle}
+STATUS: ${statusLabel}
+${responseText}
+View request: ${feedbackUrl}
+
+---
+You're receiving this because you submitted this feedback request.
+`;
+
+  return { html, text };
+}
+
+/**
+ * Generate new comment notification email HTML
+ */
+export function generateCommentNotificationEmail(
+  requestTitle: string,
+  commenterName: string,
+  commentBody: string,
+  isAdminReply: boolean,
+  userName: string | null,
+  feedbackUrl: string
+): { html: string; text: string } {
+  const greeting = userName ? `Hi ${userName},` : "Hi,";
+  const replyLabel = isAdminReply ? "TEAM RESPONSE" : "NEW COMMENT";
+  const replyColor = isAdminReply ? "#22c55e" : "#60a5fa";
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${replyLabel}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0a0a0a; font-family: 'Courier New', monospace;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #1a1a1a; border: 1px solid #333;">
+          <tr>
+            <td style="padding: 30px;">
+              <h1 style="margin: 0 0 30px 0; font-size: 14px; color: #666; letter-spacing: 2px;">
+                ISOLATED<span style="color: #fff;">.</span>TECH
+              </h1>
+              
+              <p style="margin: 0 0 20px 0; color: #f0f0f0; font-size: 14px;">${greeting}</p>
+              
+              <p style="margin: 0 0 20px 0; color: #f0f0f0; font-size: 14px;">
+                ${isAdminReply ? "The team responded to" : `${commenterName} commented on`} your feedback request:
+              </p>
+              
+              <table width="100%" style="border-top: 1px solid #333; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 15px 0;">
+                    <span style="color: #666; font-size: 11px; letter-spacing: 1px;">REQUEST</span><br>
+                    <span style="color: #f0f0f0; font-size: 14px; font-weight: bold;">${requestTitle}</span>
+                  </td>
+                </tr>
+              </table>
+              
+              <div style="margin: 0 0 20px 0; padding: 15px; background: #0a0a0a; border-left: 2px solid ${replyColor};">
+                <p style="margin: 0 0 8px 0; color: ${replyColor}; font-size: 11px; letter-spacing: 1px; font-weight: 600;">
+                  ${isAdminReply ? "🏷️ " : ""}${commenterName.toUpperCase()}
+                </p>
+                <p style="margin: 0; color: #ccc; font-size: 13px; line-height: 1.6;">${commentBody.replace(/\n/g, "<br>")}</p>
+              </div>
+              
+              <a href="${feedbackUrl}" style="display: inline-block; background: #f0f0f0; color: #0a0a0a; padding: 12px 24px; font-size: 12px; font-weight: bold; text-decoration: none; letter-spacing: 1px;">
+                VIEW DISCUSSION →
+              </a>
+              
+              <p style="margin: 40px 0 0 0; color: #666; font-size: 11px;">
+                You're receiving this because you submitted this feedback request.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+  const text = `
+ISOLATED.TECH
+
+${greeting}
+
+${isAdminReply ? "The team responded to" : `${commenterName} commented on`} your feedback request:
+
+REQUEST: ${requestTitle}
+
+${commenterName}:
+${commentBody}
+
+View discussion: ${feedbackUrl}
+
+---
+You're receiving this because you submitted this feedback request.
+`;
+
+  return { html, text };
+}
+
 export function generateUpdateEmail(
   appName: string,
   version: string,

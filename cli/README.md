@@ -55,6 +55,26 @@ isolated publish           # Publish a release (auto-detects everything)
 isolated publish --dry-run # Preview without uploading
 ```
 
+### Alerting (ntfy.sh)
+
+Push notifications to your phone when errors occur in your apps.
+
+```bash
+# Configure your ntfy.sh topic
+isolated ntfy setup my-secret-topic
+
+# Test it works
+isolated ntfy test
+
+# Send custom notifications
+isolated ntfy send "Deployment complete!" --title "🚀 Success"
+
+# Generate alerting code for your project
+isolated ntfy init                    # Auto-detect project type
+isolated ntfy init --type cloudflare  # Cloudflare Workers
+isolated ntfy init --type swift       # iOS/macOS apps
+```
+
 ## JSON Output (for AI Agents)
 
 All commands support `--json` for structured output:

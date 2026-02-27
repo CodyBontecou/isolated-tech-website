@@ -80,6 +80,14 @@ export default async function AdminLayout({
                 <span className="admin-sidebar__icon">💬</span>
                 <span>Feedback</span>
               </a>
+              <a href="/admin/feature-requests" className="admin-sidebar__link">
+                <span className="admin-sidebar__icon">✨</span>
+                <span>Feature Requests</span>
+              </a>
+              <a href="/admin/help-articles" className="admin-sidebar__link">
+                <span className="admin-sidebar__icon">📖</span>
+                <span>Help Articles</span>
+              </a>
             </nav>
           </div>
 
