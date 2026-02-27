@@ -33,7 +33,7 @@
 
 /* Hero Section */
 .smd-hero {
-  padding: 4rem 2rem 6rem;
+  padding: 6rem 2rem 6rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -454,7 +454,7 @@
 
 @media (max-width: 600px) {
   .smd-hero {
-    padding: 3rem 1.5rem 4rem;
+    padding: 5rem 1.5rem 4rem;
   }
 
   .smd-hero__header {
