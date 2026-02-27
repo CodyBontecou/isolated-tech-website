@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { query } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
@@ -37,7 +38,7 @@ async function getHelpArticles(): Promise<HelpArticle[]> {
        h.category
      FROM help_articles h
      LEFT JOIN apps a ON h.app_id = a.id
-     WHERE h.is_published = 1
+     WHERE h.is_published = 1 AND (h.article_type = 'help' OR h.article_type IS NULL)
      ORDER BY h.category, h.sort_order, h.title`,
     [],
     env

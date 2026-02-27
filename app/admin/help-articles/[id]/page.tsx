@@ -22,6 +22,8 @@ interface HelpArticle {
   category: string;
   sort_order: number;
   is_published: number;
+  article_type: string;
+  question: string | null;
 }
 
 async function getArticle(id: string): Promise<HelpArticle | null> {
@@ -29,18 +31,18 @@ async function getArticle(id: string): Promise<HelpArticle | null> {
   if (!env?.DB) return null;
 
   return queryOne<HelpArticle>(
-    `SELECT id, app_id, slug, title, body, category, sort_order, is_published 
+    `SELECT id, app_id, slug, title, body, category, sort_order, is_published, article_type, question 
      FROM help_articles WHERE id = ?`,
     [id],
     env
   );
 }
 
-async function getApps(): Promise<{ id: string; name: string }[]> {
+async function getApps(): Promise<{ id: string; name: string; slug: string }[]> {
   const env = getEnv();
   if (!env?.DB) return [];
 
-  return query(`SELECT id, name FROM apps WHERE is_published = 1 ORDER BY name`, [], env);
+  return query(`SELECT id, name, slug FROM apps WHERE is_published = 1 ORDER BY name`, [], env);
 }
 
 export default async function EditHelpArticlePage({ params }: Props) {

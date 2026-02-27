@@ -39,6 +39,34 @@ async function getAppMedia(appId: string): Promise<MediaItem[]> {
   return result.results || [];
 }
 
+interface ArticleCounts {
+  docs: number;
+  faq: number;
+  guides: number;
+}
+
+async function getArticleCounts(appId: string): Promise<ArticleCounts> {
+  const env = getEnv();
+  if (!env?.DB) return { docs: 0, faq: 0, guides: 0 };
+
+  const result = await env.DB.prepare(
+    `SELECT article_type, COUNT(*) as count
+     FROM help_articles
+     WHERE app_id = ? AND is_published = 1 AND article_type IN ('docs', 'faq', 'guide')
+     GROUP BY article_type`
+  )
+    .bind(appId)
+    .all<{ article_type: string; count: number }>();
+
+  const counts: ArticleCounts = { docs: 0, faq: 0, guides: 0 };
+  for (const row of result.results || []) {
+    if (row.article_type === "docs") counts.docs = row.count;
+    if (row.article_type === "faq") counts.faq = row.count;
+    if (row.article_type === "guide") counts.guides = row.count;
+  }
+  return counts;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -210,7 +238,7 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
   }
 
   const env = getEnv();
-  const [user, media, latestUpdates, reviews, appStoreReviews, reviewStats] = await Promise.all([
+  const [user, media, latestUpdates, reviews, appStoreReviews, reviewStats, articleCounts] = await Promise.all([
     env ? getCurrentUser(env) : null,
     getAppMedia(app.id),
     queries.getLatestUpdates(app.id, env || undefined),
@@ -219,6 +247,7 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
     queries.getCombinedReviewStats(app.id, env || undefined).catch(() => 
       queries.getAppReviewStats(app.id, env || undefined)
     ) as Promise<CombinedReviewStats | null>,
+    getArticleCounts(app.id),
   ]);
 
   // Check if user already owns this app
@@ -315,6 +344,45 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
             <MediaShowcase media={media} />
 
             <ReviewsSection reviews={reviews} appStoreReviews={appStoreReviews} stats={reviewStats} appStoreUrl={iosAppStoreUrl} />
+
+            {/* Help & Documentation Links */}
+            {(articleCounts.docs > 0 || articleCounts.faq > 0 || articleCounts.guides > 0) && (
+              <section className="app-page__help">
+                <h2 className="app-page__section-title">Help & Documentation</h2>
+                <div className="app-page__help-links">
+                  {articleCounts.docs > 0 && (
+                    <Link href={`/apps/${app.slug}/docs`} className="app-page__help-link">
+                      <span className="app-page__help-icon">📖</span>
+                      <span className="app-page__help-text">
+                        <strong>Documentation</strong>
+                        <span>{articleCounts.docs} article{articleCounts.docs !== 1 ? "s" : ""}</span>
+                      </span>
+                      <span className="app-page__help-arrow">→</span>
+                    </Link>
+                  )}
+                  {articleCounts.faq > 0 && (
+                    <Link href={`/apps/${app.slug}/faq`} className="app-page__help-link">
+                      <span className="app-page__help-icon">❓</span>
+                      <span className="app-page__help-text">
+                        <strong>FAQ</strong>
+                        <span>{articleCounts.faq} question{articleCounts.faq !== 1 ? "s" : ""}</span>
+                      </span>
+                      <span className="app-page__help-arrow">→</span>
+                    </Link>
+                  )}
+                  {articleCounts.guides > 0 && (
+                    <Link href={`/apps/${app.slug}/guides`} className="app-page__help-link">
+                      <span className="app-page__help-icon">🎓</span>
+                      <span className="app-page__help-text">
+                        <strong>Guides & Tutorials</strong>
+                        <span>{articleCounts.guides} guide{articleCounts.guides !== 1 ? "s" : ""}</span>
+                      </span>
+                      <span className="app-page__help-arrow">→</span>
+                    </Link>
+                  )}
+                </div>
+              </section>
+            )}
           </div>
 
           <aside>

@@ -8,11 +8,11 @@ export const metadata: Metadata = {
   title: "New Help Article — Admin — ISOLATED.TECH",
 };
 
-async function getApps(): Promise<{ id: string; name: string }[]> {
+async function getApps(): Promise<{ id: string; name: string; slug: string }[]> {
   const env = getEnv();
   if (!env?.DB) return [];
 
-  return query(`SELECT id, name FROM apps WHERE is_published = 1 ORDER BY name`, [], env);
+  return query(`SELECT id, name, slug FROM apps WHERE is_published = 1 ORDER BY name`, [], env);
 }
 
 export default async function NewHelpArticlePage() {

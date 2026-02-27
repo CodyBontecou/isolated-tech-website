@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface ArticleFormProps {
-  apps: { id: string; name: string }[];
+  apps: { id: string; name: string; slug: string }[];
   article?: {
     id: string;
     app_id: string | null;
@@ -14,30 +14,62 @@ interface ArticleFormProps {
     category: string;
     sort_order: number;
     is_published: number;
+    article_type: string;
+    question: string | null;
   };
 }
+
+const ARTICLE_TYPES = [
+  { value: "help", label: "Help Article", description: "General help center" },
+  { value: "docs", label: "Documentation", description: "App documentation" },
+  { value: "faq", label: "FAQ", description: "Frequently asked questions" },
+  { value: "guide", label: "Guide", description: "Tutorials & guides" },
+];
 
 const CATEGORIES = [
   { value: "general", label: "General" },
   { value: "getting-started", label: "Getting Started" },
-  { value: "faq", label: "FAQ" },
   { value: "troubleshooting", label: "Troubleshooting" },
   { value: "billing", label: "Billing & Payments" },
+  { value: "features", label: "Features" },
+  { value: "integration", label: "Integration" },
 ];
 
 export function ArticleForm({ apps, article }: ArticleFormProps) {
   const router = useRouter();
   const isEditing = !!article;
 
+  const [articleType, setArticleType] = useState(article?.article_type || "help");
   const [title, setTitle] = useState(article?.title || "");
   const [slug, setSlug] = useState(article?.slug || "");
   const [body, setBody] = useState(article?.body || "");
   const [category, setCategory] = useState(article?.category || "general");
   const [appId, setAppId] = useState(article?.app_id || "");
+  const [question, setQuestion] = useState(article?.question || "");
   const [sortOrder, setSortOrder] = useState(article?.sort_order || 0);
   const [isPublished, setIsPublished] = useState(article?.is_published === 1);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedApp = apps.find((a) => a.id === appId);
+
+  // Generate URL preview based on type
+  const getUrlPreview = () => {
+    if (articleType === "help") {
+      return `/help/${slug}`;
+    }
+    if (!selectedApp) return `(select an app)`;
+    if (articleType === "docs") {
+      return `/apps/${selectedApp.slug}/docs/${slug}`;
+    }
+    if (articleType === "faq") {
+      return `/apps/${selectedApp.slug}/faq#${slug}`;
+    }
+    if (articleType === "guide") {
+      return `/apps/${selectedApp.slug}/guides/${slug}`;
+    }
+    return `/${slug}`;
+  };
 
   const generateSlug = (text: string) => {
     return text
@@ -67,11 +99,13 @@ export function ArticleForm({ apps, article }: ArticleFormProps) {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          articleType,
           title: title.trim(),
           slug: slug.trim(),
           body: body.trim(),
           category,
           appId: appId || null,
+          question: question.trim() || null,
           sortOrder,
           isPublished,
         }),
@@ -94,6 +128,44 @@ export function ArticleForm({ apps, article }: ArticleFormProps) {
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: "700px" }}>
       <div style={{ background: "var(--gray-dark)", border: "1px solid #333", padding: "1.5rem" }}>
+        {/* Article Type */}
+        <div style={{ marginBottom: "1.25rem" }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.65rem",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              color: "#888",
+              marginBottom: "0.5rem",
+            }}
+          >
+            TYPE
+          </label>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+            {ARTICLE_TYPES.map((type) => (
+              <button
+                key={type.value}
+                type="button"
+                onClick={() => setArticleType(type.value)}
+                style={{
+                  padding: "0.75rem 0.5rem",
+                  fontSize: "0.7rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.05em",
+                  background: articleType === type.value ? "#f0f0f0" : "#0a0a0a",
+                  color: articleType === type.value ? "#0a0a0a" : "#888",
+                  border: articleType === type.value ? "1px solid #f0f0f0" : "1px solid #333",
+                  cursor: "pointer",
+                  textAlign: "center",
+                }}
+              >
+                {type.label.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Title */}
         <div style={{ marginBottom: "1.25rem" }}>
           <label
@@ -137,26 +209,26 @@ export function ArticleForm({ apps, article }: ArticleFormProps) {
               marginBottom: "0.5rem",
             }}
           >
-            SLUG (URL)
+            SLUG
           </label>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <span style={{ color: "#666", fontSize: "0.85rem" }}>/help/</span>
-            <input
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(generateSlug(e.target.value))}
-              required
-              pattern="[a-z0-9-]+"
-              style={{
-                flex: 1,
-                padding: "0.75rem",
-                fontSize: "0.85rem",
-                fontFamily: "inherit",
-                background: "#0a0a0a",
-                border: "1px solid #333",
-                color: "#f0f0f0",
-              }}
-            />
+          <input
+            type="text"
+            value={slug}
+            onChange={(e) => setSlug(generateSlug(e.target.value))}
+            required
+            pattern="[a-z0-9-]+"
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              fontSize: "0.85rem",
+              fontFamily: "inherit",
+              background: "#0a0a0a",
+              border: "1px solid #333",
+              color: "#f0f0f0",
+            }}
+          />
+          <div style={{ marginTop: "0.35rem", fontSize: "0.75rem", color: "#666" }}>
+            URL: <span style={{ color: "#888" }}>{getUrlPreview()}</span>
           </div>
         </div>
 
@@ -207,11 +279,12 @@ export function ArticleForm({ apps, article }: ArticleFormProps) {
                 marginBottom: "0.5rem",
               }}
             >
-              APP (OPTIONAL)
+              APP {articleType !== "help" && <span style={{ color: "#f87171" }}>*</span>}
             </label>
             <select
               value={appId}
               onChange={(e) => setAppId(e.target.value)}
+              required={articleType !== "help"}
               style={{
                 width: "100%",
                 padding: "0.75rem",
@@ -222,7 +295,7 @@ export function ArticleForm({ apps, article }: ArticleFormProps) {
                 color: "#f0f0f0",
               }}
             >
-              <option value="">General (no specific app)</option>
+              <option value="">{articleType === "help" ? "General (no specific app)" : "Select an app..."}</option>
               {apps.map((app) => (
                 <option key={app.id} value={app.id}>
                   {app.name}
@@ -231,6 +304,42 @@ export function ArticleForm({ apps, article }: ArticleFormProps) {
             </select>
           </div>
         </div>
+
+        {/* Question (FAQ only) */}
+        {articleType === "faq" && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <label
+              style={{
+                display: "block",
+                fontSize: "0.65rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                color: "#888",
+                marginBottom: "0.5rem",
+              }}
+            >
+              QUESTION (COLLAPSED STATE)
+            </label>
+            <input
+              type="text"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="e.g., How do I reset my password?"
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                fontSize: "0.85rem",
+                fontFamily: "inherit",
+                background: "#0a0a0a",
+                border: "1px solid #333",
+                color: "#f0f0f0",
+              }}
+            />
+            <div style={{ marginTop: "0.35rem", fontSize: "0.7rem", color: "#666" }}>
+              If empty, the title will be used as the question.
+            </div>
+          </div>
+        )}
 
         {/* Body */}
         <div style={{ marginBottom: "1.25rem" }}>

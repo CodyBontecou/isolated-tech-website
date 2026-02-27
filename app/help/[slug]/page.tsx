@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { queryOne } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
@@ -41,7 +42,7 @@ async function getHelpArticle(slug: string): Promise<HelpArticle | null> {
        h.updated_at
      FROM help_articles h
      LEFT JOIN apps a ON h.app_id = a.id
-     WHERE h.slug = ? AND h.is_published = 1`,
+     WHERE h.slug = ? AND h.is_published = 1 AND (h.article_type = 'help' OR h.article_type IS NULL)`,
     [slug],
     env
   );

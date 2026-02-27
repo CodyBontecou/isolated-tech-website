@@ -14,12 +14,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { title, slug, body, category, appId, sortOrder, isPublished } = await request.json();
+    const { title, slug, body, category, appId, sortOrder, isPublished, articleType, question } = await request.json();
 
     // Validate required fields
     if (!title?.trim() || !slug?.trim() || !body?.trim()) {
       return new Response(
         JSON.stringify({ error: "Title, slug, and body are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate app is required for non-help types
+    const type = articleType || "help";
+    if (type !== "help" && !appId) {
+      return new Response(
+        JSON.stringify({ error: "App is required for docs, FAQ, and guide articles" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -41,8 +50,8 @@ export async function POST(request: Request) {
     // Create article
     const articleId = nanoid();
     await execute(
-      `INSERT INTO help_articles (id, app_id, slug, title, body, category, sort_order, is_published)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO help_articles (id, app_id, slug, title, body, category, sort_order, is_published, article_type, question)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         articleId,
         appId || null,
@@ -52,6 +61,8 @@ export async function POST(request: Request) {
         category || "general",
         sortOrder || 0,
         isPublished ? 1 : 0,
+        type,
+        question?.trim() || null,
       ],
       env
     );
