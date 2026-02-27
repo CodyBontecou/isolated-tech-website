@@ -174,7 +174,7 @@ export default async function DashboardPage({
           LIMIT 1
         )
         LEFT JOIN reviews r ON r.user_id = p.user_id AND r.app_id = p.app_id
-        WHERE p.user_id = ? AND p.status = 'completed'
+        WHERE p.user_id = ? AND p.status IN ('completed', 'refunded_with_access')
         ORDER BY p.created_at DESC
       `).bind(user.id).all<{
         id: string;

@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
+import { nanoid } from "@/lib/db";
 
 interface DownloadToken {
   id: string;
@@ -155,6 +156,19 @@ export async function GET(
     headers.set("Content-Disposition", `attachment; filename="${filename}"`);
     headers.set("Content-Length", (object.size || version.file_size_bytes).toString());
     headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+
+    // Log download to database
+    const cfHeaders = request.headers;
+    const ipAddress = cfHeaders.get("cf-connecting-ip") || cfHeaders.get("x-forwarded-for")?.split(",")[0] || null;
+    const userAgent = cfHeaders.get("user-agent") || null;
+    const country = cfHeaders.get("cf-ipcountry") || null;
+
+    await env.DB.prepare(
+      `INSERT INTO downloads (id, user_id, app_id, version_id, download_type, download_token_id, version_string, ip_address, user_agent, country)
+       VALUES (?, ?, ?, ?, 'token', ?, ?, ?, ?, ?)`
+    )
+      .bind(nanoid(), downloadToken.user_id, downloadToken.app_id, version.id, downloadToken.id, version.version, ipAddress, userAgent, country)
+      .run();
 
     console.log(
       `Token download: token=${token.slice(0, 8)}... app=${app.slug} version=${version.version}`

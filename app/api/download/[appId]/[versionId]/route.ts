@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
+import { nanoid } from "@/lib/db";
 
 interface AppVersion {
   id: string;
@@ -109,7 +110,19 @@ export async function GET(
     headers.set("Content-Length", (object.size || version.file_size_bytes).toString());
     headers.set("Cache-Control", "private, no-cache");
 
-    // Log download
+    // Log download to database
+    const cfHeaders = request.headers;
+    const ipAddress = cfHeaders.get("cf-connecting-ip") || cfHeaders.get("x-forwarded-for")?.split(",")[0] || null;
+    const userAgent = cfHeaders.get("user-agent") || null;
+    const country = cfHeaders.get("cf-ipcountry") || null;
+
+    await env.DB.prepare(
+      `INSERT INTO downloads (id, user_id, app_id, version_id, download_type, version_string, ip_address, user_agent, country)
+       VALUES (?, ?, ?, ?, 'authenticated', ?, ?, ?, ?)`
+    )
+      .bind(nanoid(), user.id, params.appId, params.versionId, version.version, ipAddress, userAgent, country)
+      .run();
+
     console.log(
       `Download: user=${user.id} app=${app.slug} version=${version.version}`
     );

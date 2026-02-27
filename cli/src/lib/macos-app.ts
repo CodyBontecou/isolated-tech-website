@@ -1,6 +1,123 @@
 import { execSync, spawnSync } from 'child_process';
-import { existsSync, mkdirSync, readdirSync, rmSync, cpSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, rmSync, cpSync, writeFileSync, unlinkSync } from 'fs';
 import { join, dirname, basename } from 'path';
+
+/**
+ * Get all windows for an app with their IDs and bounds.
+ * Uses a Swift script to access CoreGraphics window list (no Python dependencies).
+ */
+export function getAppWindows(bundleId: string): Array<{
+  windowId: number;
+  title: string;
+  bounds: { x: number; y: number; width: number; height: number };
+}> {
+  // Swift script to get window list - runs via swift command
+  const swiftScript = `
+import Cocoa
+import CoreGraphics
+
+struct WindowInfo: Codable {
+    let windowId: Int
+    let title: String
+    let bounds: Bounds
+    
+    struct Bounds: Codable {
+        let x: Int
+        let y: Int
+        let width: Int
+        let height: Int
+    }
+}
+
+let targetBundle = "${bundleId}"
+var results: [WindowInfo] = []
+
+// Get all on-screen windows
+guard let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else {
+    print("[]")
+    exit(0)
+}
+
+// Get the PID for our target bundle ID
+let workspace = NSWorkspace.shared
+var targetPID: pid_t? = nil
+for app in workspace.runningApplications {
+    if app.bundleIdentifier == targetBundle {
+        targetPID = app.processIdentifier
+        break
+    }
+}
+
+guard let pid = targetPID else {
+    print("[]")
+    exit(0)
+}
+
+for window in windowList {
+    guard let ownerPID = window[kCGWindowOwnerPID as String] as? pid_t,
+          ownerPID == pid,
+          let windowId = window[kCGWindowNumber as String] as? Int,
+          let boundsDict = window[kCGWindowBounds as String] as? [String: CGFloat],
+          let layer = window[kCGWindowLayer as String] as? Int,
+          layer == 0 else {
+        continue
+    }
+    
+    let width = Int(boundsDict["Width"] ?? 0)
+    let height = Int(boundsDict["Height"] ?? 0)
+    
+    // Skip tiny windows
+    if width < 100 || height < 100 {
+        continue
+    }
+    
+    let title = window[kCGWindowName as String] as? String ?? ""
+    let x = Int(boundsDict["X"] ?? 0)
+    let y = Int(boundsDict["Y"] ?? 0)
+    
+    results.append(WindowInfo(
+        windowId: windowId,
+        title: title,
+        bounds: WindowInfo.Bounds(x: x, y: y, width: width, height: height)
+    ))
+}
+
+let encoder = JSONEncoder()
+if let data = try? encoder.encode(results), let json = String(data: data, encoding: .utf8) {
+    print(json)
+} else {
+    print("[]")
+}
+`;
+
+  // Write script to temp file and execute
+  const tempScript = `/tmp/isolated-windows-${Date.now()}.swift`;
+  
+  try {
+    writeFileSync(tempScript, swiftScript);
+    
+    const output = execSync(`swift "${tempScript}"`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 10000,
+    }).trim();
+    
+    try { unlinkSync(tempScript); } catch {}
+    
+    return JSON.parse(output);
+  } catch {
+    try { unlinkSync(tempScript); } catch {}
+    return [];
+  }
+}
+
+/**
+ * Get the first window ID for an app (convenience function)
+ */
+export function getWindowId(bundleId: string): number | null {
+  const windows = getAppWindows(bundleId);
+  return windows.length > 0 ? windows[0].windowId : null;
+}
 
 export interface MacOSAccessibilityElement {
   role: string;
@@ -147,18 +264,45 @@ export function prepareWindow(bundleId: string, width: number = 1440, height: nu
 }
 
 /**
- * Take a screenshot of a macOS app window
+ * Take a screenshot of a macOS app window.
+ * Uses headless capture via CGWindowID - no need for the app to be focused!
  */
-export function takeMacScreenshot(outputPath: string, bundleId: string): boolean {
-  const appName = getAppNameFromBundleId(bundleId);
-  if (!appName) return false;
+export function takeMacScreenshot(outputPath: string, bundleId: string, options?: {
+  headless?: boolean;
+  windowIndex?: number;
+}): boolean {
+  const { headless = true, windowIndex = 0 } = options || {};
   
   const dir = dirname(outputPath);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
   
-  // Bring app to front
+  // Try headless capture first using window ID
+  if (headless) {
+    const windows = getAppWindows(bundleId);
+    
+    if (windows.length > windowIndex) {
+      const windowId = windows[windowIndex].windowId;
+      
+      try {
+        // screencapture -l <windowID> captures a specific window even if not focused
+        // -x = no sound, -o = no shadow
+        execSync(`screencapture -x -o -l ${windowId} "${outputPath}"`, { stdio: 'pipe' });
+        
+        if (existsSync(outputPath)) {
+          return true;
+        }
+      } catch {
+        // Fall through to focused capture
+      }
+    }
+  }
+  
+  // Fallback: bring app to front and capture by bounds
+  const appName = getAppNameFromBundleId(bundleId);
+  if (!appName) return false;
+  
   try {
     execSync(`osascript -e 'tell application "${appName}" to activate'`, { stdio: 'pipe' });
     execSync('sleep 0.3');
@@ -166,7 +310,6 @@ export function takeMacScreenshot(outputPath: string, bundleId: string): boolean
     // Continue anyway
   }
   
-  // Get window bounds via AppleScript
   const boundsScript = `
     tell application "System Events"
       tell process "${appName}"
@@ -195,13 +338,7 @@ export function takeMacScreenshot(outputPath: string, bundleId: string): boolean
     // Fall back to window capture mode
   }
   
-  // Fallback: use interactive window capture (won't work in automated mode)
-  try {
-    execSync(`screencapture -x -o -w "${outputPath}"`, { stdio: 'pipe' });
-    return existsSync(outputPath);
-  } catch {
-    return false;
-  }
+  return false;
 }
 
 /**

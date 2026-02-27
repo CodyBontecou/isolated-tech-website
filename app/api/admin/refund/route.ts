@@ -89,8 +89,17 @@ export async function POST(request: NextRequest) {
         console.log(`Refund created for payment intent: ${purchase.stripe_payment_intent_id}`);
       } catch (stripeError) {
         console.error("Stripe refund error:", stripeError);
+        // Extract useful error message from Stripe error
+        const errorMessage = stripeError instanceof Error 
+          ? stripeError.message 
+          : "Failed to process Stripe refund";
+        const stripeCode = (stripeError as { code?: string })?.code;
         return NextResponse.json(
-          { error: "Failed to process Stripe refund" },
+          { 
+            error: errorMessage,
+            code: stripeCode,
+            paymentIntent: purchase.stripe_payment_intent_id 
+          },
           { status: 500 }
         );
       }

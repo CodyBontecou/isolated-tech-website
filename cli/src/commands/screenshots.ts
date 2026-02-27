@@ -329,21 +329,57 @@ function macosCommand(): Command {
       }
     });
   
-  // isolated screenshots macos capture
-  cmd.command('capture')
-    .description('Take a screenshot of the app window')
-    .argument('<output>', 'Output file path')
+  // isolated screenshots macos windows
+  cmd.command('windows')
+    .description('List all windows for an app (useful for headless capture)')
     .requiredOption('--bundle-id <id>', 'App bundle identifier')
-    .action(async (outputPath, opts) => {
-      const ok = macosApp.takeMacScreenshot(outputPath, opts.bundleId);
+    .action(async (opts) => {
+      const windows = macosApp.getAppWindows(opts.bundleId);
       
       if (isJsonMode()) {
-        output({ success: ok, path: outputPath });
+        output({ success: true, windows });
+        return;
+      }
+      
+      if (windows.length === 0) {
+        warn('No windows found for this app');
+        return;
+      }
+      
+      console.log();
+      windows.forEach((w, i) => {
+        console.log(`  [${i}] Window ID: ${w.windowId}`);
+        console.log(`      Title: ${w.title || '(untitled)'}`);
+        console.log(`      Size: ${w.bounds.width}x${w.bounds.height}`);
+        console.log(`      Position: (${w.bounds.x}, ${w.bounds.y})`);
+        console.log();
+      });
+      
+      info(`Use --window-index to capture a specific window`);
+    });
+  
+  // isolated screenshots macos capture
+  cmd.command('capture')
+    .description('Take a screenshot of the app window (headless by default)')
+    .argument('<output>', 'Output file path')
+    .requiredOption('--bundle-id <id>', 'App bundle identifier')
+    .option('--window-index <n>', 'Which window to capture (0 = first)', '0')
+    .option('--no-headless', 'Require app to be focused (disable headless capture)')
+    .action(async (outputPath, opts) => {
+      const ok = macosApp.takeMacScreenshot(outputPath, opts.bundleId, {
+        headless: opts.headless !== false,
+        windowIndex: parseInt(opts.windowIndex),
+      });
+      
+      if (isJsonMode()) {
+        output({ success: ok, path: outputPath, headless: opts.headless !== false });
         return;
       }
       
       if (ok) {
-        success(`Screenshot saved: ${outputPath}`);
+        success(`Screenshot saved: ${outputPath}`, {
+          mode: opts.headless !== false ? 'headless' : 'focused',
+        });
       } else {
         error('capture_failed', 'Failed to capture screenshot');
       }

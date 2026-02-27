@@ -2676,12 +2676,18 @@ html.light .hero__image-overlay {
     padding: 0.5rem;
     border-right: none;
     border-bottom: var(--border);
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.25rem;
+  }
+
+  .admin-sidebar__section {
+    display: contents;
   }
 
   .admin-sidebar__nav {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 0.5rem;
+    display: contents;
   }
 
   .admin-sidebar__link {

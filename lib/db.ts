@@ -382,4 +382,71 @@ export const queries = {
       [appId, reviewsFetched, errorMessage],
       env
     ),
+
+  // Downloads
+  getDownloadsByApp: (appId: string, env?: Env) =>
+    query<{
+      id: string;
+      user_id: string;
+      version_string: string;
+      download_type: string;
+      country: string | null;
+      downloaded_at: string;
+    }>(
+      `SELECT id, user_id, version_string, download_type, country, downloaded_at
+       FROM downloads
+       WHERE app_id = ?
+       ORDER BY downloaded_at DESC`,
+      [appId],
+      env
+    ),
+
+  getDownloadsByUser: (userId: string, env?: Env) =>
+    query<{
+      id: string;
+      app_id: string;
+      app_name: string;
+      version_string: string;
+      download_type: string;
+      downloaded_at: string;
+    }>(
+      `SELECT d.id, d.app_id, a.name as app_name, d.version_string, d.download_type, d.downloaded_at
+       FROM downloads d
+       JOIN apps a ON d.app_id = a.id
+       WHERE d.user_id = ?
+       ORDER BY d.downloaded_at DESC`,
+      [userId],
+      env
+    ),
+
+  getDownloadStats: (env?: Env) =>
+    queryOne<{
+      total_downloads: number;
+      unique_users: number;
+      downloads_today: number;
+      downloads_this_week: number;
+    }>(
+      `SELECT 
+         COUNT(*) as total_downloads,
+         COUNT(DISTINCT user_id) as unique_users,
+         SUM(CASE WHEN downloaded_at >= date('now') THEN 1 ELSE 0 END) as downloads_today,
+         SUM(CASE WHEN downloaded_at >= date('now', '-7 days') THEN 1 ELSE 0 END) as downloads_this_week
+       FROM downloads`,
+      [],
+      env
+    ),
+
+  getAppDownloadStats: (appId: string, env?: Env) =>
+    queryOne<{
+      total_downloads: number;
+      unique_users: number;
+    }>(
+      `SELECT 
+         COUNT(*) as total_downloads,
+         COUNT(DISTINCT user_id) as unique_users
+       FROM downloads
+       WHERE app_id = ?`,
+      [appId],
+      env
+    ),
 };

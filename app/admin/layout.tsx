@@ -66,6 +66,10 @@ export default async function AdminLayout({
                 <span className="admin-sidebar__icon">$</span>
                 <span>Purchases</span>
               </a>
+              <a href="/admin/downloads" className="admin-sidebar__link">
+                <span className="admin-sidebar__icon">↓</span>
+                <span>Downloads</span>
+              </a>
               <a href="/admin/users" className="admin-sidebar__link">
                 <span className="admin-sidebar__icon">◎</span>
                 <span>Users</span>

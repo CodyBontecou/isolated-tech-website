@@ -39,7 +39,12 @@ export function RefundModal({
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to process refund");
+        // Include payment intent in error if available for debugging
+        let errorMsg = data.error || "Failed to process refund";
+        if (data.code) {
+          errorMsg += ` (${data.code})`;
+        }
+        throw new Error(errorMsg);
       }
 
       onSuccess();
