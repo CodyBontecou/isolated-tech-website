@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const siteUrl = "https://isolated.tech";
 
@@ -68,14 +69,28 @@ export const metadata: Metadata = {
   },
 };
 
+// Script to prevent flash of wrong theme
+const themeScript = `
+  (function() {
+    const stored = localStorage.getItem('isolated-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = stored === 'light' ? 'light' 
+      : stored === 'dark' ? 'dark' 
+      : (prefersDark ? 'dark' : 'light');
+    document.documentElement.classList.add(theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -88,9 +103,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {/* Noise overlay */}
-        <div className="noise" />
-        {children}
+        <ThemeProvider>
+          {/* Noise overlay */}
+          <div className="noise" />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

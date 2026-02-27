@@ -3,16 +3,82 @@
    ============================================ */
 
 :root {
+  /* Fonts (shared) */
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  
+  /* Dark theme (default) */
   --black: #0a0a0a;
   --white: #f0f0f0;
   --gray: #666;
   --gray-dark: #1a1a1a;
   --gray-mid: #2a2a2a;
   --accent: #fff;
-  --font-mono: 'Space Mono', 'Courier New', monospace;
-  --font-serif: 'Instrument Serif', Georgia, serif;
   --border: 1px solid #333;
   --border-heavy: 2px solid var(--white);
+  
+  /* Additional semantic colors */
+  --bg-primary: var(--black);
+  --bg-secondary: var(--gray-dark);
+  --bg-tertiary: var(--gray-mid);
+  --text-primary: var(--white);
+  --text-secondary: var(--gray);
+  --nav-bg: rgba(10, 10, 10, 0.85);
+  --card-bg: var(--gray-dark);
+  --input-bg: var(--gray-dark);
+  --success: #4ade80;
+  --error: #f87171;
+  --warning: #fbbf24;
+}
+
+/* Light theme */
+html.light {
+  --black: #ffffff;
+  --white: #0a0a0a;
+  --gray: #666;
+  --gray-dark: #f5f5f5;
+  --gray-mid: #e5e5e5;
+  --accent: #0a0a0a;
+  --border: 1px solid #d4d4d4;
+  --border-heavy: 2px solid var(--white);
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e5e5e5;
+  --text-primary: #0a0a0a;
+  --text-secondary: #525252;
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --card-bg: #f5f5f5;
+  --input-bg: #ffffff;
+  --success: #16a34a;
+  --error: #dc2626;
+  --warning: #d97706;
+}
+
+/* System preference fallback (before JS loads) */
+@media (prefers-color-scheme: light) {
+  html:not(.dark):not(.light) {
+    --black: #ffffff;
+    --white: #0a0a0a;
+    --gray: #666;
+    --gray-dark: #f5f5f5;
+    --gray-mid: #e5e5e5;
+    --accent: #0a0a0a;
+    --border: 1px solid #d4d4d4;
+    --border-heavy: 2px solid var(--white);
+    
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --bg-tertiary: #e5e5e5;
+    --text-primary: #0a0a0a;
+    --text-secondary: #525252;
+    --nav-bg: rgba(255, 255, 255, 0.85);
+    --card-bg: #f5f5f5;
+    --input-bg: #ffffff;
+    --success: #16a34a;
+    --error: #dc2626;
+    --warning: #d97706;
+  }
 }
 
 /* RESET */
@@ -25,6 +91,11 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px;
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 body {
@@ -33,6 +104,7 @@ body {
   color: var(--white);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 a {
@@ -58,6 +130,12 @@ img {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px 256px;
+  transition: opacity 0.2s ease;
+}
+
+/* Slightly more visible noise in light mode for texture */
+html.light .noise {
+  opacity: 0.025;
 }
 
 /* NAV */
@@ -71,9 +149,10 @@ img {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 2rem;
-  background: rgba(10, 10, 10, 0.85);
+  background: var(--nav-bg);
   backdrop-filter: blur(10px);
   border-bottom: var(--border);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .nav__logo {
@@ -143,6 +222,17 @@ img {
     rgba(10, 10, 10, 0.5) 40%,
     rgba(10, 10, 10, 0.92) 80%,
     rgba(10, 10, 10, 1) 100%
+  );
+  transition: background 0.3s ease;
+}
+
+html.light .hero__image-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.5) 40%,
+    rgba(255, 255, 255, 0.92) 80%,
+    rgba(255, 255, 255, 1) 100%
   );
 }
 
@@ -2077,6 +2167,55 @@ img {
 
 .settings-checkbox span {
   font-size: 0.85rem;
+}
+
+/* Theme Selector */
+.theme-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: var(--gray-dark);
+  border: var(--border);
+  color: var(--gray);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.theme-option:hover {
+  color: var(--white);
+  border-color: var(--gray);
+}
+
+.theme-option--active {
+  background: var(--white);
+  color: var(--black);
+  border-color: var(--white);
+}
+
+.theme-option--active:hover {
+  color: var(--black);
+}
+
+.theme-option svg {
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.theme-option:hover svg,
+.theme-option--active svg {
+  opacity: 1;
 }
 
 /* Responsive */
@@ -7209,4 +7348,91 @@ img {
   .help-article__content {
     padding: 1.5rem;
   }
+}
+
+/* ============================================
+   LIGHT MODE OVERRIDES
+   ============================================ */
+
+/* Showcase arrows */
+html.light .showcase-v2__arrow {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #d4d4d4;
+}
+
+html.light .showcase-v2__arrow:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #a3a3a3;
+}
+
+/* Lightbox */
+html.light .showcase-v2__lightbox {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+/* Buttons with transparency */
+html.light .showcase-v2__lightbox-close,
+html.light .showcase-v2__lightbox-nav {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--white);
+}
+
+html.light .showcase-v2__lightbox-close:hover,
+html.light .showcase-v2__lightbox-nav:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Store hero rail items */
+html.light .store-hero__rail-item {
+  border-color: #d4d4d4;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html.light .store-hero__rail-item:hover {
+  border-color: #a3a3a3;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Dot indicator (gray dot color) */
+html.light .dot {
+  color: #a3a3a3;
+}
+
+/* Form inputs - ensure proper contrast */
+html.light input,
+html.light textarea,
+html.light select {
+  border-color: #d4d4d4;
+}
+
+html.light input:focus,
+html.light textarea:focus,
+html.light select:focus {
+  border-color: var(--white);
+}
+
+/* Scrollbar styling for light mode */
+html.light ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 5px;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+
+/* Code blocks */
+html.light code,
+html.light pre {
+  background: #f5f5f5;
+  border-color: #d4d4d4;
 }
