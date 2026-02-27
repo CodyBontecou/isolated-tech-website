@@ -26,13 +26,14 @@ async function getApp(id: string): Promise<AppRow | null> {
   return app || null;
 }
 
-export default async function NewVersionPage({ params }: { params: { id: string } }) {
-  const app = await getApp(params.id) || { id: params.id, name: "App", slug: "app" };
+export default async function NewVersionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const app = await getApp(id) || { id, name: "App", slug: "app" };
 
   return (
     <>
       <header className="admin-header">
-        <a href={`/admin/apps/${params.id}`} className="app-page__back">
+        <a href={`/admin/apps/${id}`} className="app-page__back">
           ← BACK TO {app.name.toUpperCase()}
         </a>
         <h1 className="admin-header__title">Upload New Version</h1>

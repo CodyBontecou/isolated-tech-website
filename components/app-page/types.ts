@@ -68,6 +68,8 @@ export interface AppPageConfig {
   ios_app_store_label?: string;
   /** App Store app ID for fetching reviews (numeric string, e.g., "1234567890") */
   app_store_id?: string;
+  /** Note to display about subscription management (e.g., "Manage your subscription in the iOS app") */
+  subscription_note?: string;
 }
 
 export interface AppPageUser {

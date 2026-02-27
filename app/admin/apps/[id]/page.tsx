@@ -67,10 +67,11 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default async function EditAppPage({ params }: { params: { id: string } }) {
+export default async function EditAppPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const [app, versions] = await Promise.all([
-    getApp(params.id),
-    getVersions(params.id),
+    getApp(id),
+    getVersions(id),
   ]);
 
   if (!app) {

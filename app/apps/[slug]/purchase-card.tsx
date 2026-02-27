@@ -13,6 +13,7 @@ interface PurchaseCardProps {
   hasPurchased?: boolean;
   iosAppStoreUrl?: string | null;
   iosAppStoreLabel?: string;
+  subscriptionNote?: string | null;
   hasMacOS?: boolean;
   hasIOS?: boolean;
 }
@@ -38,6 +39,7 @@ export function PurchaseCard({
   hasPurchased = false,
   iosAppStoreUrl = null,
   iosAppStoreLabel = "DOWNLOAD ON APP STORE (iOS)",
+  subscriptionNote = null,
   hasMacOS = false,
   hasIOS = false,
 }: PurchaseCardProps) {
@@ -262,6 +264,12 @@ export function PurchaseCard({
         <p className="purchase-card__note">
           Download from the iOS App Store.
         </p>
+
+        {subscriptionNote && (
+          <p className="purchase-card__note" style={{ marginTop: "0.75rem" }}>
+            {subscriptionNote}
+          </p>
+        )}
       </div>
     );
   }

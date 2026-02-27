@@ -88,9 +88,10 @@ async function getFeedback(id: string): Promise<FeedbackDetail | null> {
 export default async function AdminFeedbackDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const feedback = await getFeedback(params.id);
+  const { id } = await params;
+  const feedback = await getFeedback(id);
 
   if (!feedback) {
     notFound();

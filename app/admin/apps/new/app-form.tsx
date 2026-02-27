@@ -73,6 +73,9 @@ export function AppForm({ existingApp }: AppFormProps) {
   const [iosAppStoreLabel, setIosAppStoreLabel] = useState(
     (existingApp?.page_config as { ios_app_store_label?: string })?.ios_app_store_label || ""
   );
+  const [subscriptionNote, setSubscriptionNote] = useState(
+    (existingApp?.page_config as { subscription_note?: string })?.subscription_note || ""
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,12 +131,20 @@ export function AppForm({ existingApp }: AppFormProps) {
       const method = isEditing ? "PUT" : "POST";
 
       // Build page_config object for iOS App Store settings
+      // Preserve any existing fields not managed by this form (like app_store_id)
       const pageConfig: Record<string, string> = {};
+      const existingConfig = existingApp?.page_config as Record<string, string> | null;
+      if (existingConfig?.app_store_id) {
+        pageConfig.app_store_id = existingConfig.app_store_id;
+      }
       if (iosAppStoreUrl.trim()) {
         pageConfig.ios_app_store_url = iosAppStoreUrl.trim();
       }
       if (iosAppStoreLabel.trim()) {
         pageConfig.ios_app_store_label = iosAppStoreLabel.trim();
+      }
+      if (subscriptionNote.trim()) {
+        pageConfig.subscription_note = subscriptionNote.trim();
       }
 
       const res = await fetch(url, {
@@ -506,7 +517,7 @@ export function AppForm({ existingApp }: AppFormProps) {
             </p>
           </div>
 
-          <div>
+          <div style={{ marginBottom: "1rem" }}>
             <label className="settings-label">BUTTON LABEL (OPTIONAL)</label>
             <input
               type="text"
@@ -523,6 +534,26 @@ export function AppForm({ existingApp }: AppFormProps) {
               }}
             >
               Custom button text (default: &quot;DOWNLOAD ON APP STORE (iOS)&quot;)
+            </p>
+          </div>
+
+          <div>
+            <label className="settings-label">SUBSCRIPTION NOTE (OPTIONAL)</label>
+            <input
+              type="text"
+              className="settings-input"
+              value={subscriptionNote}
+              onChange={(e) => setSubscriptionNote(e.target.value)}
+              placeholder="Manage your subscription in the iOS app"
+            />
+            <p
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--gray)",
+                marginTop: "0.25rem",
+              }}
+            >
+              Note to display about subscription management (for apps with in-app subscriptions)
             </p>
           </div>
         </div>

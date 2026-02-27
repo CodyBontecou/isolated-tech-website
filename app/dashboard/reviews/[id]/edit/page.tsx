@@ -24,8 +24,9 @@ interface Review {
 export default async function EditReviewPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const env = getEnv();
   const user = env ? await getCurrentUser(env) : null;
 
@@ -51,7 +52,7 @@ export default async function EditReviewPage({
         FROM reviews r
         JOIN apps a ON r.app_id = a.id
         WHERE r.id = ?
-      `).bind(params.id).first<Review>();
+      `).bind(id).first<Review>();
     } catch (err) {
       console.error("Failed to fetch review:", err);
     }

@@ -51,8 +51,9 @@ async function getAppMedia(appId: string): Promise<MediaItem[]> {
   return result.results || [];
 }
 
-export default async function MediaPage({ params }: { params: { id: string } }) {
-  const app = await getApp(params.id);
+export default async function MediaPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const app = await getApp(id);
   
   if (!app) {
     notFound();
@@ -63,7 +64,7 @@ export default async function MediaPage({ params }: { params: { id: string } }) 
   return (
     <>
       <header className="admin-header">
-        <a href={`/admin/apps/${params.id}`} className="app-page__back">
+        <a href={`/admin/apps/${id}`} className="app-page__back">
           ← BACK TO {app.name.toUpperCase()}
         </a>
         <h1 className="admin-header__title">MEDIA SHOWCASE</h1>

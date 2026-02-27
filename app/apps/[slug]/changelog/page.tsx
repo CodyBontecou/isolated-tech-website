@@ -38,9 +38,10 @@ async function getApp(slug: string): Promise<App | null> {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const app = await getApp(params.slug);
+  const { slug } = await params;
+  const app = await getApp(slug);
   if (!app) return { title: "Not Found" };
 
   return {
@@ -93,9 +94,10 @@ function getPlatforms(platformsJson: string): string[] {
 export default async function ChangelogPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const app = await getApp(params.slug);
+  const { slug } = await params;
+  const app = await getApp(slug);
 
   if (!app) {
     notFound();

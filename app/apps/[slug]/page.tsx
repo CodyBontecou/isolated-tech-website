@@ -42,9 +42,10 @@ async function getAppMedia(appId: string): Promise<MediaItem[]> {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const app = await getApp(params.slug);
+  const { slug } = await params;
+  const app = await getApp(slug);
 
   if (!app) {
     return { title: "App Not Found" };
@@ -200,8 +201,9 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
-export default async function AppPage({ params }: { params: { slug: string } }) {
-  const app = await getApp(params.slug);
+export default async function AppPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const app = await getApp(slug);
 
   if (!app) {
     notFound();
@@ -229,6 +231,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
   const iosAppStoreUrl = pageConfig?.ios_app_store_url?.trim() || null;
   const iosAppStoreLabel = pageConfig?.ios_app_store_label?.trim() || "DOWNLOAD ON APP STORE (iOS)";
+  const subscriptionNote = pageConfig?.subscription_note?.trim() || null;
   const hasMacOS = platforms.includes("macos");
   const hasIOS = platforms.includes("ios");
 
@@ -326,6 +329,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
               hasPurchased={hasPurchased}
               iosAppStoreUrl={iosAppStoreUrl}
               iosAppStoreLabel={iosAppStoreLabel}
+              subscriptionNote={subscriptionNote}
               hasMacOS={hasMacOS}
               hasIOS={hasIOS}
             />
