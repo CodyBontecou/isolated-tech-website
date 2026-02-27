@@ -35,7 +35,7 @@
 html.light {
   --black: #ffffff;
   --white: #0a0a0a;
-  --gray: #666;
+  --gray: #525252;
   --gray-dark: #f5f5f5;
   --gray-mid: #e5e5e5;
   --accent: #0a0a0a;
@@ -46,7 +46,7 @@ html.light {
   --bg-secondary: #f5f5f5;
   --bg-tertiary: #e5e5e5;
   --text-primary: #0a0a0a;
-  --text-secondary: #525252;
+  --text-secondary: #404040;
   --nav-bg: rgba(255, 255, 255, 0.85);
   --card-bg: #f5f5f5;
   --input-bg: #ffffff;
@@ -60,7 +60,7 @@ html.light {
   html:not(.dark):not(.light) {
     --black: #ffffff;
     --white: #0a0a0a;
-    --gray: #666;
+    --gray: #525252;
     --gray-dark: #f5f5f5;
     --gray-mid: #e5e5e5;
     --accent: #0a0a0a;
@@ -71,7 +71,7 @@ html.light {
     --bg-secondary: #f5f5f5;
     --bg-tertiary: #e5e5e5;
     --text-primary: #0a0a0a;
-    --text-secondary: #525252;
+    --text-secondary: #404040;
     --nav-bg: rgba(255, 255, 255, 0.85);
     --card-bg: #f5f5f5;
     --input-bg: #ffffff;
