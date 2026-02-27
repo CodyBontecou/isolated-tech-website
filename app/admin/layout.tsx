@@ -104,6 +104,16 @@ export default async function AdminLayout({
               </a>
             </nav>
           </div>
+
+          <div className="admin-sidebar__section">
+            <div className="admin-sidebar__label">SETTINGS</div>
+            <nav className="admin-sidebar__nav">
+              <a href="/admin/api-keys" className="admin-sidebar__link">
+                <span className="admin-sidebar__icon">🔑</span>
+                <span>API Keys</span>
+              </a>
+            </nav>
+          </div>
         </aside>
 
         <main className="admin-main">{children}</main>
