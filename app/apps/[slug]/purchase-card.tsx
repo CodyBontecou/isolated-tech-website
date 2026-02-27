@@ -431,15 +431,22 @@ export function PurchaseCard({
         </p>
 
         {iosAppStoreUrl ? (
-          <a
-            href={iosAppStoreUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="purchase-card__btn purchase-card__btn--secondary"
-            style={{ display: "block", textAlign: "center", textDecoration: "none" }}
-          >
-            {iosAppStoreLabel}
-          </a>
+          <>
+            <a
+              href={iosAppStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="purchase-card__btn purchase-card__btn--secondary"
+              style={{ display: "block", textAlign: "center", textDecoration: "none" }}
+            >
+              {iosAppStoreLabel}
+            </a>
+            {subscriptionNote && (
+              <p className="purchase-card__note" style={{ marginTop: "0.75rem" }}>
+                {subscriptionNote}
+              </p>
+            )}
+          </>
         ) : hasIOS ? (
           <div
             style={{
