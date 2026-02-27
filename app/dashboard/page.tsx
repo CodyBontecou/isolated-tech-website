@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { SignOutButton } from "@/components/sign-out-button";
 import { FeedbackButton } from "@/components/feedback-modal";
+import { VersionSelector } from "@/components/version-selector";
 
 export const metadata: Metadata = {
   title: "Dashboard — ISOLATED.TECH",
@@ -63,18 +64,11 @@ function PurchasedAppCard({
       </Link>
 
       <div className="purchased-card__actions">
-        {!purchase.version_id ? (
-          <span className="purchased-card__btn purchased-card__btn--disabled">
-            Download unavailable
-          </span>
-        ) : (
-          <a
-            href={`/api/download/${purchase.app_id}/${purchase.version_id}`}
-            className="purchased-card__btn"
-          >
-            ↓ DOWNLOAD v{purchase.version}
-          </a>
-        )}
+        <VersionSelector
+          appId={purchase.app_id}
+          currentVersionId={purchase.version_id}
+          currentVersion={purchase.version}
+        />
 
         {purchase.has_review ? (
           <Link
