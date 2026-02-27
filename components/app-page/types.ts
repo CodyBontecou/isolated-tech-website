@@ -66,6 +66,8 @@ export interface App {
 export interface AppPageConfig {
   ios_app_store_url?: string;
   ios_app_store_label?: string;
+  /** App Store app ID for fetching reviews (numeric string, e.g., "1234567890") */
+  app_store_id?: string;
 }
 
 export interface AppPageUser {

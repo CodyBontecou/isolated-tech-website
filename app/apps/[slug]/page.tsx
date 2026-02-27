@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
 import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
-import type { App, AppPageConfig, Review, ReviewStats } from "@/components/app-page";
+import type { App, AppPageConfig, Review, AppStoreReview, CombinedReviewStats } from "@/components/app-page";
 
 async function getApp(slug: string): Promise<App | null> {
   const env = getEnv();
@@ -208,12 +208,15 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
   }
 
   const env = getEnv();
-  const [user, media, latestUpdates, reviews, reviewStats] = await Promise.all([
+  const [user, media, latestUpdates, reviews, appStoreReviews, reviewStats] = await Promise.all([
     env ? getCurrentUser(env) : null,
     getAppMedia(app.id),
     queries.getLatestUpdates(app.id, env || undefined),
     queries.getAppReviews(app.id, env || undefined) as Promise<Review[]>,
-    queries.getAppReviewStats(app.id, env || undefined) as Promise<ReviewStats | null>,
+    queries.getAppStoreReviews(app.id, env || undefined).catch(() => []) as Promise<AppStoreReview[]>,
+    queries.getCombinedReviewStats(app.id, env || undefined).catch(() => 
+      queries.getAppReviewStats(app.id, env || undefined)
+    ) as Promise<CombinedReviewStats | null>,
   ]);
 
   // Check if user already owns this app
@@ -308,7 +311,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
 
             <MediaShowcase media={media} />
 
-            <ReviewsSection reviews={reviews} stats={reviewStats} />
+            <ReviewsSection reviews={reviews} appStoreReviews={appStoreReviews} stats={reviewStats} />
           </div>
 
           <aside>

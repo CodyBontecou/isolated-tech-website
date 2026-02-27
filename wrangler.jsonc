@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "isolated-tech-store",
+  "account_id": "e4265f322e6380ee832b83ad45e3e8c0",
   "compatibility_date": "2026-02-25",
   "compatibility_flags": ["nodejs_compat"],
   "main": "worker/entry.ts",
@@ -40,6 +41,12 @@
     }
   ]
 
+  // Cron triggers (sync App Store reviews daily at 6 AM UTC)
+  // Note: Vinext may handle crons differently - check deployment logs
+  // "triggers": {
+  //   "crons": ["0 6 * * *"]
+  // }
+
   // Secrets (set via wrangler secret put):
   // - BETTER_AUTH_SECRET (32+ char secret for Better Auth)
   // - STRIPE_SECRET_KEY
@@ -49,4 +56,6 @@
   // - APPLE_CLIENT_ID, APPLE_CLIENT_SECRET
   // - GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
   // - GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+  // - APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY
+  // - CRON_SECRET (for manual sync trigger)
 }
