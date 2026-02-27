@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "isolated-tech-redirect",
+  "account_id": "e4265f322e6380ee832b83ad45e3e8c0",
+  "compatibility_date": "2026-02-25",
+  "main": "index.ts",
+  
+  // Catch all subdomains EXCEPT www (handled by main site)
+  // The wildcard route catches subdomains like healthmd.isolated.tech
+  "routes": [
+    { "pattern": "*.isolated.tech/*", "zone_name": "isolated.tech" }
+  ]
+}
