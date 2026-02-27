@@ -86,9 +86,13 @@ export default async function AdminLayout({
           <div className="admin-sidebar__section">
             <div className="admin-sidebar__label">MARKETING</div>
             <nav className="admin-sidebar__nav">
-              <a href="/admin/broadcast" className="admin-sidebar__link">
+              <a href="/admin/subscribers" className="admin-sidebar__link">
+                <span className="admin-sidebar__icon">📧</span>
+                <span>Subscribers</span>
+              </a>
+              <a href="/admin/broadcasts" className="admin-sidebar__link">
                 <span className="admin-sidebar__icon">✉</span>
-                <span>Broadcast</span>
+                <span>Broadcasts</span>
               </a>
             </nav>
           </div>

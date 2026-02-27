@@ -12,6 +12,7 @@ import { magicLink } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { D1Dialect } from "kysely-d1";
 import type { Env } from "./env";
+import { claimLegacyData } from "./legacy-claims";
 
 /**
  * Create a Better Auth instance with the given environment
@@ -80,6 +81,20 @@ export function createAuth(env: Env) {
         clientId: env.APPLE_CLIENT_ID || "",
         clientSecret: env.APPLE_CLIENT_SECRET || "",
         enabled: !!(env.APPLE_CLIENT_ID && env.APPLE_CLIENT_SECRET),
+      },
+    },
+
+    // Hooks for lifecycle events
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            // Auto-claim legacy purchases and link subscriber when user signs up
+            if (user.email) {
+              await claimLegacyData(user.id, user.email, env);
+            }
+          },
+        },
       },
     },
 
