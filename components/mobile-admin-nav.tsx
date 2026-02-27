@@ -26,21 +26,21 @@ const navSections = [
   {
     label: "SUPPORT",
     links: [
-      { href: "/admin/feedback", icon: "💬", text: "Feedback" },
-      { href: "/admin/feature-requests", icon: "✨", text: "Feature Requests" },
-      { href: "/admin/help-articles", icon: "📖", text: "Help Articles" },
+      { href: "/admin/feedback", icon: "∴", text: "Feedback" },
+      { href: "/admin/feature-requests", icon: "★", text: "Feature Requests" },
+      { href: "/admin/help-articles", icon: "≡", text: "Help Articles" },
     ],
   },
   {
     label: "MARKETING",
     links: [
-      { href: "/admin/subscribers", icon: "📧", text: "Subscribers" },
+      { href: "/admin/subscribers", icon: "@", text: "Subscribers" },
       { href: "/admin/broadcasts", icon: "✉", text: "Broadcasts" },
     ],
   },
   {
     label: "SETTINGS",
-    links: [{ href: "/admin/api-keys", icon: "🔑", text: "API Keys" }],
+    links: [{ href: "/admin/api-keys", icon: "⚿", text: "API Keys" }],
   },
 ];
 
