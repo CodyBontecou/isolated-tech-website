@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { SignOutButton } from "@/components/sign-out-button";
+import { FeedbackButton } from "@/components/feedback-modal";
 
 export const metadata: Metadata = {
   title: "Dashboard — ISOLATED.TECH",
@@ -90,6 +91,12 @@ function PurchasedAppCard({
             ★ WRITE A REVIEW
           </Link>
         )}
+
+        <FeedbackButton
+          appId={purchase.app_id}
+          appName={purchase.app_name}
+          appVersion={purchase.version}
+        />
       </div>
     </div>
   );
