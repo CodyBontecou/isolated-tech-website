@@ -4790,6 +4790,22 @@ img {
   border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
+.review-card__source--link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.review-card__source--link:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.review-card__source--link:active {
+  transform: translateY(0);
+}
+
 .review-card__source-icon {
   width: 12px;
   height: 12px;

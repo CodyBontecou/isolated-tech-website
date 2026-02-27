@@ -311,7 +311,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
 
             <MediaShowcase media={media} />
 
-            <ReviewsSection reviews={reviews} appStoreReviews={appStoreReviews} stats={reviewStats} />
+            <ReviewsSection reviews={reviews} appStoreReviews={appStoreReviews} stats={reviewStats} appStoreUrl={iosAppStoreUrl} />
           </div>
 
           <aside>
