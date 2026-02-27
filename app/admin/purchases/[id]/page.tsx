@@ -39,7 +39,7 @@ async function getPurchase(id: string): Promise<Purchase | null> {
        p.stripe_payment_intent_id,
        p.created_at
      FROM purchases p
-     JOIN users u ON p.user_id = u.id
+     JOIN user u ON p.user_id = u.id
      JOIN apps a ON p.app_id = a.id
      WHERE p.id = ?`,
     [id],

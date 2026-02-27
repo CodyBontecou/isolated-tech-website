@@ -104,8 +104,8 @@ export async function POST(request: NextRequest) {
       .bind(now, purchaseId)
       .run();
 
-    // Get user info for notification
-    const user = await env.DB.prepare(`SELECT email FROM users WHERE id = ?`)
+    // Get user info for notification (Better Auth 'user' table)
+    const user = await env.DB.prepare(`SELECT email FROM user WHERE id = ?`)
       .bind(purchase.user_id)
       .first<{ email: string }>();
 

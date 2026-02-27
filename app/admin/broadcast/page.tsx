@@ -45,16 +45,16 @@ async function getAppsWithPurchaserCounts(): Promise<AppWithCount[]> {
 async function getBroadcastStats(): Promise<BroadcastStats> {
   const env = getEnv();
 
-  // Total users
+  // Total users (Better Auth 'user' table)
   const usersResult = await queryOne<{ count: number }>(
-    `SELECT COUNT(*) as count FROM users`,
+    `SELECT COUNT(*) as count FROM user`,
     [],
     env
   );
 
   // Newsletter subscribers
   const subscribersResult = await queryOne<{ count: number }>(
-    `SELECT COUNT(*) as count FROM users WHERE newsletter_subscribed = 1`,
+    `SELECT COUNT(*) as count FROM user WHERE newsletterSubscribed = 1`,
     [],
     env
   );

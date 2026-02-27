@@ -10,9 +10,9 @@ interface User {
   id: string;
   email: string;
   name: string | null;
-  is_admin: number;
-  newsletter_subscribed: number;
-  created_at: string;
+  isAdmin: number;
+  newsletterSubscribed: number;
+  createdAt: string;
   purchase_count: number;
   review_count: number;
   oauth_providers: string[];
@@ -21,14 +21,14 @@ interface User {
 async function getUsers(): Promise<User[]> {
   const env = getEnv();
 
-  // Get users with purchase and review counts
+  // Get users with purchase and review counts (using Better Auth 'user' table)
   const users = await query<{
     id: string;
     email: string;
     name: string | null;
-    is_admin: number;
-    newsletter_subscribed: number;
-    created_at: string;
+    isAdmin: number;
+    newsletterSubscribed: number;
+    createdAt: string;
     purchase_count: number;
     review_count: number;
   }>(
@@ -36,23 +36,23 @@ async function getUsers(): Promise<User[]> {
        u.id,
        u.email,
        u.name,
-       u.is_admin,
-       u.newsletter_subscribed,
-       u.created_at,
+       u.isAdmin,
+       u.newsletterSubscribed,
+       u.createdAt,
        COALESCE((SELECT COUNT(*) FROM purchases WHERE user_id = u.id AND status = 'completed'), 0) as purchase_count,
        COALESCE((SELECT COUNT(*) FROM reviews WHERE user_id = u.id), 0) as review_count
-     FROM users u
-     ORDER BY u.created_at DESC`,
+     FROM user u
+     ORDER BY u.createdAt DESC`,
     [],
     env
   );
 
-  // Get OAuth providers for each user
+  // Get OAuth providers for each user (Better Auth 'account' table)
   const oauthAccounts = await query<{
-    user_id: string;
-    provider: string;
+    userId: string;
+    providerId: string;
   }>(
-    `SELECT user_id, provider FROM oauth_accounts`,
+    `SELECT userId, providerId FROM account`,
     [],
     env
   );
@@ -60,9 +60,9 @@ async function getUsers(): Promise<User[]> {
   // Build provider map
   const providerMap = new Map<string, string[]>();
   for (const account of oauthAccounts) {
-    const providers = providerMap.get(account.user_id) || [];
-    providers.push(account.provider);
-    providerMap.set(account.user_id, providers);
+    const providers = providerMap.get(account.userId) || [];
+    providers.push(account.providerId);
+    providerMap.set(account.userId, providers);
   }
 
   // Merge providers into users
@@ -112,7 +112,7 @@ function OAuthBadges({ providers }: { providers: string[] }) {
 export default async function AdminUsersPage() {
   const users = await getUsers();
 
-  const newsletterCount = users.filter((u) => u.newsletter_subscribed).length;
+  const newsletterCount = users.filter((u) => u.newsletterSubscribed).length;
 
   return (
     <>
@@ -167,7 +167,7 @@ export default async function AdminUsersPage() {
                     <div className="admin-table__user">
                       <span className="admin-table__user-name">
                         {user.name || "—"}
-                        {user.is_admin === 1 && (
+                        {user.isAdmin === 1 && (
                           <span
                             style={{
                               color: "#fbbf24",
@@ -188,7 +188,7 @@ export default async function AdminUsersPage() {
                   <td>{user.purchase_count}</td>
                   <td>{user.review_count}</td>
                   <td>
-                    {user.newsletter_subscribed ? (
+                    {user.newsletterSubscribed ? (
                       <span style={{ color: "#4ade80", fontSize: "0.7rem" }}>
                         ✓
                       </span>
@@ -199,12 +199,12 @@ export default async function AdminUsersPage() {
                     )}
                   </td>
                   <td className="admin-table__date">
-                    {formatDate(user.created_at)}
+                    {formatDate(user.createdAt)}
                   </td>
                   <td>
                     <div className="admin-table__actions">
                       <button className="admin-table__btn">VIEW</button>
-                      {user.is_admin === 0 && (
+                      {user.isAdmin === 0 && (
                         <button className="admin-table__btn admin-table__btn--danger">
                           DELETE
                         </button>

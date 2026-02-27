@@ -84,12 +84,12 @@ export function nanoid(size = 21): string {
  * Common query helpers
  */
 export const queries = {
-  // Users
+  // Users (Better Auth 'user' table)
   getUserById: (id: string, env?: Env) =>
-    queryOne("SELECT * FROM users WHERE id = ?", [id], env),
+    queryOne("SELECT * FROM user WHERE id = ?", [id], env),
 
   getUserByEmail: (email: string, env?: Env) =>
-    queryOne("SELECT * FROM users WHERE email = ?", [email], env),
+    queryOne("SELECT * FROM user WHERE email = ?", [email], env),
 
   // Apps
   getAppBySlug: (slug: string, env?: Env) =>

@@ -49,11 +49,6 @@ export async function DELETE(request: NextRequest) {
       .bind(user.id)
       .run();
 
-    // Delete from old oauth_accounts table (if still exists)
-    await env.DB.prepare("DELETE FROM oauth_accounts WHERE user_id = ?")
-      .bind(user.id)
-      .run();
-
     // Anonymize purchases (keep for tax/legal records)
     await env.DB.prepare(
       "UPDATE purchases SET user_id = 'deleted_user' WHERE user_id = ?"
@@ -61,12 +56,7 @@ export async function DELETE(request: NextRequest) {
       .bind(user.id)
       .run();
 
-    // Delete from old users table
-    await env.DB.prepare("DELETE FROM users WHERE id = ?")
-      .bind(user.id)
-      .run();
-
-    // Delete the Better Auth user
+    // Delete the Better Auth user (cascades to session and account)
     await env.DB.prepare('DELETE FROM "user" WHERE id = ?')
       .bind(user.id)
       .run();

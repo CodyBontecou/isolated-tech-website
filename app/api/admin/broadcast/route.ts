@@ -145,19 +145,19 @@ export async function POST(request: NextRequest) {
 
     switch (audience) {
       case "newsletter":
-        recipientQuery = `SELECT id, email, name FROM users WHERE newsletter_subscribed = 1`;
+        recipientQuery = `SELECT id, email, name FROM user WHERE newsletterSubscribed = 1`;
         break;
       case "app":
         recipientQuery = `
           SELECT DISTINCT u.id, u.email, u.name 
-          FROM users u
+          FROM user u
           JOIN purchases p ON p.user_id = u.id
           WHERE p.app_id = ? AND p.status = 'completed'
         `;
         recipientParams = [appId];
         break;
       case "all":
-        recipientQuery = `SELECT id, email, name FROM users`;
+        recipientQuery = `SELECT id, email, name FROM user`;
         break;
       default:
         return NextResponse.json({ error: "Invalid audience" }, { status: 400 });

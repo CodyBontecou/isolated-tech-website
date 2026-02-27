@@ -52,9 +52,9 @@ async function getStats(): Promise<Stats> {
     env
   );
 
-  // Total users
+  // Total users (Better Auth 'user' table)
   const usersResult = await queryOne<{ count: number }>(
-    `SELECT COUNT(*) as count FROM users`,
+    `SELECT COUNT(*) as count FROM user`,
     [],
     env
   );
@@ -72,7 +72,7 @@ async function getStats(): Promise<Stats> {
   const todayStartStr = todayStart.toISOString();
 
   const newUsersTodayResult = await queryOne<{ count: number }>(
-    `SELECT COUNT(*) as count FROM users WHERE created_at >= ?`,
+    `SELECT COUNT(*) as count FROM user WHERE createdAt >= ?`,
     [todayStartStr],
     env
   );
@@ -116,7 +116,7 @@ async function getRecentPurchases(): Promise<RecentPurchase[]> {
        p.amount_cents,
        p.created_at
      FROM purchases p
-     JOIN users u ON p.user_id = u.id
+     JOIN user u ON p.user_id = u.id
      JOIN apps a ON p.app_id = a.id
      WHERE p.status = 'completed'
      ORDER BY p.created_at DESC
