@@ -4204,6 +4204,36 @@ html.light .hero__image-overlay {
   letter-spacing: 0.1em;
 }
 
+.store-footer__bottom {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: var(--gray);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--white);
+  border-color: var(--gray);
+}
+
+.theme-toggle svg {
+  flex-shrink: 0;
+}
+
 /* Store Responsive */
 @media (max-width: 1180px) {
   .store-hero__inner {

@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { query } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { SignOutButton } from "@/components/sign-out-button";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Roadmap — ISOLATED.TECH",
@@ -188,24 +188,7 @@ export default async function RoadmapPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className="store-footer">
-        <div className="store-footer__brand">
-          <span className="store-footer__logo">
-            ISOLATED<span className="dot">.</span>TECH
-          </span>
-          <span className="store-footer__tagline">Software that ships.</span>
-        </div>
-        <div className="store-footer__links">
-          <a href="/feedback">FEEDBACK</a>
-          <a href="/roadmap">ROADMAP</a>
-          <a href="/help">HELP</a>
-          <Link href="/privacy">PRIVACY</Link>
-          <Link href="/terms">TERMS</Link>
-        </div>
-        <div className="store-footer__copy">
-          © 2026 ISOLATED.TECH
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

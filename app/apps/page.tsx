@@ -1,10 +1,10 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
 import { SignOutButton } from "@/components/sign-out-button";
 import { AppFilters } from "@/app/components/app-filters";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Apps — ISOLATED.TECH",
@@ -127,30 +127,7 @@ export default async function AppsPage() {
         <AppFilters apps={apps} showFeaturedSort={true} />
       </section>
 
-      <footer className="store-footer">
-        <div className="store-footer__brand">
-          <span className="store-footer__logo">
-            ISOLATED<span className="dot">.</span>TECH
-          </span>
-          <span className="store-footer__tagline">Software that ships.</span>
-        </div>
-        <div className="store-footer__links">
-          <a href="https://instagram.com/isolated.tech" target="_blank" rel="noopener">
-            INSTAGRAM
-          </a>
-          <a href="https://tiktok.com/@isolated.tech" target="_blank" rel="noopener">
-            TIKTOK
-          </a>
-          <Link href="/privacy">PRIVACY</Link>
-          <Link href="/terms">TERMS</Link>
-          <a href="mailto:cody@isolated.tech">
-            CONTACT
-          </a>
-        </div>
-        <div className="store-footer__copy">
-          © 2026 ISOLATED.TECH
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

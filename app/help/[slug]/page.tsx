@@ -1,10 +1,10 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { queryOne } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { SignOutButton } from "@/components/sign-out-button";
+import { SiteFooter } from "@/components/site-footer";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -172,23 +172,7 @@ export default async function HelpArticlePage({ params }: Props) {
       </main>
 
       {/* FOOTER */}
-      <footer className="store-footer">
-        <div className="store-footer__brand">
-          <span className="store-footer__logo">
-            ISOLATED<span className="dot">.</span>TECH
-          </span>
-        </div>
-        <div className="store-footer__links">
-          <a href="/feedback">FEEDBACK</a>
-          <a href="/roadmap">ROADMAP</a>
-          <a href="/help">HELP</a>
-          <Link href="/privacy">PRIVACY</Link>
-          <Link href="/terms">TERMS</Link>
-        </div>
-        <div className="store-footer__copy">
-          © 2026 ISOLATED.TECH
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

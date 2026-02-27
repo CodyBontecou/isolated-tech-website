@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { ViewTransitionLink } from "./components/view-transition-link";
@@ -6,6 +5,7 @@ import { HeroAppLink } from "./components/hero-app-link";
 import { queries } from "@/lib/db";
 import { SignOutButton } from "@/components/sign-out-button";
 import { AppFilters } from "./components/app-filters";
+import { SiteFooter } from "@/components/site-footer";
 
 interface App {
   id: string;
@@ -339,32 +339,7 @@ export default async function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="store-footer">
-        <div className="store-footer__brand">
-          <span className="store-footer__logo">
-            ISOLATED<span className="dot">.</span>TECH
-          </span>
-          <span className="store-footer__tagline">Software that ships.</span>
-        </div>
-        <div className="store-footer__links">
-          <a href="/feedback">FEEDBACK</a>
-          <a href="/roadmap">ROADMAP</a>
-          <a href="https://instagram.com/isolated.tech" target="_blank" rel="noopener">
-            INSTAGRAM
-          </a>
-          <a href="https://tiktok.com/@isolated.tech" target="_blank" rel="noopener">
-            TIKTOK
-          </a>
-          <Link href="/privacy">PRIVACY</Link>
-          <Link href="/terms">TERMS</Link>
-          <a href="mailto:cody@isolated.tech">
-            CONTACT
-          </a>
-        </div>
-        <div className="store-footer__copy">
-          © 2026 ISOLATED.TECH
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
