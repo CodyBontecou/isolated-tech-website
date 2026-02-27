@@ -92,7 +92,6 @@ function AppCard({ app, index }: { app: App; index: number }) {
           {platforms.map((p) => (
             <PlatformBadge key={p} platform={p} />
           ))}
-          {app.is_featured === 1 && <span className="store-badge store-badge--featured">★</span>}
         </div>
         <h2 className="store-card__name">{app.name}</h2>
         {app.tagline && <p className="store-card__tagline">{app.tagline}</p>}
