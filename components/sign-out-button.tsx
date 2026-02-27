@@ -25,20 +25,7 @@ export function SignOutButton({ className, children }: SignOutButtonProps) {
   return (
     <button
       onClick={handleSignOut}
-      className={className}
-      style={{
-        background: "none",
-        border: "none",
-        padding: 0,
-        margin: 0,
-        color: "inherit",
-        font: "inherit",
-        fontSize: "0.7rem",
-        letterSpacing: "0.2em",
-        fontWeight: 700,
-        cursor: "pointer",
-        transition: "opacity 0.2s",
-      }}
+      className={`nav__sign-out ${className || ""}`}
       onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.5")}
       onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
     >
