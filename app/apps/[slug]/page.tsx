@@ -261,7 +261,7 @@ export default async function AppPage({ params }: { params: { slug: string } }) 
       <AppNav user={user} redirectPath={`/apps/${app.slug}`} />
 
       <main className="app-page">
-        <a href="/apps" className="app-page__back">
+        <a href="/" className="app-page__back">
           ← ALL APPS
         </a>
 
