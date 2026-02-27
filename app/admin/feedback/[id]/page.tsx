@@ -127,7 +127,7 @@ export default async function AdminFeedbackDetailPage({
               border: `1px solid ${isBug ? "#f8717130" : "#60a5fa30"}`,
             }}
           >
-            {isBug ? "🐛 BUG REPORT" : "💬 FEEDBACK"}
+            {isBug ? "BUG REPORT" : "FEEDBACK"}
           </span>
         </div>
         <h1 className="admin-header__title" style={{ marginTop: "0.5rem" }}>
@@ -273,7 +273,7 @@ export default async function AdminFeedbackDetailPage({
                 className="auth-btn auth-btn--outline"
                 style={{ width: "100%", textAlign: "center" }}
               >
-                ✉ REPLY VIA EMAIL
+                REPLY VIA EMAIL
               </a>
               <Link
                 href={`/admin/apps/${feedback.app_id}`}

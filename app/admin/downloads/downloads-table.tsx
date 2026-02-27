@@ -56,7 +56,7 @@ function DownloadTypeBadge({ type }: { type: string }) {
 
 // Country code to flag emoji
 function getCountryFlag(countryCode: string | null): string {
-  if (!countryCode || countryCode.length !== 2) return "🌍";
+  if (!countryCode || countryCode.length !== 2) return "—";
   const codePoints = countryCode
     .toUpperCase()
     .split("")

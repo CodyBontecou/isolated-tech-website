@@ -81,7 +81,7 @@ function TypeBadge({ type }: { type: "feedback" | "bug" }) {
         border: `1px solid ${isBug ? "#f8717130" : "#60a5fa30"}`,
       }}
     >
-      {isBug ? "🐛 BUG" : "💬 FEEDBACK"}
+      {isBug ? "BUG" : "FEEDBACK"}
     </span>
   );
 }

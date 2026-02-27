@@ -105,7 +105,7 @@ export default async function AdminSubscribersPage() {
           className="auth-btn auth-btn--outline"
           style={{ width: "auto", padding: "0.5rem 1rem" }}
         >
-          📧 NEW BROADCAST
+          NEW BROADCAST
         </Link>
         <Link
           href="/admin/broadcasts"

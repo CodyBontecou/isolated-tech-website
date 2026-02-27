@@ -110,7 +110,7 @@ function StatusBadge({ status }: { status: string }) {
 function TypeBadge({ type }: { type: "feature" | "bug" | "improvement" }) {
   const config = {
     feature: { label: "FEATURE", color: "#60a5fa" },
-    bug: { label: "🐛 BUG", color: "#f87171" },
+    bug: { label: "BUG", color: "#f87171" },
     improvement: { label: "IMPROVE", color: "#a78bfa" },
   };
   const { label, color } = config[type];
@@ -226,7 +226,7 @@ export default async function AdminFeatureRequestsPage() {
                           marginTop: "0.2rem",
                         }}
                       >
-                        💬 {request.comment_count} comments
+                        {request.comment_count} comments
                       </div>
                     </div>
                   </td>

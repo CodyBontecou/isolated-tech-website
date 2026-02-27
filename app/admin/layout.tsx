@@ -83,15 +83,15 @@ export default async function AdminLayout({
             <div className="admin-sidebar__label">SUPPORT</div>
             <nav className="admin-sidebar__nav">
               <a href="/admin/feedback" className="admin-sidebar__link">
-                <span className="admin-sidebar__icon">💬</span>
+                <span className="admin-sidebar__icon">∴</span>
                 <span>Feedback</span>
               </a>
               <a href="/admin/feature-requests" className="admin-sidebar__link">
-                <span className="admin-sidebar__icon">✨</span>
+                <span className="admin-sidebar__icon">★</span>
                 <span>Feature Requests</span>
               </a>
               <a href="/admin/help-articles" className="admin-sidebar__link">
-                <span className="admin-sidebar__icon">📖</span>
+                <span className="admin-sidebar__icon">≡</span>
                 <span>Help Articles</span>
               </a>
             </nav>
@@ -101,7 +101,7 @@ export default async function AdminLayout({
             <div className="admin-sidebar__label">MARKETING</div>
             <nav className="admin-sidebar__nav">
               <a href="/admin/subscribers" className="admin-sidebar__link">
-                <span className="admin-sidebar__icon">📧</span>
+                <span className="admin-sidebar__icon">@</span>
                 <span>Subscribers</span>
               </a>
               <a href="/admin/broadcasts" className="admin-sidebar__link">
@@ -115,7 +115,7 @@ export default async function AdminLayout({
             <div className="admin-sidebar__label">SETTINGS</div>
             <nav className="admin-sidebar__nav">
               <a href="/admin/api-keys" className="admin-sidebar__link">
-                <span className="admin-sidebar__icon">🔑</span>
+                <span className="admin-sidebar__icon">⚿</span>
                 <span>API Keys</span>
               </a>
             </nav>
