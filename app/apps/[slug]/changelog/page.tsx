@@ -114,14 +114,6 @@ export default async function ChangelogPage({
   const macosUpdates = updates.filter((u: AppUpdate) => u.platform === "macos");
   const iosUpdates = updates.filter((u: AppUpdate) => u.platform === "ios");
 
-  // All versions for quick nav (deduplicated by version string)
-  const allVersions = updates.reduce<{ version: string; platform: string }[]>((acc, u: AppUpdate) => {
-    if (!acc.some((v) => v.version === u.version && v.platform === u.platform)) {
-      acc.push({ version: u.version, platform: u.platform });
-    }
-    return acc;
-  }, []);
-
   return (
     <>
       <nav className="nav">
@@ -163,27 +155,6 @@ export default async function ChangelogPage({
           </div>
         ) : (
           <>
-            {/* Quick nav */}
-            <div className="changelog-nav">
-              <span className="changelog-nav__label">VERSIONS</span>
-              <div className="changelog-nav__list">
-                {allVersions.map((v) => (
-                  <a
-                    key={`${v.platform}-${v.version}`}
-                    href={`#${v.platform}-${v.version}`}
-                    className="changelog-nav__link"
-                  >
-                    {v.version}
-                    {hasBothPlatforms && (
-                      <span className="changelog-nav__platform">
-                        {v.platform === "ios" ? "iOS" : "macOS"}
-                      </span>
-                    )}
-                  </a>
-                ))}
-              </div>
-            </div>
-
             {/* Versions */}
             <div className="changelog-versions">
               {hasBothPlatforms ? (
