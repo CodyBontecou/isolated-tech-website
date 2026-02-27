@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { SignOutButton } from "@/components/sign-out-button";
+import { SessionRefresh } from "@/components/session-refresh";
 
 export default async function AdminLayout({
   children,
@@ -16,6 +17,7 @@ export default async function AdminLayout({
 
   return (
     <>
+      <SessionRefresh />
       <nav className="nav">
         {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
         <a href="/" className="nav__logo">

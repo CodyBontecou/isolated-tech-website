@@ -38,7 +38,7 @@ export function createAuth(env: Env) {
       updateAge: 60 * 60 * 24, // Update session age daily
       cookieCache: {
         enabled: true,
-        maxAge: 60 * 5, // 5 minute cache
+        maxAge: 60 * 15, // 15 minute cache
       },
     },
 
