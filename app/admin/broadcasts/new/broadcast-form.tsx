@@ -13,12 +13,41 @@ export function BroadcastForm({ subscriberCount }: BroadcastFormProps) {
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+
+  const handleSendTest = async () => {
+    setSendingTest(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("/api/admin/broadcast/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, body }),
+      });
+
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send test email");
+      }
+
+      setSuccess("Test email sent to cody@isolated.tech!");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send test email");
+    } finally {
+      setSendingTest(false);
+    }
+  };
 
   const handleSaveDraft = async () => {
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
       const response = await fetch("/api/admin/broadcasts", {
@@ -48,6 +77,7 @@ export function BroadcastForm({ subscriberCount }: BroadcastFormProps) {
 
     setSending(true);
     setError(null);
+    setSuccess(null);
 
     try {
       const response = await fetch("/api/admin/broadcasts", {
@@ -161,28 +191,55 @@ Use double line breaks for paragraphs."
           </div>
         )}
 
-        <div style={{ display: "flex", gap: "0.75rem" }}>
+        {success && (
+          <div
+            style={{
+              padding: "0.75rem",
+              marginBottom: "1.5rem",
+              background: "#14532d",
+              border: "1px solid #22c55e",
+              color: "#86efac",
+              fontSize: "0.85rem",
+            }}
+          >
+            {success}
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <button
             onClick={handleSendNow}
             className="auth-btn"
-            disabled={sending || loading || !subject || !body || subscriberCount === 0}
+            disabled={sending || loading || sendingTest || !subject || !body || subscriberCount === 0}
             style={{
               width: "auto",
               padding: "0.75rem 1.5rem",
               background: "#22c55e",
-              opacity: sending || loading || !subject || !body || subscriberCount === 0 ? 0.5 : 1,
+              opacity: sending || loading || sendingTest || !subject || !body || subscriberCount === 0 ? 0.5 : 1,
             }}
           >
             {sending ? "SENDING..." : `SEND TO ${subscriberCount} SUBSCRIBERS`}
           </button>
           <button
-            onClick={handleSaveDraft}
+            onClick={handleSendTest}
             className="auth-btn auth-btn--outline"
-            disabled={loading || sending || !subject}
+            disabled={sendingTest || sending || loading || !subject || !body}
             style={{
               width: "auto",
               padding: "0.75rem 1.5rem",
-              opacity: loading || sending || !subject ? 0.5 : 1,
+              opacity: sendingTest || sending || loading || !subject || !body ? 0.5 : 1,
+            }}
+          >
+            {sendingTest ? "SENDING..." : "SEND TEST"}
+          </button>
+          <button
+            onClick={handleSaveDraft}
+            className="auth-btn auth-btn--outline"
+            disabled={loading || sending || sendingTest || !subject}
+            style={{
+              width: "auto",
+              padding: "0.75rem 1.5rem",
+              opacity: loading || sending || sendingTest || !subject ? 0.5 : 1,
             }}
           >
             {loading ? "SAVING..." : "SAVE DRAFT"}

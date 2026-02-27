@@ -56,7 +56,7 @@ export function BroadcastForm({ apps, stats }: BroadcastFormProps) {
         throw new Error(data.error || "Failed to send test email");
       }
 
-      setSuccess("Test email sent to your admin email!");
+      setSuccess("Test email sent to cody@isolated.tech!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

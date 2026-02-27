@@ -100,10 +100,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Body is required" }, { status: 400 });
     }
 
-    // Send test email via SES
+    // Send test email via SES to the admin test address
+    const testEmail = "cody@isolated.tech";
     const result = await sendEmail(
       {
-        to: user.email,
+        to: testEmail,
         subject: `[TEST] ${subject}`,
         html: generateBroadcastEmailHtml(subject, emailBody),
         text: emailBody,
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Test email sent to ${user.email}`,
+      message: `Test email sent to ${testEmail}`,
       messageId: result.messageId,
     });
   } catch (error) {
