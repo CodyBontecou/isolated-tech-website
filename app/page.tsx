@@ -6,6 +6,7 @@ import { queries } from "@/lib/db";
 import { SignOutButton } from "@/components/sign-out-button";
 import { AppFilters } from "./components/app-filters";
 import { SiteFooter } from "@/components/site-footer";
+import { MobileSiteNav } from "@/components/mobile-site-nav";
 
 interface App {
   id: string;
@@ -279,6 +280,7 @@ export default async function HomePage() {
             <a href="/auth/login">SIGN IN</a>
           )}
         </div>
+        <MobileSiteNav isLoggedIn={!!user} isAdmin={!!user?.isAdmin} />
       </nav>
 
       {/* HERO */}

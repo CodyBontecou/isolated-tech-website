@@ -9,5 +9,10 @@
   // The wildcard route catches subdomains like healthmd.isolated.tech
   "routes": [
     { "pattern": "*.isolated.tech/*", "zone_name": "isolated.tech" }
+  ],
+  
+  // Service bindings to route specific subdomains to their workers
+  "services": [
+    { "binding": "IMGHOST", "service": "img-host" }
   ]
 }
