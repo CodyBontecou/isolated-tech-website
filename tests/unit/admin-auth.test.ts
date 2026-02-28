@@ -44,15 +44,17 @@ describe("Admin Auth", () => {
     it("should set 30-day expiration", async () => {
       const { generateApiKey } = await import("@/lib/admin-auth");
 
-      const now = Date.now();
       const result = await generateApiKey(mockEnv as any, "test-key");
-
-      const expectedExpiry = now + 30 * 24 * 60 * 60 * 1000;
       const actualExpiry = result.expiresAt.getTime();
+      const now = Date.now();
 
-      // Allow 1 second tolerance
-      expect(actualExpiry).toBeGreaterThan(expectedExpiry - 1000);
-      expect(actualExpiry).toBeLessThan(expectedExpiry + 1000);
+      // Verify expiration is approximately 30 days in the future
+      // Allow 2 hour tolerance for test timing and DST edge cases
+      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+      const twoHoursMs = 2 * 60 * 60 * 1000;
+      const delta = Math.abs(actualExpiry - (now + thirtyDaysMs));
+      
+      expect(delta).toBeLessThan(twoHoursMs);
     });
 
     it("should store hashed key in database", async () => {
