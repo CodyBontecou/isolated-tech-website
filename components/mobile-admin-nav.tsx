@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 
 const navSections = [
@@ -46,7 +47,13 @@ const navSections = [
 
 export function MobileAdminNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  // Ensure portal target is available (client-side only)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close menu on route change
   useEffect(() => {
@@ -65,22 +72,8 @@ export function MobileAdminNav() {
     };
   }, [isOpen]);
 
-  return (
+  const overlayAndMenu = (
     <>
-      {/* Hamburger button */}
-      <button
-        className="mobile-admin-toggle"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "Close menu" : "Open menu"}
-        aria-expanded={isOpen}
-      >
-        <span className={`hamburger ${isOpen ? "hamburger--open" : ""}`}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-      </button>
-
       {/* Overlay */}
       <div
         className={`mobile-admin-overlay ${isOpen ? "mobile-admin-overlay--visible" : ""}`}
@@ -120,6 +113,27 @@ export function MobileAdminNav() {
           ))}
         </nav>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Hamburger button */}
+      <button
+        className="mobile-admin-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
+        aria-expanded={isOpen}
+      >
+        <span className={`hamburger ${isOpen ? "hamburger--open" : ""}`}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+
+      {/* Portal the overlay and menu to document.body so they escape any parent stacking context */}
+      {mounted && createPortal(overlayAndMenu, document.body)}
     </>
   );
 }

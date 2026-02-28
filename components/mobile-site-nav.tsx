@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 
 interface NavLink {
@@ -16,6 +17,7 @@ interface MobileSiteNavProps {
 
 export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   const navLinks: NavLink[] = [
@@ -31,6 +33,11 @@ export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
         { href: "/dashboard", icon: "◎", text: "Dashboard" },
       ]
     : [{ href: "/auth/login", icon: "→", text: "Sign In" }];
+
+  // Ensure portal target is available (client-side only)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close menu on route change
   useEffect(() => {
@@ -58,22 +65,8 @@ export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
     }
   };
 
-  return (
+  const overlayAndMenu = (
     <>
-      {/* Hamburger button */}
-      <button
-        className="mobile-site-toggle"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "Close menu" : "Open menu"}
-        aria-expanded={isOpen}
-      >
-        <span className={`hamburger ${isOpen ? "hamburger--open" : ""}`}>
-          <span></span>
-          <span></span>
-          <span></span>
-        </span>
-      </button>
-
       {/* Overlay */}
       <div
         className={`mobile-site-overlay ${isOpen ? "mobile-site-overlay--visible" : ""}`}
@@ -138,6 +131,27 @@ export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
           </div>
         </nav>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Hamburger button stays in the nav */}
+      <button
+        className="mobile-site-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
+        aria-expanded={isOpen}
+      >
+        <span className={`hamburger ${isOpen ? "hamburger--open" : ""}`}>
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+
+      {/* Portal the overlay and menu to document.body so they escape the nav's stacking context */}
+      {mounted && createPortal(overlayAndMenu, document.body)}
     </>
   );
 }
