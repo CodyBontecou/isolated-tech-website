@@ -3,8 +3,9 @@ import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { SignOutButton } from "@/components/sign-out-button";
 import { DeleteReviewButton } from "../delete-button";
+import { SiteNav } from "@/components/site-nav";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "View Review — ISOLATED.TECH",
@@ -96,16 +97,7 @@ export default async function ViewReviewPage({
 
   return (
     <>
-      <nav className="nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user.isAdmin && <a href="/admin">ADMIN</a>}
-          <SignOutButton />
-        </div>
-      </nav>
+      <SiteNav user={user} />
 
       <main className="dashboard">
         <header className="dashboard__header">
@@ -205,12 +197,7 @@ export default async function ViewReviewPage({
         </div>
       </main>
 
-      <footer className="footer">
-        <div className="footer__left">
-          <span>© 2026 ISOLATED.TECH</span>
-        </div>
-        <div className="footer__right" />
-      </footer>
+      <SiteFooter />
     </>
   );
 }

@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { ReviewForm } from "./review-form";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { SignOutButton } from "@/components/sign-out-button";
+import { SiteNav } from "@/components/site-nav";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Write a Review — ISOLATED.TECH",
@@ -79,17 +80,7 @@ export default async function NewReviewPage({
   if (!hasPurchased) {
     return (
       <>
-        <nav className="nav">
-          {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
-          <a href="/" className="nav__logo">
-            ISOLATED<span className="dot">.</span>TECH
-          </a>
-          <div className="nav__links">
-            <a href="/apps">APPS</a>
-            {user.isAdmin && <a href="/admin">ADMIN</a>}
-            <SignOutButton />
-          </div>
-        </nav>
+        <SiteNav user={user} />
 
         <main className="dashboard">
           <header className="dashboard__header">
@@ -119,12 +110,7 @@ export default async function NewReviewPage({
           </div>
         </main>
 
-        <footer className="footer">
-          <div className="footer__left">
-            <span>© 2026 ISOLATED.TECH</span>
-          </div>
-          <div className="footer__right" />
-        </footer>
+        <SiteFooter />
       </>
     );
   }
@@ -132,17 +118,7 @@ export default async function NewReviewPage({
   if (hasReviewed) {
     return (
       <>
-        <nav className="nav">
-          {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
-          <a href="/" className="nav__logo">
-            ISOLATED<span className="dot">.</span>TECH
-          </a>
-          <div className="nav__links">
-            <a href="/apps">APPS</a>
-            {user.isAdmin && <a href="/admin">ADMIN</a>}
-            <SignOutButton />
-          </div>
-        </nav>
+        <SiteNav user={user} />
 
         <main className="dashboard">
           <header className="dashboard__header">
@@ -173,29 +149,14 @@ export default async function NewReviewPage({
           </div>
         </main>
 
-        <footer className="footer">
-          <div className="footer__left">
-            <span>© 2026 ISOLATED.TECH</span>
-          </div>
-          <div className="footer__right" />
-        </footer>
+        <SiteFooter />
       </>
     );
   }
 
   return (
     <>
-      <nav className="nav">
-        {/* Use <a> tag to force full page navigation - vinext RSC fetch doesn't include credentials */}
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user.isAdmin && <a href="/admin">ADMIN</a>}
-          <SignOutButton />
-        </div>
-      </nav>
+      <SiteNav user={user} />
 
       <main className="dashboard">
         <header className="dashboard__header">
@@ -212,12 +173,7 @@ export default async function NewReviewPage({
         </div>
       </main>
 
-      <footer className="footer">
-        <div className="footer__left">
-          <span>© 2026 ISOLATED.TECH</span>
-        </div>
-        <div className="footer__right" />
-      </footer>
+      <SiteFooter />
     </>
   );
 }
