@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { query } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
