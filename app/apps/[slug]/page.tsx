@@ -86,6 +86,10 @@ export async function generateMetadata({
   return {
     title: app.name,
     description,
+    icons: {
+      icon: `/apps/${app.slug}/icon`,
+      apple: `/apps/${app.slug}/icon`,
+    },
     openGraph: {
       type: "website",
       url: appUrl,
