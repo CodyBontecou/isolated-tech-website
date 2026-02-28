@@ -28,11 +28,16 @@ interface RecentPurchase {
 async function getStats(): Promise<Stats> {
   const env = getEnv();
 
-  // Revenue this month
-  const monthStart = new Date();
+  // Revenue this month (use AST timezone - UTC-4)
+  const astOffsetMinutes = -4 * 60; // AST is UTC-4
+  const nowForMonth = new Date();
+  const localNowForMonth = new Date(nowForMonth.getTime() + (astOffsetMinutes + nowForMonth.getTimezoneOffset()) * 60000);
+  const monthStart = new Date(localNowForMonth);
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
-  const monthStartStr = monthStart.toISOString();
+  // Convert back to UTC for DB comparison
+  const monthStartUTC = new Date(monthStart.getTime() - (astOffsetMinutes + nowForMonth.getTimezoneOffset()) * 60000);
+  const monthStartStr = monthStartUTC.toISOString();
 
   const revenueMonthResult = await queryOne<{ total: number }>(
     `SELECT COALESCE(SUM(amount_cents), 0) as total 
@@ -66,10 +71,14 @@ async function getStats(): Promise<Stats> {
     env
   );
 
-  // New users today
-  const todayStart = new Date();
+  // New users today (use AST timezone - UTC-4)
+  const nowForToday = new Date();
+  const localNowForToday = new Date(nowForToday.getTime() + (astOffsetMinutes + nowForToday.getTimezoneOffset()) * 60000);
+  const todayStart = new Date(localNowForToday);
   todayStart.setHours(0, 0, 0, 0);
-  const todayStartStr = todayStart.toISOString();
+  // Convert back to UTC for DB comparison
+  const todayStartUTC = new Date(todayStart.getTime() - (astOffsetMinutes + nowForToday.getTimezoneOffset()) * 60000);
+  const todayStartStr = todayStartUTC.toISOString();
 
   const newUsersTodayResult = await queryOne<{ count: number }>(
     `SELECT COUNT(*) as count FROM user WHERE createdAt >= ?`,
