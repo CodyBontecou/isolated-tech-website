@@ -23,6 +23,7 @@ export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
   const navLinks: NavLink[] = [
     { href: "/", icon: "◉", text: "Home" },
     { href: "/#apps", icon: "☎", text: "Apps" },
+    { href: "/changelog", icon: "◈", text: "Updates" },
     { href: "/feedback", icon: "∴", text: "Feedback" },
     { href: "/roadmap", icon: "★", text: "Roadmap" },
   ];
