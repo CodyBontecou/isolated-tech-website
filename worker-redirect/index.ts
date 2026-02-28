@@ -6,17 +6,12 @@
  * Examples:
  *   healthmd.isolated.tech → https://isolated.tech/apps/healthmd
  *   healthmd.isolated.tech/privacy → https://isolated.tech/apps/healthmd/privacy
- * 
- * Special handling:
- *   imghost.isolated.tech → routed to img-host worker via service binding
  */
 
-interface Env {
-  IMGHOST: Fetcher;
-}
+interface Env {}
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, _env: Env): Promise<Response> {
     const url = new URL(request.url);
     const hostname = url.hostname;
     
@@ -30,11 +25,6 @@ export default {
       // Skip www subdomain (handled by main worker)
       if (subdomain === 'www') {
         return fetch(request);
-      }
-      
-      // Route imghost subdomain to its dedicated worker via service binding
-      if (subdomain === 'imghost') {
-        return env.IMGHOST.fetch(request);
       }
       
       // Build the redirect URL
