@@ -98,6 +98,7 @@ export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
                 className={`mobile-site-menu__link ${
                   pathname === link.href ? "mobile-site-menu__link--active" : ""
                 }`}
+                onClick={() => setIsOpen(false)}
               >
                 <span className="mobile-site-menu__icon">{link.icon}</span>
                 <span>{link.text}</span>
@@ -114,6 +115,7 @@ export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
                 className={`mobile-site-menu__link ${
                   pathname === link.href ? "mobile-site-menu__link--active" : ""
                 }`}
+                onClick={() => setIsOpen(false)}
               >
                 <span className="mobile-site-menu__icon">{link.icon}</span>
                 <span>{link.text}</span>

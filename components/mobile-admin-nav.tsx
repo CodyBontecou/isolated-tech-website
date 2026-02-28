@@ -104,6 +104,7 @@ export function MobileAdminNav() {
                   className={`mobile-admin-menu__link ${
                     pathname === link.href ? "mobile-admin-menu__link--active" : ""
                   }`}
+                  onClick={() => setIsOpen(false)}
                 >
                   <span className="mobile-admin-menu__icon">{link.icon}</span>
                   <span>{link.text}</span>
