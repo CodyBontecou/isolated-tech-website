@@ -34,6 +34,12 @@ jobs:
       - name: Run tests
         run: npm run test -- --run
 
+      - name: Install CLI dependencies
+        run: cd cli && npm ci
+
+      - name: Run CLI tests
+        run: cd cli && npm run test -- --run
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
