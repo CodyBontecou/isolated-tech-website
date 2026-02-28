@@ -2,6 +2,9 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { getPlatforms, hasIOS, hasMacOS, isIOSOnly, hasBothPlatforms } from "@/lib/platform";
+import { formatPrice } from "@/lib/formatting";
+import { PlatformBadge, StarRatingCompact } from "@/components/ui";
 
 interface App {
   id: string;
@@ -27,47 +30,6 @@ type SortOption = "featured" | "name" | "price-low" | "price-high" | "rating" | 
 interface AppFiltersProps {
   apps: App[];
   showFeaturedSort?: boolean;
-}
-
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return platformsJson.split(",").map((p) => p.trim().replace(/"/g, ""));
-  }
-}
-
-function formatPrice(minCents: number, suggestedCents: number | null, platforms?: string[]): string {
-  const hasIOS = platforms?.includes("ios");
-  const hasMacOS = platforms?.includes("macos");
-  
-  if (hasIOS && !hasMacOS) {
-    return "App Store";
-  }
-  
-  if (minCents === 0) {
-    return "Name your price";
-  }
-  return `From $${(minCents / 100).toFixed(2)}`;
-}
-
-function PlatformBadge({ platform }: { platform: string }) {
-  return (
-    <span className="store-badge">
-      {platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform.toUpperCase()}
-    </span>
-  );
-}
-
-function StarRatingCompact({ rating, count }: { rating: number; count: number }) {
-  if (count === 0) return null;
-  const roundedRating = Math.round(rating * 10) / 10;
-  return (
-    <div className="star-rating-compact" aria-label={`${roundedRating} out of 5 stars from ${count} reviews`}>
-      <span className="star-rating-compact__star">★</span>
-      <span className="star-rating-compact__value">{roundedRating.toFixed(1)}</span>
-    </div>
-  );
 }
 
 function AppCard({ app, index }: { app: App; index: number }) {
@@ -122,12 +84,10 @@ export function AppFilters({ apps, showFeaturedSort = true }: AppFiltersProps) {
     if (platformFilter !== "all") {
       filtered = filtered.filter((app) => {
         const platforms = getPlatforms(app.platforms);
-        const hasIOS = platforms.includes("ios");
-        const hasMacOS = platforms.includes("macos");
 
-        if (platformFilter === "ios") return hasIOS && !hasMacOS;
-        if (platformFilter === "macos") return hasMacOS && !hasIOS;
-        if (platformFilter === "both") return hasIOS && hasMacOS;
+        if (platformFilter === "ios") return isIOSOnly(platforms);
+        if (platformFilter === "macos") return hasMacOS(platforms) && !hasIOS(platforms);
+        if (platformFilter === "both") return hasBothPlatforms(platforms);
         return true;
       });
     }
@@ -136,13 +96,10 @@ export function AppFilters({ apps, showFeaturedSort = true }: AppFiltersProps) {
     if (priceFilter !== "all") {
       filtered = filtered.filter((app) => {
         const platforms = getPlatforms(app.platforms);
-        const hasIOS = platforms.includes("ios");
-        const hasMacOS = platforms.includes("macos");
-        const isIOSOnly = hasIOS && !hasMacOS;
-        
+
         // iOS-only apps are handled by App Store, so exclude from price filter
-        if (isIOSOnly) return priceFilter === "all";
-        
+        if (isIOSOnly(platforms)) return priceFilter === "all";
+
         if (priceFilter === "free") return app.min_price_cents === 0;
         if (priceFilter === "paid") return app.min_price_cents > 0;
         return true;

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries, queryOne } from "@/lib/db";
+import { getPlatforms, hasBothPlatforms as checkBothPlatforms } from "@/lib/platform";
 import { SiteNav } from "@/components/site-nav";
 
 interface App {
@@ -83,14 +84,6 @@ function renderMarkdown(text: string): string {
     .join("\n");
 }
 
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return [];
-  }
-}
-
 export default async function ChangelogPage({
   params,
 }: {
@@ -110,7 +103,7 @@ export default async function ChangelogPage({
   ]);
 
   const platforms = getPlatforms(app.platforms);
-  const hasBothPlatforms = platforms.includes("macos") && platforms.includes("ios");
+  const hasBothPlatforms = checkBothPlatforms(platforms);
 
   // Group updates by platform if the app supports both
   const macosUpdates = updates.filter((u: AppUpdate) => u.platform === "macos");

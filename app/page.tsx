@@ -3,6 +3,9 @@ import { getCurrentUser } from "@/lib/auth/middleware";
 import { ViewTransitionLink } from "./components/view-transition-link";
 import { HeroAppLink } from "./components/hero-app-link";
 import { queries } from "@/lib/db";
+import { getPlatforms, isIOSOnly } from "@/lib/platform";
+import { formatPrice } from "@/lib/formatting";
+import { PlatformBadge, StarRatingCompact } from "@/components/ui";
 import { AppFilters } from "./components/app-filters";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
@@ -99,54 +102,9 @@ async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
   };
 }
 
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return platformsJson.split(",").map((p) => p.trim().replace(/"/g, ""));
-  }
-}
-
-function formatPrice(minCents: number, suggestedCents: number | null, platforms?: string[]): string {
-  // iOS-only apps show "App Store" since pricing is handled there
-  const hasIOS = platforms?.includes("ios");
-  const hasMacOS = platforms?.includes("macos");
-  
-  if (hasIOS && !hasMacOS) {
-    return "App Store";
-  }
-  
-  // macOS apps use "Name your price"
-  if (minCents === 0) {
-    return "Name your price";
-  }
-  return `From $${(minCents / 100).toFixed(2)}`;
-}
-
-function PlatformBadge({ platform }: { platform: string }) {
-  return (
-    <span className="store-badge">
-      {platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform.toUpperCase()}
-    </span>
-  );
-}
-
-function StarRatingCompact({ rating, count }: { rating: number; count: number }) {
-  if (count === 0) return null;
-  const roundedRating = Math.round(rating * 10) / 10;
-  return (
-    <div className="star-rating-compact" aria-label={`${roundedRating} out of 5 stars from ${count} reviews`}>
-      <span className="star-rating-compact__star">★</span>
-      <span className="star-rating-compact__value">{roundedRating.toFixed(1)}</span>
-    </div>
-  );
-}
-
 function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
   const platforms = getPlatforms(app.platforms);
-  const hasIOS = platforms.includes("ios");
-  const hasMacOS = platforms.includes("macos");
-  const isIOSOnly = hasIOS && !hasMacOS;
+  const appIsIOSOnly = isIOSOnly(platforms);
 
   return (
     <section className="store-hero">
@@ -186,7 +144,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                   className="store-hero__btn store-hero__btn--primary"
                   heroIconId="hero-featured-icon"
                 >
-                  {isIOSOnly ? "VIEW ON APP STORE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents, platforms)}`}
+                  {appIsIOSOnly ? "VIEW ON APP STORE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents, platforms)}`}
                 </HeroAppLink>
                 <HeroAppLink 
                   href={`/apps/${app.slug}`} 

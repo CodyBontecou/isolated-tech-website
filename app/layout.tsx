@@ -101,6 +101,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap"
           rel="stylesheet"
         />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="ISOLATED.TECH Apps"
+          href="/feed.xml"
+        />
       </head>
       <body>
         <ThemeProvider>

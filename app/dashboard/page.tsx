@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
+import { formatDate } from "@/lib/formatting";
 import { FeedbackButton } from "@/components/feedback-modal";
 import { VersionSelector } from "@/components/version-selector";
 import { SiteNav } from "@/components/site-nav";
@@ -23,20 +24,6 @@ interface Purchase {
   version: string;
   version_id: string | null;
   has_review: boolean;
-}
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatPrice(cents: number): string {
-  if (cents === 0) return "Free";
-  return `$${(cents / 100).toFixed(2)}`;
 }
 
 function PurchasedAppCard({

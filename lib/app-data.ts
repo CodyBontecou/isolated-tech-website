@@ -1,19 +1,12 @@
 import { queries } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import type { App, AppPageConfig, AppPageUser, Review, ReviewStats } from "@/components/app-page/types";
+import { getPlatforms, hasIOS, hasMacOS } from "@/lib/platform";
 
 export type { App, AppPageConfig, AppPageUser, Review, ReviewStats };
 
-/**
- * Parse platforms JSON string to array
- */
-export function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return [];
-  }
-}
+// Re-export getPlatforms for backwards compatibility
+export { getPlatforms } from "@/lib/platform";
 
 /**
  * Parse custom page config JSON
@@ -105,7 +98,7 @@ export function getPurchaseCardProps(
     hasPurchased,
     iosAppStoreUrl: configOverrides?.ios_app_store_url?.trim() || pageConfig?.ios_app_store_url?.trim() || null,
     iosAppStoreLabel: configOverrides?.ios_app_store_label?.trim() || pageConfig?.ios_app_store_label?.trim() || "DOWNLOAD ON APP STORE (iOS)",
-    hasMacOS: platforms.includes("macos"),
-    hasIOS: platforms.includes("ios"),
+    hasMacOS: hasMacOS(platforms),
+    hasIOS: hasIOS(platforms),
   };
 }
