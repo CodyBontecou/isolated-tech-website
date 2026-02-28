@@ -80,12 +80,31 @@ export function createMockStripeEvent(
 export interface MockStripeState {
   sessions: Map<string, Stripe.Checkout.Session>;
   charges: Map<string, Stripe.Charge>;
+  refunds: Map<string, Stripe.Refund>;
 }
 
-export function createMockStripe(initialState?: MockStripeState): Stripe {
-  const state: MockStripeState = initialState || {
+export function createMockRefund(
+  overrides: Partial<Stripe.Refund> = {}
+): Stripe.Refund {
+  return {
+    id: `re_test_${Date.now()}`,
+    object: "refund",
+    amount: 999,
+    currency: "usd",
+    status: "succeeded",
+    payment_intent: `pi_test_${Date.now()}`,
+    charge: `ch_test_${Date.now()}`,
+    created: Math.floor(Date.now() / 1000),
+    ...overrides,
+  } as Stripe.Refund;
+}
+
+export function createMockStripe(initialState?: Partial<MockStripeState>): Stripe {
+  const state: MockStripeState = {
     sessions: new Map(),
     charges: new Map(),
+    refunds: new Map(),
+    ...initialState,
   };
 
   const mockStripe = {
@@ -125,9 +144,55 @@ export function createMockStripe(initialState?: MockStripeState): Stripe {
         return state.charges.get(id) || null;
       }),
     },
+    refunds: {
+      create: vi.fn(
+        async (
+          params: Stripe.RefundCreateParams
+        ): Promise<Stripe.Refund> => {
+          const refund = createMockRefund({
+            payment_intent: params.payment_intent as string,
+            amount: params.amount,
+          });
+          state.refunds.set(refund.id, refund);
+          return refund;
+        }
+      ),
+      retrieve: vi.fn(async (id: string): Promise<Stripe.Refund | null> => {
+        return state.refunds.get(id) || null;
+      }),
+    },
   };
 
   return mockStripe as unknown as Stripe;
+}
+
+/**
+ * Create a mock Stripe that throws errors
+ * Useful for testing error handling
+ */
+export function createFailingStripe(error: Error | string): Stripe {
+  const errorObj = typeof error === "string" ? new Error(error) : error;
+  
+  return {
+    checkout: {
+      sessions: {
+        create: vi.fn().mockRejectedValue(errorObj),
+        retrieve: vi.fn().mockRejectedValue(errorObj),
+      },
+    },
+    webhooks: {
+      constructEvent: vi.fn(() => {
+        throw errorObj;
+      }),
+    },
+    charges: {
+      retrieve: vi.fn().mockRejectedValue(errorObj),
+    },
+    refunds: {
+      create: vi.fn().mockRejectedValue(errorObj),
+      retrieve: vi.fn().mockRejectedValue(errorObj),
+    },
+  } as unknown as Stripe;
 }
 
 // ============================================================================

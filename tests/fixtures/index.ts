@@ -80,6 +80,31 @@ export const testPurchase = {
   created_at: new Date("2024-01-01").toISOString(),
 };
 
+export const refundedPurchase = {
+  id: "purchase_refunded_123",
+  user_id: testUser.id,
+  app_id: testApp.id,
+  stripe_payment_intent_id: "pi_refunded_123",
+  stripe_checkout_session_id: "cs_refunded_123",
+  amount_cents: 999,
+  discount_code_id: null,
+  status: "refunded",
+  created_at: new Date("2024-01-01").toISOString(),
+  refunded_at: new Date("2024-01-15").toISOString(),
+};
+
+export const freePurchase = {
+  id: "purchase_free_123",
+  user_id: testUser.id,
+  app_id: freeApp.id,
+  stripe_payment_intent_id: null,
+  stripe_checkout_session_id: null,
+  amount_cents: 0,
+  discount_code_id: null,
+  status: "completed",
+  created_at: new Date("2024-01-01").toISOString(),
+};
+
 // ============================================================================
 // Discount Codes
 // ============================================================================
@@ -206,7 +231,7 @@ export function createTestD1State() {
       ["user", [testUser, adminUser]],
       ["apps", [testApp, freeApp]],
       ["app_versions", [testVersion]],
-      ["purchases", [testPurchase]],
+      ["purchases", [testPurchase, refundedPurchase, freePurchase]],
       ["discount_codes", [
         percentDiscountCode,
         fixedDiscountCode,
