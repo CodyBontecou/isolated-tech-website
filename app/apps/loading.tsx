@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 
 function AppCardSkeleton() {
   return (
@@ -23,17 +23,7 @@ function AppCardSkeleton() {
 export default function AppsLoading() {
   return (
     <>
-      <nav className="nav">
-        {/* Use <a> tags to force full page navigation - vinext RSC fetch doesn't include credentials */}
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {/* Show neutral state during loading - actual auth state comes from the page */}
-          <span style={{ color: "var(--gray)" }}>...</span>
-        </div>
-      </nav>
+      <SiteNav user={null} activePage="apps" />
 
       <section className="store-hero store-hero--empty" style={{ minHeight: "40vh" }}>
         <div className="store-hero__content">

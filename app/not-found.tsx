@@ -1,17 +1,10 @@
 import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 
 export default function NotFound() {
   return (
     <>
-      <nav className="nav">
-        <Link href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </Link>
-        <div className="nav__links">
-          <Link href="/apps">APPS</Link>
-
-        </div>
-      </nav>
+      <SiteNav user={null} />
 
       <main
         style={{

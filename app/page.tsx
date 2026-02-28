@@ -3,10 +3,9 @@ import { getCurrentUser } from "@/lib/auth/middleware";
 import { ViewTransitionLink } from "./components/view-transition-link";
 import { HeroAppLink } from "./components/hero-app-link";
 import { queries } from "@/lib/db";
-import { SignOutButton } from "@/components/sign-out-button";
 import { AppFilters } from "./components/app-filters";
 import { SiteFooter } from "@/components/site-footer";
-import { MobileSiteNav } from "@/components/mobile-site-nav";
+import { SiteNav } from "@/components/site-nav";
 
 interface App {
   id: string;
@@ -259,29 +258,8 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* NAV - Use <a> tags for navigation to force full page loads.
-          vinext's RSC fetch doesn't include credentials, so cookies aren't sent
-          during client-side navigation, causing auth to fail. */}
-      <nav className="nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="#apps">APPS</a>
-          <a href="/feedback">FEEDBACK</a>
-          <a href="/roadmap">ROADMAP</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login">SIGN IN</a>
-          )}
-        </div>
-        <MobileSiteNav isLoggedIn={!!user} isAdmin={!!user?.isAdmin} />
-      </nav>
+      {/* NAV */}
+      <SiteNav user={user} activePage="apps" />
 
       {/* HERO */}
       {featured ? (

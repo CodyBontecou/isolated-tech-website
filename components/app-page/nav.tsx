@@ -1,4 +1,4 @@
-import { SignOutButton } from "@/components/sign-out-button";
+import { SiteNav } from "@/components/site-nav";
 import type { AppPageUser } from "./types";
 
 interface AppNavProps {
@@ -7,24 +7,6 @@ interface AppNavProps {
   className?: string;
 }
 
-export function AppNav({ user, redirectPath = "/apps", className = "" }: AppNavProps) {
-  return (
-    <nav className={`nav ${className}`.trim()}>
-      <a href="/" className="nav__logo">
-        ISOLATED<span className="dot">.</span>TECH
-      </a>
-      <div className="nav__links">
-        <a href="/apps">APPS</a>
-        {user ? (
-          <>
-            {user.isAdmin && <a href="/admin">ADMIN</a>}
-            <a href="/dashboard">DASHBOARD</a>
-            <SignOutButton />
-          </>
-        ) : (
-          <a href={`/auth/login?redirect=${redirectPath}`}>SIGN IN</a>
-        )}
-      </div>
-    </nav>
-  );
+export function AppNav({ user, redirectPath = "/apps" }: AppNavProps) {
+  return <SiteNav user={user} activePage="apps" redirectPath={redirectPath} />;
 }

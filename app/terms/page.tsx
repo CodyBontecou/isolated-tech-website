@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -9,16 +9,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <>
-      <nav className="nav">
-        <Link href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </Link>
-        <div className="nav__links">
-          <Link href="/">HOME</Link>
-          <Link href="/apps">APPS</Link>
-          <Link href="/privacy">PRIVACY</Link>
-        </div>
-      </nav>
+      <SiteNav user={null} />
 
       <main className="legal-page">
         <article className="legal-card">

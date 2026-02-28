@@ -3,8 +3,8 @@ import Link from "next/link";
 import { query } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
-import { SignOutButton } from "@/components/sign-out-button";
 import { SiteFooter } from "@/components/site-footer";
+import { SiteNav } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: "Roadmap — ISOLATED.TECH",
@@ -135,25 +135,7 @@ export default async function RoadmapPage() {
   return (
     <>
       {/* NAV */}
-      <nav className="nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/#apps">APPS</a>
-          <a href="/feedback">FEEDBACK</a>
-          <a href="/roadmap" style={{ opacity: 1 }}>ROADMAP</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <SiteNav user={user} activePage="roadmap" />
 
       {/* HEADER */}
       <header className="roadmap-header">

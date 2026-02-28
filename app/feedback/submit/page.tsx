@@ -4,8 +4,8 @@ import { query } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { SubmitForm } from "./submit-form";
-import { SignOutButton } from "@/components/sign-out-button";
 import { SiteFooter } from "@/components/site-footer";
+import { SiteNav } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: "Submit Feedback — ISOLATED.TECH",
@@ -36,19 +36,7 @@ export default async function SubmitFeedbackPage() {
   return (
     <>
       {/* NAV */}
-      <nav className="nav">
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/#apps">APPS</a>
-          <a href="/feedback">FEEDBACK</a>
-          <a href="/roadmap">ROADMAP</a>
-          {user.isAdmin && <a href="/admin">ADMIN</a>}
-          <a href="/dashboard">DASHBOARD</a>
-          <SignOutButton />
-        </div>
-      </nav>
+      <SiteNav user={user} activePage="feedback" />
 
       {/* MAIN */}
       <main className="submit-page">

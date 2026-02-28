@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries, queryOne } from "@/lib/db";
-import { SignOutButton } from "@/components/sign-out-button";
+import { SiteNav } from "@/components/site-nav";
 
 interface App {
   id: string;
@@ -118,24 +118,7 @@ export default async function ChangelogPage({
 
   return (
     <>
-      <nav className="nav">
-        {/* Use <a> tags to force full page navigation - vinext RSC fetch doesn't include credentials */}
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <SiteNav user={user} activePage="apps" />
 
       <main className="app-page">
         <a href={`/apps/${app.slug}`} className="app-page__back">

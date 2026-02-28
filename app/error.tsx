@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { SiteNav } from "@/components/site-nav";
 
 export default function Error({
   error,
@@ -17,15 +18,7 @@ export default function Error({
 
   return (
     <>
-      <nav className="nav">
-        <Link href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </Link>
-        <div className="nav__links">
-          <Link href="/apps">APPS</Link>
-
-        </div>
-      </nav>
+      <SiteNav user={null} />
 
       <main
         style={{

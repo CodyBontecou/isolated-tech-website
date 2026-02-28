@@ -2,9 +2,9 @@ import { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
-import { SignOutButton } from "@/components/sign-out-button";
 import { AppFilters } from "@/app/components/app-filters";
 import { SiteFooter } from "@/components/site-footer";
+import { SiteNav } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: "Apps — ISOLATED.TECH",
@@ -87,24 +87,7 @@ export default async function AppsPage() {
 
   return (
     <>
-      <nav className="nav">
-        {/* Use <a> tags to force full page navigation - vinext RSC fetch doesn't include credentials */}
-        <a href="/" className="nav__logo">
-          ISOLATED<span className="dot">.</span>TECH
-        </a>
-        <div className="nav__links">
-          <a href="/apps">APPS</a>
-          {user ? (
-            <>
-              {user.isAdmin && <a href="/admin">ADMIN</a>}
-              <a href="/dashboard">DASHBOARD</a>
-              <SignOutButton />
-            </>
-          ) : (
-            <a href="/auth/login">SIGN IN</a>
-          )}
-        </div>
-      </nav>
+      <SiteNav user={user} activePage="apps" />
 
       <section className="store-hero store-hero--empty" style={{ minHeight: "40vh" }}>
         <div className="store-hero__content">
