@@ -107,6 +107,12 @@ export default function RootLayout({
           title="ISOLATED.TECH Apps"
           href="/feed.xml"
         />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="ISOLATED.TECH Updates"
+          href="/feed/updates.xml"
+        />
       </head>
       <body>
         <ThemeProvider>
