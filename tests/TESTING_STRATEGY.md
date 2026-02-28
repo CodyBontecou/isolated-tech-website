@@ -19,6 +19,10 @@ This document outlines a three-tier testing strategy prioritized by business imp
 | Download (Token) | Good | `integration/download.test.ts` |
 | nanoid generation | Unit | `unit/db.test.ts` |
 | Stripe utilities | Unit | `unit/stripe.test.ts` |
+| **Route Health (E2E)** | Good | `e2e/route-health.spec.ts` |
+| **Route Health (Integration)** | Good | `integration/route-health.test.ts` |
+| All page renders | Good | `e2e/route-health.spec.ts` |
+| API input validation | Good | `integration/route-health.test.ts` |
 
 ### ❌ Gaps Identified
 | Area | Priority | Impact | Notes |

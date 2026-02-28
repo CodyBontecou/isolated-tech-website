@@ -58,6 +58,43 @@ Use this as a manual testing checklist and as a guide for automated tests.
 
 ---
 
+## 🔴 CRITICAL: Route Health
+
+All pages must render without 500 errors. This is now covered by automated tests:
+
+### Static Pages
+- [x] Homepage (`/`)
+- [x] Terms of Service (`/terms`)
+- [x] Privacy Policy (`/privacy`)
+
+### Public Dynamic Pages
+- [x] Feedback List (`/feedback`)
+- [x] Public Roadmap (`/roadmap`)
+- [x] Help Center (`/help`)
+- [x] Apps Listing (`/apps`)
+
+### Auth Pages
+- [x] Login (`/auth/login`)
+- [x] Email Verification (`/auth/verify`)
+
+### Protected Pages (handle unauthenticated gracefully)
+- [x] Dashboard (`/dashboard`)
+- [x] Reviews (`/dashboard/reviews`)
+- [x] Settings (`/dashboard/settings`)
+- [x] Submit Feedback (`/feedback/submit`)
+
+### Admin Pages (redirect when not admin)
+- [x] All admin routes handle auth gracefully
+
+### API Endpoints
+- [x] GET `/api/feedback` - returns valid JSON
+- [x] POST `/api/feedback/submit` - validates input
+- [x] POST `/api/checkout` - requires auth
+
+**Tests:** `tests/e2e/route-health.spec.ts`, `tests/integration/route-health.test.ts`
+
+---
+
 ## Manual Smoke Test Script
 
 Run this before every deploy:

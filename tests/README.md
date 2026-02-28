@@ -42,18 +42,33 @@ tests/
 │   └── auth.ts           # Authentication mocks
 ├── unit/                 # Unit tests
 │   ├── db.test.ts
+│   ├── email.test.ts
 │   └── stripe.test.ts
 ├── integration/          # Integration tests
 │   ├── checkout.test.ts
-│   ├── webhook.test.ts
-│   └── download.test.ts
+│   ├── download.test.ts
+│   ├── feedback.test.ts
+│   ├── route-health.test.ts  # 🆕 Route health tests (no 500s)
+│   └── webhook.test.ts
 └── e2e/                  # End-to-end tests
-    └── purchase-flow.spec.ts
+    ├── purchase-flow.spec.ts
+    └── route-health.spec.ts  # 🆕 Full page render smoke tests
 ```
 
 ## Critical Paths Tested
 
-### 1. Checkout Flow (`tests/integration/checkout.test.ts`)
+### 1. Route Health (`tests/e2e/route-health.spec.ts`, `tests/integration/route-health.test.ts`)
+- ✅ All static pages render without 500 errors
+- ✅ All public dynamic pages render without 500 errors
+- ✅ Auth pages render without 500 errors
+- ✅ Protected pages handle unauthenticated users gracefully
+- ✅ Admin pages redirect/deny unauthenticated users (no 500)
+- ✅ API endpoints return valid responses, not 500s
+- ✅ Dynamic routes handle missing resources gracefully
+- ✅ Database queries handle empty results
+- ✅ Input validation rejects malformed requests
+
+### 2. Checkout Flow (`tests/integration/checkout.test.ts`)
 - ✅ Authentication required
 - ✅ App validation
 - ✅ Duplicate purchase prevention
@@ -62,7 +77,7 @@ tests/
 - ✅ Discount code application
 - ✅ Error handling (Stripe not configured)
 
-### 2. Stripe Webhooks (`tests/integration/webhook.test.ts`)
+### 3. Stripe Webhooks (`tests/integration/webhook.test.ts`)
 - ✅ Signature verification
 - ✅ `checkout.session.completed` - Purchase creation
 - ✅ `charge.refunded` - Refund handling
@@ -70,7 +85,7 @@ tests/
 - ✅ Missing metadata handling
 - ✅ Unhandled event types
 
-### 3. Downloads (`tests/integration/download.test.ts`)
+### 4. Downloads (`tests/integration/download.test.ts`)
 - ✅ Authentication required
 - ✅ Purchase verification
 - ✅ Admin bypass
