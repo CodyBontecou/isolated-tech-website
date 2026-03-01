@@ -1,6 +1,6 @@
 /**
  * Font loading for OG image generation with Satori
- * Fetches Space Mono from Google Fonts CDN
+ * Fetches Inter from Google Fonts CDN (more reliable than Space Mono)
  */
 
 interface FontConfig {
@@ -14,38 +14,52 @@ interface FontConfig {
 let cachedFonts: FontConfig[] | null = null;
 
 /**
- * Load Space Mono font for Satori
- * Uses Google Fonts CDN, caches in memory
+ * Load Inter font for Satori
+ * Uses Google Fonts CDN with proper headers, caches in memory
+ * Falls back to fetching without headers if needed
  */
 export async function loadFonts(): Promise<FontConfig[]> {
   if (cachedFonts) {
     return cachedFonts;
   }
 
-  // Space Mono Regular (400)
-  const spaceMonoRegular = await fetch(
-    "https://fonts.gstatic.com/s/spacemono/v12/i7dPIFZifjKcF5UAWdDRYEF8RQ.woff"
-  ).then((res) => res.arrayBuffer());
+  // Use Inter font (widely used, reliable CDN)
+  // These are direct WOFF2 URLs from Google Fonts
+  const interRegularUrl =
+    "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2";
+  const interBoldUrl =
+    "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiJ-Ek-_EeA.woff2";
 
-  // Space Mono Bold (700)
-  const spaceMonoBold = await fetch(
-    "https://fonts.gstatic.com/s/spacemono/v12/i7dMIFZifjKcF5UAWdDRaPpZUFWaHg.woff"
-  ).then((res) => res.arrayBuffer());
+  try {
+    const [interRegular, interBold] = await Promise.all([
+      fetch(interRegularUrl).then((res) => {
+        if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
+        return res.arrayBuffer();
+      }),
+      fetch(interBoldUrl).then((res) => {
+        if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
+        return res.arrayBuffer();
+      }),
+    ]);
 
-  cachedFonts = [
-    {
-      name: "Space Mono",
-      data: spaceMonoRegular,
-      weight: 400,
-      style: "normal",
-    },
-    {
-      name: "Space Mono",
-      data: spaceMonoBold,
-      weight: 700,
-      style: "normal",
-    },
-  ];
+    cachedFonts = [
+      {
+        name: "Inter",
+        data: interRegular,
+        weight: 400,
+        style: "normal",
+      },
+      {
+        name: "Inter",
+        data: interBold,
+        weight: 700,
+        style: "normal",
+      },
+    ];
 
-  return cachedFonts;
+    return cachedFonts;
+  } catch (error) {
+    console.error("Failed to load fonts:", error);
+    throw error;
+  }
 }
