@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { requireAdmin } from "@/lib/admin-auth";
+import { getPlatforms } from "@/lib/app-data";
 
 export async function PATCH(
   request: NextRequest,
@@ -98,7 +99,7 @@ export async function PATCH(
         .first<{ platforms: string }>();
       
       if (appData) {
-        const platforms = JSON.parse(appData.platforms || '[]');
+        const platforms = getPlatforms(appData.platforms || '');
         if (!platforms.includes('macos')) {
           platforms.push('macos');
           await env.DB.prepare(`UPDATE apps SET platforms = ? WHERE id = ?`)

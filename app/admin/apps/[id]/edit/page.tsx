@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppForm } from "../../new/app-form";
 import { getEnv } from "@/lib/cloudflare-context";
+import { getPlatforms } from "@/lib/app-data";
 
 export const metadata: Metadata = {
   title: "Edit App — Admin — ISOLATED.TECH",
@@ -45,18 +46,6 @@ async function getApp(id: string): Promise<AppData | null> {
   return app || null;
 }
 
-function parsePlatforms(platforms: string): string[] {
-  try {
-    // Handle JSON array format: '["macos","ios"]'
-    const parsed = JSON.parse(platforms);
-    if (Array.isArray(parsed)) return parsed;
-    return [platforms];
-  } catch {
-    // Handle comma-separated or single value
-    return platforms.split(",").map((p) => p.trim().replace(/"/g, ""));
-  }
-}
-
 export default async function EditAppPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const app = await getApp(id);
@@ -73,7 +62,7 @@ export default async function EditAppPage({ params }: { params: Promise<{ id: st
     description: app.description || "",
     icon_url: app.icon_url,
     screenshots: app.screenshots ? JSON.parse(app.screenshots) : [],
-    platforms: parsePlatforms(app.platforms),
+    platforms: getPlatforms(app.platforms),
     min_price_cents: app.min_price_cents,
     suggested_price_cents: app.suggested_price_cents || 0,
     is_published: app.is_published === 1,

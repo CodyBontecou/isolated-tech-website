@@ -17,4 +17,7 @@ export default defineConfig({
       viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
     }),
   ],
+  optimizeDeps: {
+    include: ["react", "react/jsx-runtime", "react/jsx-dev-runtime", "react-dom", "react-dom/client"],
+  },
 });

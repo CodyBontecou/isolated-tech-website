@@ -4732,7 +4732,7 @@ html.light .feedback-modal__btn--submit {
    ============================================================================ */
 
 .changelog-page {
-  padding: 0 var(--spacing-md);
+  padding: 5rem var(--spacing-md) 0;
   max-width: 900px;
   margin: 0 auto;
   min-height: 70vh;

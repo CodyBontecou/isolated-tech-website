@@ -1,10 +1,15 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { query, queryOne } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { AppNav, AppFooter } from "@/components/app-page";
+
+// Custom styled articles that should redirect to their blog versions
+const CUSTOM_STYLED_ARTICLES: Record<string, string[]> = {
+  syncmd: ["obsidian-git-ios-setup"],
+};
 
 interface Props {
   params: Promise<{ slug: string; articleSlug: string }>;
@@ -107,6 +112,12 @@ function parseMarkdown(text: string): string {
 
 export default async function GuideArticlePage({ params }: Props) {
   const { slug, articleSlug } = await params;
+
+  // Redirect to custom styled blog version if available
+  if (CUSTOM_STYLED_ARTICLES[slug]?.includes(articleSlug)) {
+    redirect(`/apps/${slug}/blog/${articleSlug}`);
+  }
+
   const app = await getApp(slug);
 
   if (!app) {

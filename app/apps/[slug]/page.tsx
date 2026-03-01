@@ -6,6 +6,7 @@ import { MediaShowcase, MediaItem } from "./media-showcase";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
+import { getPlatforms } from "@/lib/app-data";
 import { AppNav, AppFooter, ReviewsSection } from "@/components/app-page";
 import type { App, AppPageConfig, Review, AppStoreReview, CombinedReviewStats } from "@/components/app-page";
 
@@ -107,14 +108,6 @@ export async function generateMetadata({
       canonical: appUrl,
     },
   };
-}
-
-function getPlatforms(platformsJson: string): string[] {
-  try {
-    return JSON.parse(platformsJson);
-  } catch {
-    return [];
-  }
 }
 
 function getPageConfig(configJson: string | null): AppPageConfig | null {

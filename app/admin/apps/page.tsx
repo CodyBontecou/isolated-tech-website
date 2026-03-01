@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { query } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
+import { getPlatforms } from "@/lib/app-data";
 
 export const metadata: Metadata = {
   title: "Apps — Admin — ISOLATED.TECH",
@@ -106,14 +107,7 @@ function formatPrice(cents: number): string {
 }
 
 function PlatformBadges({ platforms }: { platforms: string }) {
-  // platforms is stored as JSON array like '["macos"]' or '["macos","ios"]'
-  let list: string[] = [];
-  try {
-    list = JSON.parse(platforms);
-  } catch {
-    // Fallback for comma-separated format
-    list = platforms.split(",").map((p) => p.trim().replace(/"/g, ""));
-  }
+  const list = getPlatforms(platforms);
 
   return (
     <div style={{ display: "flex", gap: "0.25rem" }}>
