@@ -30,7 +30,7 @@ export function OGImageTemplate({ name, tagline, iconUrl }: OGImageProps) {
         flexDirection: "column",
         justifyContent: "center",
         padding: 80,
-        fontFamily: "Inter",
+        fontFamily: "Roboto Mono",
         position: "relative",
       }}
     >
@@ -168,7 +168,7 @@ export function GenericOGTemplate({ title, subtitle }: GenericOGProps) {
         justifyContent: "center",
         alignItems: "center",
         padding: 80,
-        fontFamily: "Inter",
+        fontFamily: "Roboto Mono",
         position: "relative",
       }}
     >

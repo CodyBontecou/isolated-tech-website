@@ -1,6 +1,6 @@
 /**
  * Font loading for OG image generation with Satori
- * Fetches Inter from Google Fonts CDN (more reliable than Space Mono)
+ * Satori requires TTF or OTF format (not WOFF/WOFF2)
  */
 
 interface FontConfig {
@@ -14,29 +14,28 @@ interface FontConfig {
 let cachedFonts: FontConfig[] | null = null;
 
 /**
- * Load Inter font for Satori
- * Uses Google Fonts CDN with proper headers, caches in memory
- * Falls back to fetching without headers if needed
+ * Load Roboto Mono font for Satori (TTF format required)
+ * Using jsDelivr CDN which hosts Google Fonts in TTF format
  */
 export async function loadFonts(): Promise<FontConfig[]> {
   if (cachedFonts) {
     return cachedFonts;
   }
 
-  // Use Inter font (widely used, reliable CDN)
-  // These are direct WOFF2 URLs from Google Fonts
-  const interRegularUrl =
-    "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2";
-  const interBoldUrl =
-    "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiJ-Ek-_EeA.woff2";
+  // Roboto Mono TTF from jsDelivr (mirrors Google Fonts)
+  // Satori requires TTF/OTF, not WOFF/WOFF2
+  const robotoMonoRegularUrl =
+    "https://cdn.jsdelivr.net/fontsource/fonts/roboto-mono@latest/latin-400-normal.ttf";
+  const robotoMonoBoldUrl =
+    "https://cdn.jsdelivr.net/fontsource/fonts/roboto-mono@latest/latin-700-normal.ttf";
 
   try {
-    const [interRegular, interBold] = await Promise.all([
-      fetch(interRegularUrl).then((res) => {
+    const [robotoRegular, robotoBold] = await Promise.all([
+      fetch(robotoMonoRegularUrl).then((res) => {
         if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
         return res.arrayBuffer();
       }),
-      fetch(interBoldUrl).then((res) => {
+      fetch(robotoMonoBoldUrl).then((res) => {
         if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
         return res.arrayBuffer();
       }),
@@ -44,14 +43,14 @@ export async function loadFonts(): Promise<FontConfig[]> {
 
     cachedFonts = [
       {
-        name: "Inter",
-        data: interRegular,
+        name: "Roboto Mono",
+        data: robotoRegular,
         weight: 400,
         style: "normal",
       },
       {
-        name: "Inter",
-        data: interBold,
+        name: "Roboto Mono",
+        data: robotoBold,
         weight: 700,
         style: "normal",
       },
