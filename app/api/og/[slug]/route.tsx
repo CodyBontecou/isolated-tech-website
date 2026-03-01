@@ -48,12 +48,21 @@ export async function GET(
     // Load fonts
     const fonts = await loadFonts();
 
+    // Make icon URL absolute (Satori requires absolute URLs for images)
+    const siteUrl = "https://isolated.tech";
+    let absoluteIconUrl: string | null = null;
+    if (app.icon_url) {
+      absoluteIconUrl = app.icon_url.startsWith("http")
+        ? app.icon_url
+        : `${siteUrl}${app.icon_url.startsWith("/") ? "" : "/"}${app.icon_url}`;
+    }
+
     // Generate SVG with Satori
     const svg = await satori(
       OGImageTemplate({
         name: app.name,
         tagline: app.tagline,
-        iconUrl: app.icon_url,
+        iconUrl: absoluteIconUrl,
       }),
       {
         width: 1200,
