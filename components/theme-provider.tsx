@@ -15,13 +15,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const STORAGE_KEY = "isolated-theme";
 
 function getSystemTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
 
   // Initialize theme from localStorage
@@ -87,7 +87,7 @@ export function useTheme() {
   if (context === undefined) {
     return {
       theme: "system" as Theme,
-      resolvedTheme: "dark" as "light" | "dark",
+      resolvedTheme: "light" as "light" | "dark",
       setTheme: () => {},
     };
   }
