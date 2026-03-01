@@ -84,6 +84,9 @@ export async function generateMetadata({
   const siteUrl = "https://isolated.tech";
   const appUrl = `${siteUrl}/apps/${app.slug}`;
 
+  // Dynamic OG image URL - generates 1200x630 image with app icon, name, and tagline
+  const ogImageUrl = `${siteUrl}/api/og/${app.slug}`;
+
   return {
     title: app.name,
     description,
@@ -96,13 +99,20 @@ export async function generateMetadata({
       url: appUrl,
       title: `${app.name} — ISOLATED.TECH`,
       description,
-      images: app.icon_url ? [{ url: app.icon_url, width: 256, height: 256, alt: app.name }] : [],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: app.name,
+        },
+      ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: `${app.name} — ISOLATED.TECH`,
       description,
-      images: app.icon_url ? [app.icon_url] : [],
+      images: [ogImageUrl],
     },
     alternates: {
       canonical: appUrl,
