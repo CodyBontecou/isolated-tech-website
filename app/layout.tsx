@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "./styles/base.css";
+import "./styles/components.css";
+import "./styles/pages.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const siteUrl = "https://isolated.tech";

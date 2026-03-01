@@ -6,7 +6,7 @@
     "visual-regression",
     "baseline"
   ],
-  "status": "open",
+  "status": "closed",
   "created_at": "2026-03-01T13:49:24.773Z"
 }
 

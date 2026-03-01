@@ -1,0 +1,150 @@
+/* ============================================
+   ISOLATED.TECH — BASE STYLES
+   Variables, Reset, Typography, Foundational
+   ============================================ */
+
+/* ============================================
+   CSS CUSTOM PROPERTIES
+   ============================================ */
+
+:root {
+  /* Fonts (shared) */
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  
+  /* Dark theme (default) */
+  --black: #0a0a0a;
+  --white: #f0f0f0;
+  --gray: #666;
+  --gray-dark: #1a1a1a;
+  --gray-mid: #2a2a2a;
+  --accent: #fff;
+  --border: 1px solid #333;
+  --border-heavy: 2px solid var(--white);
+  
+  /* Additional semantic colors */
+  --bg-primary: var(--black);
+  --bg-secondary: var(--gray-dark);
+  --bg-tertiary: var(--gray-mid);
+  --text-primary: var(--white);
+  --text-secondary: var(--gray);
+  --nav-bg: rgba(10, 10, 10, 0.85);
+  --card-bg: var(--gray-dark);
+  --input-bg: var(--gray-dark);
+  --success: #4ade80;
+  --error: #f87171;
+  --warning: #fbbf24;
+}
+
+/* Light theme */
+html.light {
+  --black: #ffffff;
+  --white: #0a0a0a;
+  --gray: #525252;
+  --gray-dark: #f5f5f5;
+  --gray-mid: #e5e5e5;
+  --accent: #0a0a0a;
+  --border: 1px solid #d4d4d4;
+  --border-heavy: 2px solid var(--white);
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e5e5e5;
+  --text-primary: #0a0a0a;
+  --text-secondary: #404040;
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --card-bg: #f5f5f5;
+  --input-bg: #ffffff;
+  --success: #16a34a;
+  --error: #dc2626;
+  --warning: #d97706;
+}
+
+/* System preference fallback (before JS loads) */
+@media (prefers-color-scheme: light) {
+  html:not(.dark):not(.light) {
+    --black: #ffffff;
+    --white: #0a0a0a;
+    --gray: #525252;
+    --gray-dark: #f5f5f5;
+    --gray-mid: #e5e5e5;
+    --accent: #0a0a0a;
+    --border: 1px solid #d4d4d4;
+    --border-heavy: 2px solid var(--white);
+    
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --bg-tertiary: #e5e5e5;
+    --text-primary: #0a0a0a;
+    --text-secondary: #404040;
+    --nav-bg: rgba(255, 255, 255, 0.85);
+    --card-bg: #f5f5f5;
+    --input-bg: #ffffff;
+    --success: #16a34a;
+    --error: #dc2626;
+    --warning: #d97706;
+  }
+}
+
+/* ============================================
+   RESET
+   ============================================ */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-mono);
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+a {
+  color: var(--white);
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* ============================================
+   NOISE OVERLAY (Foundational visual element)
+   ============================================ */
+
+.noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  transition: opacity 0.2s ease;
+}
+
+/* Slightly more visible noise in light mode for texture */
+html.light .noise {
+  opacity: 0.025;
+}
