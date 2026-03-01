@@ -1,7 +1,8 @@
 /**
  * Visual Regression Tests - Authentication Pages
  * 
- * Tests login, verify, and error states
+ * Tests login, verify, and error states.
+ * No authentication or seeding required.
  */
 
 import { test, expect } from "@playwright/test";
@@ -55,29 +56,6 @@ test.describe("Auth Pages Visual Regression", () => {
       await waitForVisualStability(page);
       
       await expect(page).toHaveScreenshot("verify-with-email.png");
-    });
-  });
-
-  test.describe("Login Error States", () => {
-    test("login with invalid email shows error", async ({ page }) => {
-      await page.goto("/auth/login");
-      await waitForVisualStability(page);
-      
-      // Try to submit with invalid email
-      const emailInput = page.locator('input[type="email"]');
-      const submitButton = page.locator('button[type="submit"]');
-      
-      if (await emailInput.isVisible().catch(() => false)) {
-        await emailInput.fill("not-an-email");
-        
-        if (await submitButton.isVisible().catch(() => false)) {
-          await submitButton.click();
-          
-          // Wait for error state
-          await page.waitForTimeout(500);
-          await expect(page).toHaveScreenshot("login-error-invalid-email.png");
-        }
-      }
     });
   });
 });

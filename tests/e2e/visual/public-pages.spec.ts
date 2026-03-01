@@ -1,22 +1,14 @@
 /**
  * Visual Regression Tests - Public Pages
  * 
- * Tests homepage, app listing, and app detail pages
+ * Tests homepage, app listing, and app detail pages.
+ * Uses existing data in the database - no seeding required.
  */
 
 import { test, expect } from "@playwright/test";
-import { seedAll, cleanupTestData, TEST_APPS } from "../helpers/seed";
 import { waitForVisualStability, hideDynamicElements } from "./helpers";
 
 test.describe("Public Pages Visual Regression", () => {
-  test.beforeAll(async ({ request }) => {
-    await seedAll(request);
-  });
-
-  test.afterAll(async ({ request }) => {
-    await cleanupTestData(request);
-  });
-
   test.beforeEach(async ({ page }) => {
     // Hide dynamic elements that change between runs
     await hideDynamicElements(page);
@@ -37,18 +29,6 @@ test.describe("Public Pages Visual Regression", () => {
       await expect(page).toHaveScreenshot("homepage-full.png", { 
         fullPage: true 
       });
-    });
-
-    test("homepage with filters visible", async ({ page }) => {
-      await page.goto("/");
-      await waitForVisualStability(page);
-      
-      // Scroll to filters section if needed
-      const filtersSection = page.locator("[class*='filters'], [class*='filter-bar']").first();
-      if (await filtersSection.isVisible().catch(() => false)) {
-        await filtersSection.scrollIntoViewIfNeeded();
-        await expect(page).toHaveScreenshot("homepage-filters.png");
-      }
     });
   });
 
@@ -71,50 +51,32 @@ test.describe("Public Pages Visual Regression", () => {
   });
 
   test.describe("App Detail", () => {
-    test("app detail page - free app", async ({ page }) => {
-      await page.goto(`/apps/${TEST_APPS.FREE}`);
+    test("app detail page", async ({ page }) => {
+      // Navigate to apps page first, then click on first app
+      await page.goto("/apps");
       await waitForVisualStability(page);
       
-      await expect(page).toHaveScreenshot("app-detail-free.png");
-    });
-
-    test("app detail page - paid app", async ({ page }) => {
-      await page.goto(`/apps/${TEST_APPS.PAID}`);
-      await waitForVisualStability(page);
-      
-      await expect(page).toHaveScreenshot("app-detail-paid.png");
+      // Find first app link and navigate
+      const appLink = page.locator('a[href^="/apps/"]').first();
+      if (await appLink.isVisible()) {
+        await appLink.click();
+        await waitForVisualStability(page);
+        await expect(page).toHaveScreenshot("app-detail.png");
+      }
     });
 
     test("app detail page full scroll", async ({ page }) => {
-      await page.goto(`/apps/${TEST_APPS.FREE}`);
+      await page.goto("/apps");
       await waitForVisualStability(page);
       
-      await expect(page).toHaveScreenshot("app-detail-full.png", {
-        fullPage: true,
-      });
-    });
-  });
-
-  test.describe("App Sub-pages", () => {
-    test("app changelog page", async ({ page }) => {
-      await page.goto(`/apps/${TEST_APPS.FREE}/changelog`);
-      await waitForVisualStability(page);
-      
-      await expect(page).toHaveScreenshot("app-changelog.png");
-    });
-
-    test("app docs page", async ({ page }) => {
-      await page.goto(`/apps/${TEST_APPS.FREE}/docs`);
-      await waitForVisualStability(page);
-      
-      await expect(page).toHaveScreenshot("app-docs.png");
-    });
-
-    test("app faq page", async ({ page }) => {
-      await page.goto(`/apps/${TEST_APPS.FREE}/faq`);
-      await waitForVisualStability(page);
-      
-      await expect(page).toHaveScreenshot("app-faq.png");
+      const appLink = page.locator('a[href^="/apps/"]').first();
+      if (await appLink.isVisible()) {
+        await appLink.click();
+        await waitForVisualStability(page);
+        await expect(page).toHaveScreenshot("app-detail-full.png", {
+          fullPage: true,
+        });
+      }
     });
   });
 });

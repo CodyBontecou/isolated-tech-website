@@ -9,7 +9,8 @@ export default defineConfig({
   reporter: "html",
   
   // Snapshot settings for visual regression
-  snapshotPathTemplate: "{testDir}/{testFileDir}/__snapshots__/{testFilePath}/{arg}{ext}",
+  // Include project name to separate desktop/mobile screenshots
+  snapshotPathTemplate: "{testDir}/{testFileDir}/__snapshots__/{projectName}/{testFilePath}/{arg}{ext}",
   
   use: {
     baseURL: process.env.TEST_BASE_URL || "http://localhost:3000",

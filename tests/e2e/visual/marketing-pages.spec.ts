@@ -1,22 +1,14 @@
 /**
  * Visual Regression Tests - Marketing & Info Pages
  * 
- * Tests changelog, roadmap, feedback, help, privacy, terms
+ * Tests changelog, roadmap, feedback, help, privacy, terms.
+ * Uses existing data in the database - no seeding required.
  */
 
 import { test, expect } from "@playwright/test";
-import { seedAll, cleanupTestData } from "../helpers/seed";
 import { waitForVisualStability, hideDynamicElements } from "./helpers";
 
 test.describe("Marketing Pages Visual Regression", () => {
-  test.beforeAll(async ({ request }) => {
-    await seedAll(request);
-  });
-
-  test.afterAll(async ({ request }) => {
-    await cleanupTestData(request);
-  });
-
   test.beforeEach(async ({ page }) => {
     await hideDynamicElements(page);
   });
