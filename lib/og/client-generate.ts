@@ -159,14 +159,14 @@ function roundedRect(
  * Upload generated OG image to the server
  */
 export async function uploadOGImage(
-  slug: string,
+  appIdOrSlug: string,
   pngBlob: Blob
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const formData = new FormData();
-    formData.append("file", pngBlob, `${slug}-og.png`);
+    formData.append("file", pngBlob, `${appIdOrSlug}-og.png`);
 
-    const response = await fetch(`/api/admin/apps/${slug}/og`, {
+    const response = await fetch(`/api/admin/apps/${appIdOrSlug}/og`, {
       method: "POST",
       body: formData,
     });

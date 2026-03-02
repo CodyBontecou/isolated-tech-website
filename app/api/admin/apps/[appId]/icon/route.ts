@@ -4,11 +4,13 @@
  *
  * Accepts multipart form with a "file" field (PNG, JPEG, or WebP, max 5MB).
  * Stores to R2 at apps/{slug}/icon.png and updates the app's icon_url.
+ * 
+ * Sellers can only upload icons for their own apps.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageApp } from "@/lib/admin-auth";
 
 export async function POST(
   request: NextRequest,
@@ -45,6 +47,14 @@ export async function POST(
 
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+
+    // Check user can manage this app
+    if (!await canManageApp(user, app.id, env)) {
+      return NextResponse.json(
+        { error: "You don't have permission to manage this app" },
+        { status: 403 }
+      );
     }
 
     // Parse multipart form
@@ -95,6 +105,9 @@ export async function POST(
       .bind(iconUrl, new Date().toISOString(), app.id)
       .run();
 
+    // Remove stale pre-generated OG image so it can be regenerated with new icon
+    await env.APPS_BUCKET.delete(`og/${app.slug}.png`);
+
     console.log(
       `Uploaded icon for ${app.slug} (${file.size} bytes) by ${user.email}`
     );
@@ -104,6 +117,7 @@ export async function POST(
       icon_url: iconUrl,
       r2Key,
       size: file.size,
+      og_needs_regeneration: true,
     });
   } catch (error) {
     console.error("Icon upload error:", error);

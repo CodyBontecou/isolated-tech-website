@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { generateOGPngClient, uploadOGImage } from "@/lib/og/client-generate";
 
 interface AppFormProps {
   existingApp?: {
@@ -40,6 +41,7 @@ export function AppForm({ existingApp }: AppFormProps) {
   const [tagline, setTagline] = useState(existingApp?.tagline || "");
   const [description, setDescription] = useState(existingApp?.description || "");
   const [iconUrl, setIconUrl] = useState(existingApp?.icon_url || "");
+  const [iconFile, setIconFile] = useState<File | null>(null);
   const [platforms, setPlatforms] = useState<string[]>(
     existingApp?.platforms || ["macos"]
   );
@@ -169,9 +171,56 @@ export function AppForm({ existingApp }: AppFormProps) {
         }),
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || "Failed to save app");
+      }
+
+      // Resolve saved app identifier (for uploads)
+      const appIdOrSlug = isEditing
+        ? existingApp?.id || slug.trim()
+        : data.app?.id || slug.trim();
+
+      // #2: If icon file uploaded, upload icon first (and use its URL for OG generation)
+      let finalIconUrl = iconUrl.trim() || null;
+      if (iconFile) {
+        const iconFormData = new FormData();
+        iconFormData.append("file", iconFile);
+
+        const iconRes = await fetch(`/api/admin/apps/${appIdOrSlug}/icon`, {
+          method: "POST",
+          body: iconFormData,
+        });
+
+        const iconData = await iconRes.json();
+        if (!iconRes.ok) {
+          throw new Error(iconData.error || "Failed to upload icon");
+        }
+
+        finalIconUrl = iconData.icon_url || finalIconUrl;
+      }
+
+      // #1: Auto-generate OG image on save (name/tagline/slug updates)
+      // Also runs after icon upload above so OG includes latest icon.
+      try {
+        const resolvedIconUrl = finalIconUrl
+          ? finalIconUrl.startsWith("http")
+            ? finalIconUrl
+            : `${window.location.origin}${finalIconUrl.startsWith("/") ? "" : "/"}${finalIconUrl}`
+          : null;
+
+        const ogPng = await generateOGPngClient({
+          name: name.trim(),
+          tagline: tagline.trim(),
+          iconUrl: resolvedIconUrl,
+        });
+
+        const ogResult = await uploadOGImage(appIdOrSlug, ogPng);
+        if (!ogResult.success) {
+          console.warn("OG auto-generation failed:", ogResult.error);
+        }
+      } catch (ogError) {
+        console.warn("OG auto-generation error:", ogError);
       }
 
       router.push("/admin/apps?success=1");
@@ -275,7 +324,7 @@ export function AppForm({ existingApp }: AppFormProps) {
         </p>
       </div>
 
-      {/* Icon URL */}
+      {/* Icon URL / Upload */}
       <div style={{ marginBottom: "1.5rem" }}>
         <label className="settings-label">ICON URL (OPTIONAL)</label>
         <input
@@ -285,6 +334,18 @@ export function AppForm({ existingApp }: AppFormProps) {
           onChange={(e) => setIconUrl(e.target.value)}
           placeholder="https://example.com/icon.png"
         />
+
+        <label className="settings-label" style={{ marginTop: "0.75rem", display: "block" }}>
+          OR UPLOAD ICON (PNG/JPG/WEBP)
+        </label>
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="settings-input"
+          onChange={(e) => setIconFile(e.target.files?.[0] || null)}
+          style={{ padding: "0.5rem" }}
+        />
+
         <p
           style={{
             fontSize: "0.7rem",
@@ -292,7 +353,7 @@ export function AppForm({ existingApp }: AppFormProps) {
             marginTop: "0.25rem",
           }}
         >
-          256x256 PNG recommended
+          If you upload a file, it will be saved to /apps/{slug}/icon and OG image will auto-regenerate.
         </p>
       </div>
 
