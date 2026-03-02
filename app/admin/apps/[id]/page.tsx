@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { query, queryOne } from "@/lib/db";
 import { getEnv } from "@/lib/cloudflare-context";
+import { OGGenerator } from "@/components/admin/og-generator";
 
 export const metadata: Metadata = {
   title: "Edit App — Admin — ISOLATED.TECH",
@@ -13,6 +14,7 @@ interface App {
   name: string;
   slug: string;
   tagline: string | null;
+  icon_url: string | null;
   platforms: string;
   min_price_cents: number;
   suggested_price_cents: number | null;
@@ -32,7 +34,7 @@ interface Version {
 async function getApp(id: string): Promise<App | null> {
   const env = getEnv();
   return queryOne<App>(
-    `SELECT id, name, slug, tagline, platforms, min_price_cents, 
+    `SELECT id, name, slug, tagline, icon_url, platforms, min_price_cents, 
             suggested_price_cents, is_published
      FROM apps WHERE id = ?`,
     [id],
@@ -241,6 +243,25 @@ export default async function EditAppPage({ params }: { params: Promise<{ id: st
             </table>
           </div>
         )}
+      </section>
+
+      {/* OG Image */}
+      <section className="admin-section" style={{ marginTop: "2rem" }}>
+        <h2 className="admin-section__title">SOCIAL PREVIEW</h2>
+        <div
+          style={{
+            padding: "1.5rem",
+            background: "var(--gray-dark)",
+            border: "var(--border)",
+          }}
+        >
+          <OGGenerator
+            appSlug={app.slug}
+            appName={app.name}
+            appTagline={app.tagline}
+            iconUrl={app.icon_url}
+          />
+        </div>
       </section>
 
       {/* Danger Zone */}
