@@ -91,6 +91,9 @@ export async function GET(
       console.log("OG: APPS_BUCKET not available");
     }
 
+    // Log what we're passing to template
+    console.log(`OG: Passing to template - name: ${app.name}, tagline: ${app.tagline}, iconUrl exists: ${!!iconDataUrl}`);
+
     // Generate SVG with Satori
     const svg = await satori(
       OGImageTemplate({
@@ -104,6 +107,10 @@ export async function GET(
         fonts,
       }
     );
+
+    // DEBUG: Check if SVG contains image tag
+    const hasImage = svg.includes("<image") || svg.includes("xlink:href");
+    console.log(`OG: SVG generated, length: ${svg.length}, hasImage: ${hasImage}`);
 
     // Try to convert to PNG with resvg
     const ResvgClass = await getResvg();
