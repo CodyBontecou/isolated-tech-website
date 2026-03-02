@@ -138,6 +138,12 @@ export function createMockStripe(initialState?: Partial<MockStripeState>): Strip
           return createMockStripeEvent(data.type, data.data);
         }
       ),
+      constructEventAsync: vi.fn(
+        async (payload: string, signature: string, secret: string): Promise<Stripe.Event> => {
+          const data = JSON.parse(payload);
+          return createMockStripeEvent(data.type, data.data);
+        }
+      ),
     },
     charges: {
       retrieve: vi.fn(async (id: string): Promise<Stripe.Charge | null> => {
@@ -182,6 +188,9 @@ export function createFailingStripe(error: Error | string): Stripe {
     },
     webhooks: {
       constructEvent: vi.fn(() => {
+        throw errorObj;
+      }),
+      constructEventAsync: vi.fn(async () => {
         throw errorObj;
       }),
     },

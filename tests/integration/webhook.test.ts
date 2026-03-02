@@ -117,8 +117,8 @@ describe("POST /api/webhooks/stripe", () => {
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
-      // Make constructEvent throw an error
-      mockStripe.webhooks.constructEvent = vi.fn(() => {
+      // Make constructEventAsync throw an error
+      mockStripe.webhooks.constructEventAsync = vi.fn(() => {
         throw new Error("Invalid signature");
       });
 
@@ -164,8 +164,8 @@ describe("POST /api/webhooks/stripe", () => {
 
       const event = createMockStripeEvent("checkout.session.completed", session);
 
-      // Mock constructEvent to return our event
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      // Mock constructEventAsync to return our event
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -207,7 +207,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("checkout.session.completed", session);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -235,7 +235,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("checkout.session.completed", session);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -287,7 +287,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("checkout.session.completed", session);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -340,7 +340,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("checkout.session.completed", session);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -372,7 +372,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("charge.refunded", charge);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -402,7 +402,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("charge.refunded", charge);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -431,7 +431,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("charge.refunded", charge);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -484,7 +484,7 @@ describe("POST /api/webhooks/stripe", () => {
       });
 
       const event = createMockStripeEvent("checkout.session.completed", session);
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
@@ -510,7 +510,7 @@ describe("POST /api/webhooks/stripe", () => {
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const event = createMockStripeEvent("payment_intent.created", {});
-      mockStripe.webhooks.constructEvent = vi.fn().mockReturnValue(event);
+      mockStripe.webhooks.constructEventAsync = vi.fn().mockReturnValue(event);
 
       const { POST } = await import("@/app/api/webhooks/stripe/route");
 
