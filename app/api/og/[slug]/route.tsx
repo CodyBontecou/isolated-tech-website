@@ -55,9 +55,11 @@ export async function GET(
     if (env?.APPS_BUCKET) {
       try {
         const r2Key = `apps/${slug}/icon.png`;
+        console.log(`OG: Fetching icon from R2 key: ${r2Key}`);
         const iconObject = await env.APPS_BUCKET.get(r2Key);
         
         if (iconObject) {
+          console.log(`OG: Icon found, size: ${iconObject.size}`);
           const iconBuffer = await iconObject.arrayBuffer();
           const contentType = iconObject.httpMetadata?.contentType || "image/png";
           const base64 = btoa(
@@ -67,10 +69,15 @@ export async function GET(
             )
           );
           iconDataUrl = `data:${contentType};base64,${base64}`;
+          console.log(`OG: Icon converted to data URL, length: ${iconDataUrl.length}`);
+        } else {
+          console.log(`OG: Icon not found in R2 at ${r2Key}`);
         }
       } catch (iconError) {
-        console.warn("Failed to fetch icon from R2:", iconError);
+        console.error("OG: Failed to fetch icon from R2:", iconError);
       }
+    } else {
+      console.log("OG: APPS_BUCKET not available");
     }
 
     // Generate SVG with Satori
