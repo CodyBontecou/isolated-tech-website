@@ -28,6 +28,7 @@
   --bg-tertiary: var(--gray-mid);
   --text-primary: var(--white);
   --text-secondary: var(--gray);
+  --foreground: var(--white);
   --nav-bg: rgba(10, 10, 10, 0.85);
   --card-bg: var(--gray-dark);
   --input-bg: var(--gray-dark);

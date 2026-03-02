@@ -2774,8 +2774,8 @@ html.light .hero__image-overlay {
   width: 40px;
   height: 40px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: var(--bg-secondary);
+  border: var(--border);
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -2784,8 +2784,8 @@ html.light .hero__image-overlay {
 }
 
 .mobile-site-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: var(--bg-tertiary);
+  border-color: var(--text-primary);
 }
 
 .mobile-site-toggle:active {
