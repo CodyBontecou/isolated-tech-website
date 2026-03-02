@@ -3,10 +3,12 @@
  * GET /api/og/[slug] - Returns PNG image for app pages
  *
  * Uses Satori (React → SVG) + @cf-wasm/resvg (SVG → PNG)
- * Compatible with Cloudflare Workers
  * 
- * Note: In local dev (workerd), WASM may not initialize properly.
- * The route will return an SVG fallback in that case.
+ * KNOWN LIMITATION: resvg WASM cannot render embedded data URL images.
+ * The SVG contains the icon correctly (viewable with ?debug=svg),
+ * but the PNG output shows a placeholder. This is a resvg limitation.
+ * 
+ * Future fix: Pre-generate OG images when apps are updated, store in R2.
  */
 
 import satori from "satori";
@@ -15,18 +17,53 @@ import { getAppBySlug } from "@/lib/app-data";
 import { loadFonts } from "@/lib/og/fonts";
 import { OGImageTemplate } from "@/lib/og/template";
 
-// Dynamic import for resvg to handle WASM initialization issues
+// Dynamic import for resvg
 let Resvg: typeof import("@cf-wasm/resvg/workerd").Resvg | null = null;
 
 async function getResvg() {
   if (Resvg) return Resvg;
   try {
-    // Try legacy version first (better image support)
-    const module = await import("@cf-wasm/resvg/legacy/workerd");
+    const module = await import("@cf-wasm/resvg/workerd");
     Resvg = module.Resvg;
     return Resvg;
   } catch (error) {
     console.warn("Failed to load resvg WASM:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetch icon from R2 and convert to data URL
+ * Note: This works for SVG output but resvg can't render it in PNG
+ */
+async function getIconDataUrl(
+  slug: string,
+  bucket: R2Bucket | undefined
+): Promise<string | null> {
+  if (!bucket) return null;
+
+  try {
+    const r2Key = `apps/${slug}/icon.png`;
+    const iconObject = await bucket.get(r2Key);
+
+    if (!iconObject) return null;
+
+    const iconBuffer = await iconObject.arrayBuffer();
+    const contentType = iconObject.httpMetadata?.contentType || "image/png";
+
+    // Convert to base64
+    const uint8Array = new Uint8Array(iconBuffer);
+    let binary = "";
+    const chunkSize = 8192;
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    const base64 = btoa(binary);
+
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    console.warn("Failed to fetch icon:", error);
     return null;
   }
 }
@@ -38,10 +75,10 @@ export async function GET(
   try {
     const { slug } = await params;
     const env = getEnv();
+    const url = new URL(request.url);
 
     // Fetch app data
     const app = await getAppBySlug(slug, env?.DB);
-
     if (!app) {
       return new Response("App not found", { status: 404 });
     }
@@ -49,51 +86,8 @@ export async function GET(
     // Load fonts
     const fonts = await loadFonts();
 
-    // Fetch icon directly from R2 and convert to data URL
-    // (Can't fetch from same Worker due to loopback restriction)
-    let iconDataUrl: string | null = null;
-    
-    if (env?.APPS_BUCKET) {
-      try {
-        const r2Key = `apps/${slug}/icon.png`;
-        console.log(`OG: Fetching icon from R2 key: ${r2Key}`);
-        const iconObject = await env.APPS_BUCKET.get(r2Key);
-        
-        if (iconObject) {
-          console.log(`OG: Icon found, size: ${iconObject.size}`);
-          const iconBuffer = await iconObject.arrayBuffer();
-          const contentType = iconObject.httpMetadata?.contentType || "image/png";
-          
-          // Use Buffer-style encoding for Workers environment
-          const uint8Array = new Uint8Array(iconBuffer);
-          let binary = "";
-          const chunkSize = 8192;
-          for (let i = 0; i < uint8Array.length; i += chunkSize) {
-            const chunk = uint8Array.subarray(i, i + chunkSize);
-            binary += String.fromCharCode.apply(null, Array.from(chunk));
-          }
-          const base64 = btoa(binary);
-          
-          iconDataUrl = `data:${contentType};base64,${base64}`;
-          console.log(`OG: Icon converted to data URL, length: ${iconDataUrl.length}, starts with: ${iconDataUrl.substring(0, 50)}`);
-          
-          // Verify the data URL is valid
-          if (!iconDataUrl.startsWith("data:image/")) {
-            console.error("OG: Invalid data URL generated");
-            iconDataUrl = null;
-          }
-        } else {
-          console.log(`OG: Icon not found in R2 at ${r2Key}`);
-        }
-      } catch (iconError) {
-        console.error("OG: Failed to fetch icon from R2:", iconError);
-      }
-    } else {
-      console.log("OG: APPS_BUCKET not available");
-    }
-
-    // Log what we're passing to template
-    console.log(`OG: Passing to template - name: ${app.name}, tagline: ${app.tagline}, iconUrl exists: ${!!iconDataUrl}`);
+    // Fetch icon (works in SVG, not in PNG due to resvg limitation)
+    const iconDataUrl = await getIconDataUrl(slug, env?.APPS_BUCKET);
 
     // Generate SVG with Satori
     const svg = await satori(
@@ -109,32 +103,23 @@ export async function GET(
       }
     );
 
-    // DEBUG: Check if SVG contains image tag
-    const hasImage = svg.includes("<image") || svg.includes("xlink:href");
-    console.log(`OG: SVG generated, length: ${svg.length}, hasImage: ${hasImage}`);
-
-    // DEBUG: Return SVG directly to inspect
-    const debugSvg = new URL(request.url).searchParams.get("debug") === "svg";
-    if (debugSvg) {
+    // Debug mode: return raw SVG (shows icon correctly)
+    if (url.searchParams.get("debug") === "svg") {
       return new Response(svg, {
-        headers: { "Content-Type": "image/svg+xml" },
+        headers: {
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "no-store",
+        },
       });
     }
 
-    // Try to convert to PNG with resvg
+    // Convert to PNG with resvg
     const ResvgClass = await getResvg();
-    
+
     if (ResvgClass) {
       try {
-        // Use options that enable image loading
         const resvg = new ResvgClass(svg, {
-          fitTo: {
-            mode: "width",
-            value: 1200,
-          },
-          // Enable loading of embedded images
-          imageRendering: 1, // optimizeQuality
-          shapeRendering: 2, // geometricPrecision
+          fitTo: { mode: "width", value: 1200 },
         });
         const pngData = resvg.render();
         const pngBuffer = pngData.asPng();
@@ -147,11 +132,11 @@ export async function GET(
           },
         });
       } catch (pngError) {
-        console.warn("PNG generation failed, falling back to SVG:", pngError);
+        console.warn("PNG generation failed:", pngError);
       }
     }
 
-    // Fallback: return SVG (works in local dev where WASM fails)
+    // Fallback: return SVG
     return new Response(svg, {
       headers: {
         "Content-Type": "image/svg+xml",
@@ -161,7 +146,7 @@ export async function GET(
   } catch (error) {
     console.error("OG image generation error:", error);
     return new Response(
-      `Error generating image: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Error: ${error instanceof Error ? error.message : "Unknown"}`,
       { status: 500 }
     );
   }
