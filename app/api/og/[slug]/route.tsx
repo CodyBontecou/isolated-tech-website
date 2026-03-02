@@ -21,7 +21,8 @@ let Resvg: typeof import("@cf-wasm/resvg/workerd").Resvg | null = null;
 async function getResvg() {
   if (Resvg) return Resvg;
   try {
-    const module = await import("@cf-wasm/resvg/workerd");
+    // Try legacy version first (better image support)
+    const module = await import("@cf-wasm/resvg/legacy/workerd");
     Resvg = module.Resvg;
     return Resvg;
   } catch (error) {
@@ -125,11 +126,15 @@ export async function GET(
     
     if (ResvgClass) {
       try {
+        // Use options that enable image loading
         const resvg = new ResvgClass(svg, {
           fitTo: {
             mode: "width",
             value: 1200,
           },
+          // Enable loading of embedded images
+          imageRendering: 1, // optimizeQuality
+          shapeRendering: 2, // geometricPrecision
         });
         const pngData = resvg.render();
         const pngBuffer = pngData.asPng();
