@@ -48,13 +48,31 @@ export async function GET(
     // Load fonts
     const fonts = await loadFonts();
 
-    // Make icon URL absolute (Satori requires absolute URLs for images)
+    // Fetch and convert icon to data URL (Satori can't fetch images itself in Workers)
     const siteUrl = "https://isolated.tech";
-    let absoluteIconUrl: string | null = null;
+    let iconDataUrl: string | null = null;
+    
     if (app.icon_url) {
-      absoluteIconUrl = app.icon_url.startsWith("http")
+      const absoluteIconUrl = app.icon_url.startsWith("http")
         ? app.icon_url
         : `${siteUrl}${app.icon_url.startsWith("/") ? "" : "/"}${app.icon_url}`;
+      
+      try {
+        const iconResponse = await fetch(absoluteIconUrl);
+        if (iconResponse.ok) {
+          const iconBuffer = await iconResponse.arrayBuffer();
+          const contentType = iconResponse.headers.get("content-type") || "image/png";
+          const base64 = btoa(
+            new Uint8Array(iconBuffer).reduce(
+              (data, byte) => data + String.fromCharCode(byte),
+              ""
+            )
+          );
+          iconDataUrl = `data:${contentType};base64,${base64}`;
+        }
+      } catch (iconError) {
+        console.warn("Failed to fetch icon:", iconError);
+      }
     }
 
     // Generate SVG with Satori
@@ -62,7 +80,7 @@ export async function GET(
       OGImageTemplate({
         name: app.name,
         tagline: app.tagline,
-        iconUrl: absoluteIconUrl,
+        iconUrl: iconDataUrl,
       }),
       {
         width: 1200,
