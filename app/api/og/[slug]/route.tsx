@@ -2,13 +2,13 @@
  * Dynamic OG Image Generation
  * GET /api/og/[slug] - Returns PNG image for app pages
  *
- * Uses Satori (React → SVG) + @cf-wasm/resvg (SVG → PNG)
+ * Strategy:
+ * 1. Check R2 for pre-generated PNG (uploaded via admin panel)
+ * 2. Fall back to dynamic generation with Satori + resvg
  * 
- * KNOWN LIMITATION: resvg WASM cannot render embedded data URL images.
- * The SVG contains the icon correctly (viewable with ?debug=svg),
- * but the PNG output shows a placeholder. This is a resvg limitation.
- * 
- * Future fix: Pre-generate OG images when apps are updated, store in R2.
+ * Note: Dynamic generation shows placeholder instead of icon
+ * due to resvg WASM limitation with embedded images.
+ * For icons, use the admin panel to generate OG images client-side.
  */
 
 import satori from "satori";
@@ -32,42 +32,6 @@ async function getResvg() {
   }
 }
 
-/**
- * Fetch icon from R2 and convert to data URL
- * Note: This works for SVG output but resvg can't render it in PNG
- */
-async function getIconDataUrl(
-  slug: string,
-  bucket: R2Bucket | undefined
-): Promise<string | null> {
-  if (!bucket) return null;
-
-  try {
-    const r2Key = `apps/${slug}/icon.png`;
-    const iconObject = await bucket.get(r2Key);
-
-    if (!iconObject) return null;
-
-    const iconBuffer = await iconObject.arrayBuffer();
-    const contentType = iconObject.httpMetadata?.contentType || "image/png";
-
-    // Convert to base64
-    const uint8Array = new Uint8Array(iconBuffer);
-    let binary = "";
-    const chunkSize = 8192;
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const chunk = uint8Array.subarray(i, i + chunkSize);
-      binary += String.fromCharCode.apply(null, Array.from(chunk));
-    }
-    const base64 = btoa(binary);
-
-    return `data:${contentType};base64,${base64}`;
-  } catch (error) {
-    console.warn("Failed to fetch icon:", error);
-    return null;
-  }
-}
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -83,18 +47,32 @@ export async function GET(
       return new Response("App not found", { status: 404 });
     }
 
-    // Load fonts
+    // 1. Try to serve pre-generated PNG from R2
+    if (env?.APPS_BUCKET) {
+      const r2Key = `og/${slug}.png`;
+      const ogObject = await env.APPS_BUCKET.get(r2Key);
+
+      if (ogObject) {
+        return new Response(ogObject.body, {
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=86400, s-maxage=86400",
+            "CDN-Cache-Control": "public, max-age=604800",
+            "X-OG-Source": "r2",
+          },
+        });
+      }
+    }
+
+    // 2. Fall back to dynamic generation
     const fonts = await loadFonts();
 
-    // Fetch icon (works in SVG, not in PNG due to resvg limitation)
-    const iconDataUrl = await getIconDataUrl(slug, env?.APPS_BUCKET);
-
-    // Generate SVG with Satori
+    // Generate SVG (without icon - resvg can't render embedded images)
     const svg = await satori(
       OGImageTemplate({
         name: app.name,
         tagline: app.tagline,
-        iconUrl: iconDataUrl,
+        iconUrl: null, // Skip icon for dynamic generation
       }),
       {
         width: 1200,
@@ -103,12 +81,13 @@ export async function GET(
       }
     );
 
-    // Debug mode: return raw SVG (shows icon correctly)
+    // Debug mode: return raw SVG
     if (url.searchParams.get("debug") === "svg") {
       return new Response(svg, {
         headers: {
           "Content-Type": "image/svg+xml",
           "Cache-Control": "no-store",
+          "X-OG-Source": "dynamic-svg",
         },
       });
     }
@@ -127,8 +106,8 @@ export async function GET(
         return new Response(pngBuffer as unknown as BodyInit, {
           headers: {
             "Content-Type": "image/png",
-            "Cache-Control": "public, max-age=86400, s-maxage=86400",
-            "CDN-Cache-Control": "public, max-age=604800",
+            "Cache-Control": "public, max-age=3600, s-maxage=3600", // Shorter cache for dynamic
+            "X-OG-Source": "dynamic-png",
           },
         });
       } catch (pngError) {
@@ -136,11 +115,12 @@ export async function GET(
       }
     }
 
-    // Fallback: return SVG
+    // Final fallback: return SVG
     return new Response(svg, {
       headers: {
         "Content-Type": "image/svg+xml",
         "Cache-Control": "public, max-age=3600",
+        "X-OG-Source": "fallback-svg",
       },
     });
   } catch (error) {
