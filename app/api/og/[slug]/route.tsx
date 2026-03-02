@@ -62,14 +62,25 @@ export async function GET(
           console.log(`OG: Icon found, size: ${iconObject.size}`);
           const iconBuffer = await iconObject.arrayBuffer();
           const contentType = iconObject.httpMetadata?.contentType || "image/png";
-          const base64 = btoa(
-            new Uint8Array(iconBuffer).reduce(
-              (data, byte) => data + String.fromCharCode(byte),
-              ""
-            )
-          );
+          
+          // Use Buffer-style encoding for Workers environment
+          const uint8Array = new Uint8Array(iconBuffer);
+          let binary = "";
+          const chunkSize = 8192;
+          for (let i = 0; i < uint8Array.length; i += chunkSize) {
+            const chunk = uint8Array.subarray(i, i + chunkSize);
+            binary += String.fromCharCode.apply(null, Array.from(chunk));
+          }
+          const base64 = btoa(binary);
+          
           iconDataUrl = `data:${contentType};base64,${base64}`;
-          console.log(`OG: Icon converted to data URL, length: ${iconDataUrl.length}`);
+          console.log(`OG: Icon converted to data URL, length: ${iconDataUrl.length}, starts with: ${iconDataUrl.substring(0, 50)}`);
+          
+          // Verify the data URL is valid
+          if (!iconDataUrl.startsWith("data:image/")) {
+            console.error("OG: Invalid data URL generated");
+            iconDataUrl = null;
+          }
         } else {
           console.log(`OG: Icon not found in R2 at ${r2Key}`);
         }
