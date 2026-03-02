@@ -86,28 +86,35 @@ function groupByMonth(updates: Update[]): MonthGroup[] {
  */
 function formatReleaseNotes(notes: string): string {
   return notes
-    .replace(/##?\s+/g, "") // headers
+    .replace(/^#{1,6}\s*/gm, "") // markdown headers
     .replace(/\*\*(.+?)\*\*/g, "$1") // bold
     .replace(/\*(.+?)\*/g, "$1") // italic
     .replace(/`(.+?)`/g, "$1") // inline code
     .replace(/\[(.+?)\]\(.+?\)/g, "$1") // links
-    .replace(/^-\s+/gm, "• "); // list items
+    .replace(/^\s*[-*]\s+/gm, "• ") // bullet lists
+    .trim();
+}
+
+function formatAppName(name: string): string {
+  return name.replace(/\.md$/i, "").trim();
 }
 
 function UpdateEntry({ update }: { update: Update }) {
+  const displayName = formatAppName(update.app_name);
+
   return (
     <div className="changelog-entry">
       <Link href={`/apps/${update.app_slug}`} className="changelog-entry__app">
         <div className="changelog-entry__icon">
           {update.app_icon ? (
-            <img src={update.app_icon} alt={`${update.app_name} icon`} />
+            <img src={update.app_icon} alt={`${displayName} icon`} />
           ) : (
-            <span>{update.app_name[0].toUpperCase()}</span>
+            <span>{displayName[0]?.toUpperCase() || "?"}</span>
           )}
         </div>
         <div className="changelog-entry__info">
           <div className="changelog-entry__header">
-            <span className="changelog-entry__name">{update.app_name}</span>
+            <span className="changelog-entry__name">{displayName}</span>
             <span className="changelog-entry__version">v{update.version}</span>
             <PlatformBadge platform={update.platform as "ios" | "macos"} />
           </div>
