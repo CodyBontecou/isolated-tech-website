@@ -7,8 +7,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
-import { createStripeClient, createDashboardLink } from "@/lib/stripe";
-import { queryOne } from "@/lib/db";
+import { createStripeClient, createDashboardLink, checkAccountStatus } from "@/lib/stripe";
+import { queryOne, execute } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,18 +48,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!sellerInfo.stripe_onboarded) {
-      return NextResponse.json(
-        { error: "Please complete Stripe onboarding first." },
-        { status: 400 }
-      );
-    }
-
     const stripe = createStripeClient(env);
     if (!stripe) {
       return NextResponse.json(
         { error: "Payment processing not configured" },
         { status: 503 }
+      );
+    }
+
+    // Verify onboarding status live from Stripe before issuing dashboard link.
+    const stripeStatus = await checkAccountStatus(stripe, sellerInfo.stripe_account_id);
+
+    const nextOnboarded = stripeStatus.chargesEnabled ? 1 : 0;
+    if (nextOnboarded !== sellerInfo.stripe_onboarded) {
+      await execute(
+        `UPDATE user SET stripe_onboarded = ? WHERE id = ?`,
+        [nextOnboarded, user.id],
+        env
+      );
+    }
+
+    if (!stripeStatus.chargesEnabled) {
+      return NextResponse.json(
+        {
+          error: "Please complete Stripe onboarding first.",
+          details: `requirements=${stripeStatus.requirementsStatus ?? "unknown"}, transfers=${stripeStatus.transfersCapabilityStatus ?? "unknown"}`,
+        },
+        { status: 400 }
       );
     }
 

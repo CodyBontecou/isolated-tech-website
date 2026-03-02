@@ -94,7 +94,7 @@ export function isMissingStripeAccountError(error: unknown): boolean {
 
   return (
     code === "resource_missing" &&
-    (param === "account" || message.includes("no such account"))
+    (param === "account" || param === "id" || message.includes("no such account"))
   );
 }
 
@@ -113,43 +113,67 @@ export function calculateSellerAmount(priceCents: number): number {
 }
 
 /**
- * Create a Stripe Connect account for a seller
+ * Create a Stripe Connect v2 account for a seller.
+ *
+ * Uses recipient configuration with platform-owned fees/losses,
+ * matching our marketplace destination-charge model.
  */
 export async function createConnectAccount(
   stripe: Stripe,
   email: string,
-  metadata?: Record<string, string>
-): Promise<Stripe.Account> {
-  return stripe.accounts.create({
-    type: "express",
-    email,
-    metadata,
-    capabilities: {
-      card_payments: { requested: true },
-      transfers: { requested: true },
+  displayName?: string
+): Promise<Stripe.V2.Core.Account> {
+  return stripe.v2.core.accounts.create({
+    display_name: displayName || email.split("@")[0],
+    contact_email: email,
+    identity: {
+      country: "us",
+    },
+    dashboard: "express",
+    defaults: {
+      responsibilities: {
+        fees_collector: "application",
+        losses_collector: "application",
+      },
+    },
+    configuration: {
+      recipient: {
+        capabilities: {
+          stripe_balance: {
+            stripe_transfers: {
+              requested: true,
+            },
+          },
+        },
+      },
     },
   });
 }
 
 /**
- * Create an account onboarding link for Stripe Connect
+ * Create a v2 account onboarding link for Stripe Connect.
  */
 export async function createAccountLink(
   stripe: Stripe,
   accountId: string,
   refreshUrl: string,
   returnUrl: string
-): Promise<Stripe.AccountLink> {
-  return stripe.accountLinks.create({
+): Promise<Stripe.V2.Core.AccountLink> {
+  return stripe.v2.core.accountLinks.create({
     account: accountId,
-    refresh_url: refreshUrl,
-    return_url: returnUrl,
-    type: "account_onboarding",
+    use_case: {
+      type: "account_onboarding",
+      account_onboarding: {
+        configurations: ["recipient"],
+        refresh_url: refreshUrl,
+        return_url: returnUrl,
+      },
+    },
   });
 }
 
 /**
- * Check if a Connect account has completed onboarding
+ * Check v2 account onboarding status and payout readiness.
  */
 export async function checkAccountStatus(
   stripe: Stripe,
@@ -158,12 +182,30 @@ export async function checkAccountStatus(
   detailsSubmitted: boolean;
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
+  requirementsStatus: string | null;
+  transfersCapabilityStatus: string | null;
 }> {
-  const account = await stripe.accounts.retrieve(accountId);
+  const account = await stripe.v2.core.accounts.retrieve(accountId, {
+    include: ["configuration.recipient", "requirements"],
+  });
+
+  const transfersCapabilityStatus =
+    account.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status ?? null;
+
+  const requirementsStatus = account.requirements?.summary?.minimum_deadline?.status ?? null;
+
+  const onboardingComplete =
+    requirementsStatus !== "currently_due" && requirementsStatus !== "past_due";
+
+  const readyToReceivePayments = transfersCapabilityStatus === "active";
+
   return {
-    detailsSubmitted: account.details_submitted ?? false,
-    chargesEnabled: account.charges_enabled ?? false,
-    payoutsEnabled: account.payouts_enabled ?? false,
+    // Keep legacy field names so existing seller code can continue to use this helper.
+    detailsSubmitted: onboardingComplete,
+    chargesEnabled: onboardingComplete && readyToReceivePayments,
+    payoutsEnabled: readyToReceivePayments,
+    requirementsStatus,
+    transfersCapabilityStatus,
   };
 }
 

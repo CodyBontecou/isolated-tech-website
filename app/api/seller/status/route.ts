@@ -53,19 +53,20 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check Stripe account status
+    // Check Stripe account status directly from Stripe API (source of truth).
     const stripe = createStripeClient(env);
     let stripeStatus = null;
-    
+
     if (stripe) {
       try {
         stripeStatus = await checkAccountStatus(stripe, sellerInfo.stripe_account_id);
-        
-        // Update onboarded status if changed
-        if (stripeStatus.chargesEnabled && !sellerInfo.stripe_onboarded) {
+
+        // Keep DB flag in sync with live Stripe status for downstream checks.
+        const nextOnboarded = stripeStatus.chargesEnabled ? 1 : 0;
+        if (nextOnboarded !== sellerInfo.stripe_onboarded) {
           await env.DB.prepare(
-            `UPDATE user SET stripe_onboarded = 1 WHERE id = ?`
-          ).bind(user.id).run();
+            `UPDATE user SET stripe_onboarded = ? WHERE id = ?`
+          ).bind(nextOnboarded, user.id).run();
         }
       } catch (e) {
         console.error("Failed to check Stripe account status:", e);
@@ -111,6 +112,8 @@ export async function GET(request: NextRequest) {
         detailsSubmitted: stripeStatus.detailsSubmitted,
         chargesEnabled: stripeStatus.chargesEnabled,
         payoutsEnabled: stripeStatus.payoutsEnabled,
+        requirementsStatus: stripeStatus.requirementsStatus,
+        transfersCapabilityStatus: stripeStatus.transfersCapabilityStatus,
       } : null,
       apps,
       stats: stats ? {

@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { requireAdmin, getAppFilterClause } from "@/lib/admin-auth";
 import { nanoid } from "@/lib/db";
+import { getSellerConnectState } from "@/lib/seller-connect-status";
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,12 +92,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    // Sellers must have completed Stripe onboarding to create paid apps
-    if (user.isSeller && !user.isSuperuser && !user.stripeOnboarded) {
-      return NextResponse.json(
-        { error: "Please complete Stripe onboarding before creating apps" },
-        { status: 400 }
-      );
+    // Sellers must have completed Stripe onboarding to create paid apps.
+    // Use hybrid status check (live Stripe v2 status + DB fallback).
+    if (user.isSeller && !user.isSuperuser) {
+      const sellerConnectState = await getSellerConnectState(env, user.id);
+
+      if (!sellerConnectState.effectiveOnboarded) {
+        return NextResponse.json(
+          {
+            error: "Please complete Stripe onboarding before creating apps",
+            details: sellerConnectState.liveChecked
+              ? `requirements=${sellerConnectState.requirementsStatus ?? "unknown"}, transfers=${sellerConnectState.transfersCapabilityStatus ?? "unknown"}`
+              : "Could not verify live Stripe status; using cached onboarding state.",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const body = await request.json();

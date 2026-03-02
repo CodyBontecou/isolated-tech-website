@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queryOne, query } from "@/lib/db";
 import { PLATFORM_FEE_PERCENT } from "@/lib/stripe";
+import { getSellerConnectState } from "@/lib/seller-connect-status";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { SellerDashboardClient } from "./seller-dashboard-client";
@@ -92,8 +93,16 @@ export default async function SellerPage() {
     env
   );
 
-  const isOnboarded = sellerInfo?.stripe_onboarded === 1;
   const isSeller = sellerInfo?.is_seller === 1;
+
+  // Hybrid status model:
+  // - live v2 status from Stripe for accuracy
+  // - DB flag as fallback when Stripe is temporarily unavailable
+  const sellerConnectState = isSeller
+    ? await getSellerConnectState(env, user.id)
+    : null;
+
+  const isOnboarded = sellerConnectState?.effectiveOnboarded ?? sellerInfo?.stripe_onboarded === 1;
 
   // If not a seller yet, show onboarding CTA
   if (!isSeller) {
@@ -170,6 +179,11 @@ export default async function SellerPage() {
               <p className="auth-card__subtitle">
                 You're almost there! Complete your Stripe account setup to start selling.
               </p>
+              {sellerConnectState?.liveChecked && (
+                <p style={{ marginTop: "0.75rem", fontSize: "0.8rem", color: "var(--gray)" }}>
+                  Requirements: {sellerConnectState.requirementsStatus || "unknown"} • Transfers: {sellerConnectState.transfersCapabilityStatus || "unknown"}
+                </p>
+              )}
             </div>
 
             <SellerDashboardClient action="onboard" buttonText="Continue Setup" />

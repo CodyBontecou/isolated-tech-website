@@ -2,7 +2,7 @@
  * POST /api/seller/onboard
  *
  * Start Stripe Connect onboarding for a user to become a seller.
- * Creates a Connect Express account and returns an onboarding URL.
+ * Creates a Connect v2 recipient account and returns an onboarding URL.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -66,10 +66,11 @@ export async function POST(request: NextRequest) {
     );
 
     const createAndPersistConnectAccount = async (): Promise<string> => {
-      const account = await createConnectAccount(stripe, user.email, {
-        user_id: user.id,
-        platform: "isolated.tech",
-      });
+      const account = await createConnectAccount(
+        stripe,
+        user.email,
+        user.name || undefined
+      );
 
       await execute(
         `UPDATE user SET stripe_account_id = ?, stripe_onboarded = 0, is_seller = 1 WHERE id = ?`,

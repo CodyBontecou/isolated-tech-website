@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
-import { queryOne, execute } from "@/lib/db";
-import { createStripeClient, checkAccountStatus } from "@/lib/stripe";
+import { queryOne } from "@/lib/db";
+import { getSellerConnectState } from "@/lib/seller-connect-status";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
 import Link from "next/link";
@@ -35,27 +35,9 @@ export default async function OnboardCompletePage() {
     redirect("/seller");
   }
 
-  // Check Stripe account status
-  const stripe = createStripeClient(env);
-  let isComplete = false;
-  
-  if (stripe) {
-    try {
-      const status = await checkAccountStatus(stripe, sellerInfo.stripe_account_id);
-      isComplete = status.chargesEnabled;
-
-      // Update database if onboarding is complete
-      if (isComplete && !sellerInfo.stripe_onboarded) {
-        await execute(
-          `UPDATE user SET stripe_onboarded = 1 WHERE id = ?`,
-          [user.id],
-          env
-        );
-      }
-    } catch (e) {
-      console.error("Failed to check Stripe status:", e);
-    }
-  }
+  // Check Stripe account status using hybrid helper (live Stripe v2 + DB fallback).
+  const sellerConnectState = await getSellerConnectState(env, user.id);
+  const isComplete = sellerConnectState.effectiveOnboarded;
 
   if (!isComplete) {
     return (
@@ -69,6 +51,11 @@ export default async function OnboardCompletePage() {
                 It looks like your Stripe account setup isn't complete yet.
                 Please finish setting up your account to start selling.
               </p>
+              {sellerConnectState.liveChecked && (
+                <p style={{ marginTop: "0.75rem", fontSize: "0.8rem", color: "var(--gray)" }}>
+                  Requirements: {sellerConnectState.requirementsStatus || "unknown"} • Transfers: {sellerConnectState.transfersCapabilityStatus || "unknown"}
+                </p>
+              )}
             </div>
 
             <Link href="/seller" className="auth-btn" style={{ display: "block", textAlign: "center" }}>

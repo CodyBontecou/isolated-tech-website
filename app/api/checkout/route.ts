@@ -12,6 +12,7 @@ import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
 import { createStripeClient, getBaseUrl, calculatePlatformFee, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { nanoid } from "@/lib/db";
+import { getSellerConnectState } from "@/lib/seller-connect-status";
 
 interface CheckoutRequest {
   appId: string;
@@ -99,12 +100,24 @@ export async function POST(request: NextRequest) {
         .bind(app.owner_id)
         .first<AppOwner>();
 
-      // Verify seller can receive payments
-      if (appOwner && (!appOwner.stripe_account_id || !appOwner.stripe_onboarded)) {
-        return NextResponse.json(
-          { error: "This app's seller has not completed payment setup" },
-          { status: 400 }
-        );
+      // Verify seller can receive payments (hybrid live Stripe v2 + DB fallback).
+      if (appOwner) {
+        const sellerConnectState = await getSellerConnectState(env, appOwner.id);
+
+        if (!sellerConnectState.stripeAccountId || !sellerConnectState.effectiveOnboarded) {
+          return NextResponse.json(
+            {
+              error: "This app's seller has not completed payment setup",
+              details: sellerConnectState.liveChecked
+                ? `requirements=${sellerConnectState.requirementsStatus ?? "unknown"}, transfers=${sellerConnectState.transfersCapabilityStatus ?? "unknown"}`
+                : "Could not verify live Stripe status; using cached onboarding state.",
+            },
+            { status: 400 }
+          );
+        }
+
+        // Ensure checkout uses the verified connected account ID.
+        appOwner.stripe_account_id = sellerConnectState.stripeAccountId;
       }
     }
 

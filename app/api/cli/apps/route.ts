@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { requireAdmin, getAppFilterClause } from "@/lib/admin-auth";
 import { query, execute, nanoid } from "@/lib/db";
+import { getSellerConnectState } from "@/lib/seller-connect-status";
 
 interface App {
   id: string;
@@ -55,12 +56,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  // Sellers must complete Stripe onboarding before creating apps
-  if (!user.isSuperuser && user.isSeller && !user.stripeOnboarded) {
-    return NextResponse.json(
-      { error: "Complete Stripe onboarding first at /seller" },
-      { status: 400 }
-    );
+  // Sellers must complete Stripe onboarding before creating apps.
+  // Use hybrid status check (live Stripe v2 status + DB fallback).
+  if (!user.isSuperuser && user.isSeller) {
+    const sellerConnectState = await getSellerConnectState(env, user.id);
+
+    if (!sellerConnectState.effectiveOnboarded) {
+      return NextResponse.json(
+        {
+          error: "Complete Stripe onboarding first at /seller",
+          details: sellerConnectState.liveChecked
+            ? `requirements=${sellerConnectState.requirementsStatus ?? "unknown"}, transfers=${sellerConnectState.transfersCapabilityStatus ?? "unknown"}`
+            : "Could not verify live Stripe status; using cached onboarding state.",
+        },
+        { status: 400 }
+      );
+    }
   }
 
   let body: { bundleId?: string; name?: string; slug?: string };
