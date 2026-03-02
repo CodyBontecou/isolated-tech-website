@@ -25,6 +25,7 @@ describe("POST /api/admin/versions/presign", () => {
       d1State: fixtures.createTestD1State(),
     });
     (mockEnv as any).ADMIN_API_KEY = "test_admin_api_key";
+    (mockEnv as any).SUPERUSER_EMAILS = fixtures.adminUser.email;
   });
 
   afterEach(() => {
@@ -218,6 +219,7 @@ describe("POST /api/admin/versions", () => {
       d1State: fixtures.createTestD1State(),
     });
     (mockEnv as any).ADMIN_API_KEY = "test_admin_api_key";
+    (mockEnv as any).SUPERUSER_EMAILS = fixtures.adminUser.email;
   });
 
   afterEach(() => {
@@ -414,6 +416,7 @@ describe("Admin versions edge cases", () => {
       d1State: fixtures.createTestD1State(),
     });
     (mockEnv as any).ADMIN_API_KEY = "test_admin_api_key";
+    (mockEnv as any).SUPERUSER_EMAILS = fixtures.adminUser.email;
   });
 
   afterEach(() => {
