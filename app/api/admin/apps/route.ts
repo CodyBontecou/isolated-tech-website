@@ -1,11 +1,11 @@
 /**
- * GET /api/admin/apps - List all apps
+ * GET /api/admin/apps - List apps (scoped by owner for sellers)
  * POST /api/admin/apps - Create a new app
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, getAppFilterClause } from "@/lib/admin-auth";
 import { nanoid } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
@@ -24,32 +24,51 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
-    const { results } = await env.DB.prepare(
-      `SELECT a.*,
-        (SELECT COUNT(*) FROM app_versions WHERE app_id = a.id) as version_count,
-        (SELECT COUNT(*) FROM purchases WHERE app_id = a.id AND status = 'completed') as purchase_count
-       FROM apps a
-       ORDER BY a.created_at DESC`
-    ).all<{
-      id: string;
-      name: string;
-      slug: string;
-      tagline: string;
-      description: string;
-      icon_url: string | null;
-      screenshots: string | null;
-      platforms: string;
-      min_price_cents: number;
-      suggested_price_cents: number;
-      is_published: number;
-      page_config: string | null;
-      created_at: string;
-      updated_at: string;
-      version_count: number;
-      purchase_count: number;
-    }>();
+    // Get filter clause based on user permissions
+    const { where, params } = getAppFilterClause(user);
 
-    return NextResponse.json({ apps: results });
+    const query = `
+      SELECT a.*,
+        (SELECT COUNT(*) FROM app_versions WHERE app_id = a.id) as version_count,
+        (SELECT COUNT(*) FROM purchases WHERE app_id = a.id AND status = 'completed') as purchase_count,
+        (SELECT COALESCE(SUM(amount_cents), 0) FROM purchases WHERE app_id = a.id AND status = 'completed') as total_revenue_cents,
+        u.email as owner_email,
+        u.name as owner_name
+       FROM apps a
+       LEFT JOIN user u ON a.owner_id = u.id
+       WHERE ${where}
+       ORDER BY a.created_at DESC
+    `;
+
+    const { results } = await env.DB.prepare(query)
+      .bind(...params)
+      .all<{
+        id: string;
+        name: string;
+        slug: string;
+        tagline: string;
+        description: string;
+        icon_url: string | null;
+        screenshots: string | null;
+        platforms: string;
+        min_price_cents: number;
+        suggested_price_cents: number;
+        is_published: number;
+        page_config: string | null;
+        owner_id: string | null;
+        created_at: string;
+        updated_at: string;
+        version_count: number;
+        purchase_count: number;
+        total_revenue_cents: number;
+        owner_email: string | null;
+        owner_name: string | null;
+      }>();
+
+    return NextResponse.json({ 
+      apps: results,
+      isSuperuser: user.isSuperuser,
+    });
   } catch (error) {
     console.error("List apps error:", error);
     return NextResponse.json({ error: "Failed to fetch apps" }, { status: 500 });
@@ -72,6 +91,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
+    // Sellers must have completed Stripe onboarding to create paid apps
+    if (user.isSeller && !user.isSuperuser && !user.stripeOnboarded) {
+      return NextResponse.json(
+        { error: "Please complete Stripe onboarding before creating apps" },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const {
       name,
@@ -88,6 +115,7 @@ export async function POST(request: NextRequest) {
       featured_order,
       page_config,
       github_url,
+      owner_id: requestedOwnerId, // Only superusers can set this
     } = body;
 
     // Validate
@@ -133,13 +161,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine owner_id:
+    // - Superusers can specify any owner or leave it null (platform-owned)
+    // - Sellers always own their own apps
+    let ownerId: string | null = null;
+    
+    if (user.isSuperuser) {
+      // Superuser can set owner to anyone or leave null
+      ownerId = requestedOwnerId || null;
+    } else if (user.isSeller) {
+      // Sellers always own their apps
+      ownerId = user.id;
+    }
+
     // Create app
     const appId = nanoid();
     const now = new Date().toISOString();
 
     await env.DB.prepare(
-      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, is_featured, featured_order, custom_page_config, github_url, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO apps (id, name, slug, tagline, description, icon_url, screenshots, platforms, min_price_cents, suggested_price_cents, is_published, is_featured, featured_order, custom_page_config, github_url, owner_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         appId,
@@ -157,6 +198,7 @@ export async function POST(request: NextRequest) {
         featured_order || 0,
         page_config ? JSON.stringify(page_config) : null,
         github_url || null,
+        ownerId,
         now,
         now
       )
@@ -168,6 +210,7 @@ export async function POST(request: NextRequest) {
         id: appId,
         name,
         slug,
+        owner_id: ownerId,
       },
     });
   } catch (error) {

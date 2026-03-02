@@ -2,11 +2,12 @@
  * POST /api/admin/versions
  *
  * Create a new version record after file upload.
+ * Sellers can only create versions for their own apps.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageApp } from "@/lib/admin-auth";
 import { nanoid } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
@@ -44,6 +45,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
+      );
+    }
+
+    // Check user can manage this app
+    if (!await canManageApp(user, appId, env)) {
+      return NextResponse.json(
+        { error: "You don't have permission to manage this app" },
+        { status: 403 }
       );
     }
 

@@ -2,11 +2,12 @@
  * POST /api/admin/versions/presign
  *
  * Generate R2 key for version upload.
+ * Sellers can only upload versions for their own apps.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageApp } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +32,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
+      );
+    }
+
+    // Check user can manage this app
+    if (!await canManageApp(user, appId, env)) {
+      return NextResponse.json(
+        { error: "You don't have permission to manage this app" },
+        { status: 403 }
       );
     }
 

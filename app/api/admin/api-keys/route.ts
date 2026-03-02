@@ -5,7 +5,7 @@ import { query } from "@/lib/db";
 
 /**
  * GET /api/admin/api-keys
- * List all API keys (without the actual key values)
+ * List API keys (scoped to current user unless superuser)
  */
 export async function GET(request: NextRequest) {
   const env = getEnv();
@@ -23,11 +23,20 @@ export async function GET(request: NextRequest) {
     expires_at: string;
     last_used_at: string | null;
     is_revoked: number;
+    user_id: string | null;
+    owner_email: string | null;
   }>(
-    `SELECT id, name, key_prefix, created_at, expires_at, last_used_at, is_revoked 
-     FROM api_keys 
-     ORDER BY created_at DESC`,
-    [],
+    admin.isSuperuser
+      ? `SELECT k.id, k.name, k.key_prefix, k.created_at, k.expires_at, k.last_used_at, k.is_revoked, k.user_id, u.email as owner_email
+         FROM api_keys k
+         LEFT JOIN user u ON k.user_id = u.id
+         ORDER BY k.created_at DESC`
+      : `SELECT k.id, k.name, k.key_prefix, k.created_at, k.expires_at, k.last_used_at, k.is_revoked, k.user_id, u.email as owner_email
+         FROM api_keys k
+         LEFT JOIN user u ON k.user_id = u.id
+         WHERE k.user_id = ?
+         ORDER BY k.created_at DESC`,
+    admin.isSuperuser ? [] : [admin.id],
     env
   );
 
@@ -41,13 +50,15 @@ export async function GET(request: NextRequest) {
       lastUsedAt: k.last_used_at,
       isRevoked: k.is_revoked === 1,
       isExpired: new Date(k.expires_at) < new Date(),
+      userId: k.user_id,
+      ownerEmail: k.owner_email,
     })),
   });
 }
 
 /**
  * POST /api/admin/api-keys
- * Generate a new API key with 30-day expiration
+ * Generate a new API key with 30-day expiration, owned by current user
  */
 export async function POST(request: NextRequest) {
   try {
@@ -61,10 +72,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const name = body.name || "default";
 
-    const { key, expiresAt } = await generateApiKey(env, name);
+    // Superusers may optionally create keys for another user
+    const targetUserId = admin.isSuperuser && body.userId ? body.userId : admin.id;
+
+    const { key, expiresAt } = await generateApiKey(env, name, targetUserId);
 
     return NextResponse.json({
-      key, // Only returned once at creation time!
+      key, // Only returned once at creation time
       expiresAt: expiresAt.toISOString(),
       message: "Save this key securely - it won't be shown again!",
     });
@@ -99,7 +113,10 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  const revoked = await revokeApiKey(env, keyPrefix);
+  const revoked = await revokeApiKey(env, keyPrefix, {
+    isSuperuser: admin.isSuperuser,
+    userId: admin.id,
+  });
 
   if (!revoked) {
     return NextResponse.json({ error: "Key not found" }, { status: 404 });

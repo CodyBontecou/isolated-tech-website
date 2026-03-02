@@ -17,6 +17,7 @@
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test --project=chromium",
     "test:e2e:ui": "playwright test --ui",
+    "test:migrations": "./scripts/test-migrations.sh",
     "test:visual": "playwright test --project=visual-desktop --project=visual-mobile tests/e2e/visual/",
     "test:visual:update": "playwright test --project=visual-desktop --project=visual-mobile tests/e2e/visual/ --update-snapshots",
     "test:all": "npm run test:run && npm run test:e2e"

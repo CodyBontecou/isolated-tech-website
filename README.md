@@ -62,6 +62,7 @@ docs/               # Documentation
 - [Admin Guide](docs/admin-guide.md) — Managing the store
 - [Development Guide](docs/development.md) — Local setup and deployment
 - [Sparkle Setup](docs/sparkle-setup.md) — Integrating auto-updates
+- [Marketplace Setup](docs/marketplace-setup.md) — Multi-tenant sellers + Stripe Connect + CLI onboarding
 
 ## Environment Setup
 

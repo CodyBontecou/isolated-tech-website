@@ -3,6 +3,7 @@ import { MobileSiteNav } from "@/components/mobile-site-nav";
 
 interface SiteNavUser {
   isAdmin?: boolean;
+  isSeller?: boolean;
 }
 
 interface SiteNavProps {
@@ -27,6 +28,7 @@ export function SiteNav({ user, activePage, redirectPath }: SiteNavProps) {
         {user ? (
           <>
             {user.isAdmin && <a href="/admin">ADMIN</a>}
+            {user.isSeller && !user.isAdmin && <a href="/seller">SELLER</a>}
             <a href="/dashboard">DASHBOARD</a>
             <SignOutButton />
           </>
@@ -34,7 +36,7 @@ export function SiteNav({ user, activePage, redirectPath }: SiteNavProps) {
           <a href={`/auth/login${redirectPath ? `?redirect=${redirectPath}` : ""}`}>SIGN IN</a>
         )}
       </div>
-      <MobileSiteNav isLoggedIn={!!user} isAdmin={!!user?.isAdmin} />
+      <MobileSiteNav isLoggedIn={!!user} isAdmin={!!user?.isAdmin} isSeller={!!user?.isSeller} />
     </nav>
   );
 }

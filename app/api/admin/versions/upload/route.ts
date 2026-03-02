@@ -2,11 +2,13 @@
  * POST /api/admin/versions/upload
  *
  * Upload file to R2 bucket.
+ * Sellers can only upload files for their own apps.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageApp } from "@/lib/admin-auth";
+import { queryOne } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,12 +30,39 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const r2Key = formData.get("r2Key") as string | null;
+    const appId = formData.get("appId") as string | null;
 
     if (!file || !r2Key) {
       return NextResponse.json(
         { error: "File and r2Key are required" },
         { status: 400 }
       );
+    }
+
+    // Check ownership if appId provided, otherwise extract from r2Key
+    let appIdToCheck = appId;
+    
+    if (!appIdToCheck) {
+      // Extract slug from r2Key (format: apps/{slug}/versions/...)
+      const match = r2Key.match(/^apps\/([^/]+)\//);
+      if (match) {
+        const slug = match[1];
+        const app = await queryOne<{ id: string }>(
+          `SELECT id FROM apps WHERE slug = ?`,
+          [slug],
+          env
+        );
+        appIdToCheck = app?.id || null;
+      }
+    }
+
+    if (appIdToCheck) {
+      if (!await canManageApp(user, appIdToCheck, env)) {
+        return NextResponse.json(
+          { error: "You don't have permission to upload files for this app" },
+          { status: 403 }
+        );
+      }
     }
 
     // Validate file size (max 500MB)

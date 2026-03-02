@@ -43,6 +43,9 @@ export interface Env {
 
   // Better Auth secret
   BETTER_AUTH_SECRET: string;
+
+  // Superuser emails (comma-separated list)
+  SUPERUSER_EMAILS?: string;
 }
 
 /**

@@ -3,13 +3,14 @@
  *
  * Create a Stripe Checkout session for app purchase.
  * Handles both paid and free apps.
+ * For seller-owned apps, uses Stripe Connect with 15% platform fee.
  * Users can download purchased apps from their dashboard.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
-import { createStripeClient, getBaseUrl } from "@/lib/stripe";
+import { createStripeClient, getBaseUrl, calculatePlatformFee, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { nanoid } from "@/lib/db";
 
 interface CheckoutRequest {
@@ -26,6 +27,14 @@ interface App {
   description: string | null;
   icon_url: string | null;
   min_price_cents: number;
+  owner_id: string | null;
+}
+
+interface AppOwner {
+  id: string;
+  email: string;
+  stripe_account_id: string | null;
+  stripe_onboarded: number;
 }
 
 interface DiscountCode {
@@ -69,9 +78,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "App ID required" }, { status: 400 });
     }
 
-    // Get app
+    // Get app with owner info
     const app = await env.DB.prepare(
-      `SELECT id, name, slug, tagline, description, icon_url, min_price_cents 
+      `SELECT id, name, slug, tagline, description, icon_url, min_price_cents, owner_id 
        FROM apps WHERE id = ?`
     )
       .bind(appId)
@@ -79,6 +88,24 @@ export async function POST(request: NextRequest) {
 
     if (!app) {
       return NextResponse.json({ error: "App not found" }, { status: 404 });
+    }
+
+    // Get owner's Stripe account if this is a seller-owned app
+    let appOwner: AppOwner | null = null;
+    if (app.owner_id) {
+      appOwner = await env.DB.prepare(
+        `SELECT id, email, stripe_account_id, stripe_onboarded FROM user WHERE id = ?`
+      )
+        .bind(app.owner_id)
+        .first<AppOwner>();
+
+      // Verify seller can receive payments
+      if (appOwner && (!appOwner.stripe_account_id || !appOwner.stripe_onboarded)) {
+        return NextResponse.json(
+          { error: "This app's seller has not completed payment setup" },
+          { status: 400 }
+        );
+      }
     }
 
     // Check if already purchased
@@ -131,6 +158,12 @@ export async function POST(request: NextRequest) {
 
     const baseUrl = getBaseUrl(request);
 
+    // Calculate platform fee for seller-owned apps
+    const platformFeeCents = appOwner?.stripe_account_id 
+      ? calculatePlatformFee(finalPriceCents) 
+      : 0;
+    const sellerAmountCents = finalPriceCents - platformFeeCents;
+
     // Handle free purchase (price = 0)
     if (finalPriceCents === 0) {
       // Create purchase directly
@@ -138,8 +171,8 @@ export async function POST(request: NextRequest) {
       const now = new Date().toISOString();
 
       await env.DB.prepare(
-        `INSERT INTO purchases (id, user_id, app_id, amount_cents, discount_code_id, status, created_at)
-         VALUES (?, ?, ?, 0, ?, 'completed', ?)`
+        `INSERT INTO purchases (id, user_id, app_id, amount_cents, discount_code_id, platform_fee_cents, seller_amount_cents, status, created_at)
+         VALUES (?, ?, ?, 0, ?, 0, 0, 'completed', ?)`
       )
         .bind(
           purchaseId,
@@ -184,6 +217,9 @@ export async function POST(request: NextRequest) {
       user_email: user.email,
       app_name: app.name,
       finalPriceCents,
+      platformFeeCents,
+      sellerAmountCents,
+      isSellerApp: !!appOwner?.stripe_account_id,
       baseUrl,
     });
 
@@ -219,7 +255,8 @@ export async function POST(request: NextRequest) {
       return parts.length > 0 ? parts.join('\n\n') : undefined;
     };
 
-    const session = await stripe.checkout.sessions.create({
+    // Build checkout session config
+    const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
       mode: "payment",
       customer_email: user.email,
       line_items: [
@@ -244,10 +281,25 @@ export async function POST(request: NextRequest) {
         discount_code_id: usedDiscountCode?.id || "",
         original_price_cents: priceCents.toString(),
         final_price_cents: finalPriceCents.toString(),
+        platform_fee_cents: platformFeeCents.toString(),
+        seller_amount_cents: sellerAmountCents.toString(),
+        seller_id: app.owner_id || "",
       },
       success_url: `${baseUrl}/dashboard?purchased=${app.slug}`,
       cancel_url: `${baseUrl}/apps/${app.slug}`,
-    });
+    };
+
+    // Add Stripe Connect payment handling for seller-owned apps
+    if (appOwner?.stripe_account_id) {
+      sessionConfig.payment_intent_data = {
+        application_fee_amount: platformFeeCents,
+        transfer_data: {
+          destination: appOwner.stripe_account_id,
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return NextResponse.json({
       success: true,

@@ -13,9 +13,10 @@ interface NavLink {
 interface MobileSiteNavProps {
   isLoggedIn: boolean;
   isAdmin: boolean;
+  isSeller?: boolean;
 }
 
-export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
+export function MobileSiteNav({ isLoggedIn, isAdmin, isSeller }: MobileSiteNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -31,6 +32,7 @@ export function MobileSiteNav({ isLoggedIn, isAdmin }: MobileSiteNavProps) {
   const userLinks: NavLink[] = isLoggedIn
     ? [
         ...(isAdmin ? [{ href: "/admin", icon: "⚙", text: "Admin" }] : []),
+        ...(isSeller && !isAdmin ? [{ href: "/seller", icon: "$", text: "Seller" }] : []),
         { href: "/dashboard", icon: "◎", text: "Dashboard" },
       ]
     : [{ href: "/auth/login", icon: "→", text: "Sign In" }];

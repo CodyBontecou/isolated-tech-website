@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageApp } from "@/lib/admin-auth";
 import { queryOne } from "@/lib/db";
 
 interface App {
@@ -16,7 +16,7 @@ interface App {
 
 /**
  * GET /api/cli/apps/[slug]
- * 
+ *
  * Get a specific app by slug.
  */
 export async function GET(
@@ -25,12 +25,12 @@ export async function GET(
 ) {
   const env = getEnv();
   const { slug } = await params;
-  
+
   const user = await requireAdmin(request, env);
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
-  
+
   const app = await queryOne<App>(
     `SELECT id, slug, name, tagline, description, icon_url, platforms, is_published
      FROM apps
@@ -38,10 +38,17 @@ export async function GET(
     [slug],
     env
   );
-  
+
   if (!app) {
     return NextResponse.json({ error: "App not found" }, { status: 404 });
   }
-  
+
+  if (!(await canManageApp(user, app.id, env))) {
+    return NextResponse.json(
+      { error: "You don't have permission to access this app" },
+      { status: 403 }
+    );
+  }
+
   return NextResponse.json(app);
 }

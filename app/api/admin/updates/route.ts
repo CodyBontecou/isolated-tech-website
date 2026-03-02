@@ -3,11 +3,13 @@
  *
  * GET  — List all updates for an app (?appId=...)
  * POST — Create a new update record
+ * 
+ * Sellers can only manage updates for their own apps.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageApp } from "@/lib/admin-auth";
 import { nanoid, queries, execute } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
@@ -28,6 +30,14 @@ export async function GET(request: NextRequest) {
     const appId = request.nextUrl.searchParams.get("appId");
     if (!appId) {
       return NextResponse.json({ error: "appId is required" }, { status: 400 });
+    }
+
+    // Check user can manage this app
+    if (!await canManageApp(user, appId, env)) {
+      return NextResponse.json(
+        { error: "You don't have permission to view this app's updates" },
+        { status: 403 }
+      );
     }
 
     const updates = await queries.getAppUpdates(appId, env);
@@ -64,6 +74,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "appId, platform, and version are required" },
         { status: 400 }
+      );
+    }
+
+    // Check user can manage this app
+    if (!await canManageApp(user, appId, env)) {
+      return NextResponse.json(
+        { error: "You don't have permission to manage this app" },
+        { status: 403 }
       );
     }
 

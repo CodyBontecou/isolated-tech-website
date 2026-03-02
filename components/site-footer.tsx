@@ -19,6 +19,7 @@ export function SiteFooter({ showTagline = true }: SiteFooterProps) {
         )}
       </div>
       <div className="store-footer__links">
+        <Link href="/seller">SELL WITH US</Link>
         <a href="/feedback">FEEDBACK</a>
         <a href="/roadmap">ROADMAP</a>
         <a href="/help">HELP</a>
