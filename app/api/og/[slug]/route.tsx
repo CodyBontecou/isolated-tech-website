@@ -112,6 +112,14 @@ export async function GET(
     const hasImage = svg.includes("<image") || svg.includes("xlink:href");
     console.log(`OG: SVG generated, length: ${svg.length}, hasImage: ${hasImage}`);
 
+    // DEBUG: Return SVG directly to inspect
+    const debugSvg = new URL(request.url).searchParams.get("debug") === "svg";
+    if (debugSvg) {
+      return new Response(svg, {
+        headers: { "Content-Type": "image/svg+xml" },
+      });
+    }
+
     // Try to convert to PNG with resvg
     const ResvgClass = await getResvg();
     
