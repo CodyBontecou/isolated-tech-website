@@ -126,6 +126,16 @@ class ApiClient {
     return this.request('POST', '/api/cli/apps', data);
   }
 
+  async updateApp(slug: string, data: {
+    name?: string;
+    tagline?: string;
+    description?: string;
+    is_published?: boolean;
+    platforms?: string[];
+  }): Promise<ApiResponse<App>> {
+    return this.request('PATCH', `/api/cli/apps/${slug}`, data);
+  }
+
   // Version endpoints
   async listVersions(appSlug: string): Promise<ApiResponse<Version[]>> {
     return this.request('GET', `/api/cli/apps/${appSlug}/versions`);
