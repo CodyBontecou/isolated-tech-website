@@ -152,7 +152,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: clamp(1.1rem, 2vw, 1.4rem);
-  color: #888;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
   line-height: 1.3;
 }
@@ -1433,7 +1433,7 @@
 .changelog-entry__notes li,
 .changelog__item {
   font-size: 0.85rem;
-  color: #aaa;
+  color: var(--text-secondary);
   margin-left: 1rem;
   margin-bottom: 0.25rem;
 }
@@ -1441,7 +1441,7 @@
 .changelog-entry__notes p,
 .changelog__text {
   font-size: 0.85rem;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .changelog-entry__notes a {
@@ -1879,8 +1879,8 @@
 
 .feedback-modal__app-version {
   font-size: 0.7rem;
-  color: #ccc;
-  background: #333;
+  color: var(--text-secondary);
+  background: var(--gray-mid);
   padding: 0.15rem 0.4rem;
   border-radius: 2px;
 }
@@ -2002,8 +2002,8 @@
 
 .feedback-modal__btn--cancel {
   background: transparent;
-  border: 1px solid #444;
-  color: #999;
+  border: 1px solid var(--gray);
+  color: var(--text-secondary);
 }
 
 .feedback-modal__btn--cancel:hover:not(:disabled) {
@@ -3013,7 +3013,7 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 .feedback-detail__body {
   font-size: 0.9rem;
   line-height: 1.7;
-  color: #bbb;
+  color: var(--text-secondary);
 }
 
 .feedback-detail__body p {
@@ -3050,7 +3050,7 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 .feedback-detail__response-body {
   font-size: 0.85rem;
   line-height: 1.7;
-  color: #ccc;
+  color: var(--text-secondary);
 }
 
 .feedback-detail__response-body p {
@@ -3173,7 +3173,7 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 .feedback-comment__body {
   font-size: 0.85rem;
   line-height: 1.6;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .feedback-comment__body p {
@@ -4290,7 +4290,7 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 .help-article__body {
   font-size: 0.9rem;
   line-height: 1.8;
-  color: #bbb;
+  color: var(--text-secondary);
 }
 
 .help-article__body h1 {
