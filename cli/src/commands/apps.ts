@@ -185,6 +185,49 @@ appsCommand
   });
 
 appsCommand
+  .command('icon <slug> <file>')
+  .description('Upload an app icon (PNG, JPEG, or WebP, max 5MB)')
+  .action(async (slug: string, file: string) => {
+    if (!isAuthenticated()) {
+      error('not_authenticated', 'Not logged in', 'Run: isolated login');
+      process.exit(1);
+    }
+
+    // Check file exists
+    const fs = await import('fs');
+    const path = await import('path');
+    
+    const filePath = path.resolve(file);
+    if (!fs.existsSync(filePath)) {
+      error('file_not_found', `File not found: ${file}`);
+      process.exit(1);
+    }
+
+    const spinner = isJsonMode() ? null : ora('Uploading icon...').start();
+
+    const response = await api.uploadIcon(slug, filePath);
+
+    if (!response.success || !response.data) {
+      spinner?.fail('Failed to upload icon');
+      error('upload_failed', response.message || 'Failed to upload icon');
+      process.exit(1);
+    }
+
+    spinner?.succeed('Icon uploaded!');
+
+    if (isJsonMode()) {
+      output({ success: true, ...response.data });
+      return;
+    }
+
+    console.log();
+    console.log(chalk.green(`  ✓ Icon uploaded for ${slug}`));
+    console.log(chalk.gray(`    Size: ${(response.data.size / 1024).toFixed(1)} KB`));
+    console.log(chalk.gray(`    URL: https://isolated.tech${response.data.icon_url}`));
+    console.log();
+  });
+
+appsCommand
   .command('versions <slug>')
   .description('List versions for an app')
   .action(async (slug: string) => {

@@ -136,6 +136,56 @@ class ApiClient {
     return this.request('PATCH', `/api/cli/apps/${slug}`, data);
   }
 
+  async uploadIcon(slug: string, filePath: string): Promise<ApiResponse<{ icon_url: string; size: number }>> {
+    const url = `${this.baseUrl}/api/cli/apps/${slug}/icon`;
+    const token = getToken();
+    
+    // Read file
+    const fs = await import('fs');
+    const path = await import('path');
+    const fileBuffer = fs.readFileSync(filePath);
+    const filename = path.basename(filePath);
+    
+    // Determine content type
+    const ext = path.extname(filePath).toLowerCase();
+    const contentTypes: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+    };
+    const contentType = contentTypes[ext] || 'image/png';
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', new Blob([fileBuffer], { type: contentType }), filename);
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          ...(token && { 'X-API-Key': token }),
+        },
+        body: formData,
+      });
+      
+      const data = await response.json() as { icon_url?: string; size?: number; error?: string };
+      
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || `HTTP ${response.status}`,
+          message: data.error || response.statusText,
+        };
+      }
+      
+      return { success: true, data: data as { icon_url: string; size: number } };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      return { success: false, error: 'network_error', message };
+    }
+  }
+
   // Version endpoints
   async listVersions(appSlug: string): Promise<ApiResponse<Version[]>> {
     return this.request('GET', `/api/cli/apps/${appSlug}/versions`);

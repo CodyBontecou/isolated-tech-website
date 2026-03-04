@@ -5,8 +5,9 @@ export interface Env {
   // D1 Database
   DB: D1Database;
 
-  // R2 Bucket (app binaries)
+  // R2 Buckets
   APPS_BUCKET: R2Bucket;
+  PI_SHARES: R2Bucket;
 
   // KV Namespace (sessions, magic link tokens)
   AUTH_KV: KVNamespace;
@@ -47,6 +48,9 @@ export interface Env {
 
   // Better Auth secret
   BETTER_AUTH_SECRET: string;
+
+  // Pi Share upload secret
+  PI_SHARE_SECRET?: string;
 
   // Superuser emails (comma-separated list)
   SUPERUSER_EMAILS?: string;

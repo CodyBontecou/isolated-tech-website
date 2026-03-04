@@ -25,11 +25,15 @@
     }
   ],
 
-  // R2 Bucket (app binaries)
+  // R2 Buckets
   "r2_buckets": [
     {
       "binding": "APPS_BUCKET",
       "bucket_name": "isolated-tech-apps"
+    },
+    {
+      "binding": "PI_SHARES",
+      "bucket_name": "pi-shares"
     }
   ],
 

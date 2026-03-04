@@ -8,6 +8,7 @@
 // @ts-expect-error — virtual module resolved by vinext
 import rscHandler from "virtual:vinext-rsc-entry";
 import { runWithCloudflareContext } from "../lib/cloudflare-context";
+import { handleShareRequest } from "../lib/share";
 import type { Env } from "../lib/env";
 
 export default {
@@ -27,6 +28,23 @@ export default {
     // Block protocol-relative URL open redirect attacks (//evil.com/).
     if (url.pathname.startsWith("//")) {
       return new Response("404 Not Found", { status: 404 });
+    }
+
+    // Handle pi session shares (before RSC handler for performance)
+    // Shares are served directly from R2 without going through vinext
+    if (url.pathname.startsWith("/share/") && url.pathname !== "/share/") {
+      const shareResponse = await handleShareRequest(request, env);
+      if (shareResponse) {
+        return shareResponse;
+      }
+    }
+
+    // Handle share upload endpoint
+    if (url.pathname === "/share/upload" && request.method === "POST") {
+      const shareResponse = await handleShareRequest(request, env);
+      if (shareResponse) {
+        return shareResponse;
+      }
     }
 
     // Run the RSC handler with Cloudflare context available
