@@ -27,6 +27,13 @@ export default {
         return fetch(request);
       }
       
+      // Proxy consulting subdomain to Cloudflare Pages
+      if (subdomain === 'consulting') {
+        const pagesUrl = new URL(request.url);
+        pagesUrl.hostname = 'ai-consulting-1qe.pages.dev';
+        return fetch(pagesUrl.toString(), request);
+      }
+      
       // Build the redirect URL
       const path = url.pathname === '/' ? '' : url.pathname;
       const search = url.search || '';
