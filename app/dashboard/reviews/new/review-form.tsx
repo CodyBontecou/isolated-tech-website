@@ -38,12 +38,12 @@ function StarRatingInput({
           style={{
             background: "none",
             border: "none",
-            cursor: "crosshair",
+            cursor: "pointer",
             fontSize: "2rem",
             color:
-              star <= (hoverRating || value) ? "#fbbf24" : "#333",
+              star <= (hoverRating || value) ? "#fbbf24" : "#444",
             transition: "color 0.1s",
-            padding: "0.25rem",
+            padding: "0.3rem",
           }}
           aria-label={`Rate ${star} stars`}
         >
@@ -122,7 +122,7 @@ export function ReviewForm({
       <div style={{ marginBottom: "2rem" }}>
         <label className="settings-label">RATING *</label>
         <StarRatingInput value={rating} onChange={setRating} />
-        <p style={{ fontSize: "0.75rem", color: "var(--gray)", marginTop: "0.5rem" }}>
+        <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginTop: "0.55rem", lineHeight: 1.6 }}>
           {rating === 0
             ? "Click to rate"
             : rating === 1
@@ -162,7 +162,7 @@ export function ReviewForm({
           maxLength={2000}
           style={{ resize: "vertical", minHeight: "120px" }}
         />
-        <p style={{ fontSize: "0.7rem", color: "var(--gray)", marginTop: "0.5rem" }}>
+        <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: "0.55rem", lineHeight: 1.6 }}>
           {body.length} / 2000 characters
         </p>
       </div>

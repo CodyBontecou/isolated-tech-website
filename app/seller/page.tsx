@@ -52,7 +52,7 @@ function SellerCliOnboardingSection() {
       <h3 style={{ marginBottom: "0.75rem", fontSize: "0.85rem", fontWeight: 600 }}>
         CLI QUICKSTART
       </h3>
-      <p style={{ color: "var(--gray)", fontSize: "0.8rem", marginBottom: "0.75rem" }}>
+      <p style={{ color: "var(--text-secondary)", fontSize: "0.92rem", marginBottom: "0.8rem", lineHeight: 1.65 }}>
         Prefer terminal workflow? Use the isolated CLI:
       </p>
       <pre
@@ -71,7 +71,7 @@ isolated login
 isolated init
 isolated publish`}
       </pre>
-      <p style={{ color: "var(--gray)", fontSize: "0.75rem", marginTop: "0.75rem" }}>
+      <p style={{ color: "var(--text-secondary)", fontSize: "0.84rem", marginTop: "0.8rem", lineHeight: 1.65 }}>
         For agents/automation, append <code>--json</code> to commands.
       </p>
     </div>
@@ -123,7 +123,7 @@ export default async function SellerPage() {
               <h3 style={{ marginBottom: "1rem", fontSize: "0.9rem", fontWeight: 600 }}>
                 HOW IT WORKS
               </h3>
-              <ol style={{ paddingLeft: "1.5rem", color: "var(--gray)", lineHeight: 1.8 }}>
+              <ol style={{ paddingLeft: "1.5rem", color: "var(--text-secondary)", lineHeight: 1.9, fontSize: "0.95rem" }}>
                 <li>Connect your Stripe account to receive payments</li>
                 <li>Upload your apps via our CLI or web interface</li>
                 <li>Set your prices and publish when ready</li>
@@ -139,11 +139,11 @@ export default async function SellerPage() {
               border: "1px solid var(--border)"
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ color: "var(--gray)" }}>Platform fee</span>
+                <span style={{ color: "var(--text-secondary)", fontSize: "0.95rem" }}>Platform fee</span>
                 <span style={{ fontWeight: 600 }}>{PLATFORM_FEE_PERCENT}%</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
-                <span style={{ color: "var(--gray)" }}>You keep</span>
+                <span style={{ color: "var(--text-secondary)", fontSize: "0.95rem" }}>You keep</span>
                 <span style={{ fontWeight: 600, color: "var(--accent)" }}>{100 - PLATFORM_FEE_PERCENT}%</span>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default async function SellerPage() {
               <SellerDashboardClient action="onboard" />
             </div>
 
-            <p style={{ marginTop: "1.5rem", fontSize: "0.75rem", color: "var(--gray)", textAlign: "center" }}>
+            <p style={{ marginTop: "1.5rem", fontSize: "0.84rem", color: "var(--text-secondary)", textAlign: "center", lineHeight: 1.7 }}>
               By becoming a seller, you agree to our{" "}
               <Link href="/terms" style={{ color: "var(--accent)" }}>Terms of Service</Link>
               {" "}and{" "}
@@ -180,7 +180,7 @@ export default async function SellerPage() {
                 You're almost there! Complete your Stripe account setup to start selling.
               </p>
               {sellerConnectState?.liveChecked && (
-                <p style={{ marginTop: "0.75rem", fontSize: "0.8rem", color: "var(--gray)" }}>
+                <p style={{ marginTop: "0.8rem", fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: 1.65 }}>
                   Requirements: {sellerConnectState.requirementsStatus || "unknown"} • Transfers: {sellerConnectState.transfersCapabilityStatus || "unknown"}
                 </p>
               )}
@@ -254,17 +254,17 @@ export default async function SellerPage() {
           marginBottom: "2rem"
         }}>
           <div className="purchased-card" style={{ padding: "1.5rem" }}>
-            <p style={{ color: "var(--gray)", fontSize: "0.75rem", marginBottom: "0.5rem" }}>TOTAL SALES</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.84rem", marginBottom: "0.55rem", letterSpacing: "0.06em" }}>TOTAL SALES</p>
             <p style={{ fontSize: "2rem", fontWeight: 600 }}>{stats?.total_sales || 0}</p>
           </div>
           <div className="purchased-card" style={{ padding: "1.5rem" }}>
-            <p style={{ color: "var(--gray)", fontSize: "0.75rem", marginBottom: "0.5rem" }}>GROSS REVENUE</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.84rem", marginBottom: "0.55rem", letterSpacing: "0.06em" }}>GROSS REVENUE</p>
             <p style={{ fontSize: "2rem", fontWeight: 600 }}>
               ${((stats?.total_revenue_cents || 0) / 100).toFixed(2)}
             </p>
           </div>
           <div className="purchased-card" style={{ padding: "1.5rem" }}>
-            <p style={{ color: "var(--gray)", fontSize: "0.75rem", marginBottom: "0.5rem" }}>NET EARNINGS</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.84rem", marginBottom: "0.55rem", letterSpacing: "0.06em" }}>NET EARNINGS</p>
             <p style={{ fontSize: "2rem", fontWeight: 600, color: "var(--accent)" }}>
               ${(netRevenue / 100).toFixed(2)}
             </p>
@@ -314,7 +314,7 @@ export default async function SellerPage() {
                     borderTop: "1px solid var(--border)",
                     fontSize: "0.8rem"
                   }}>
-                    <span style={{ color: "var(--gray)" }}>Sales: {app.purchase_count}</span>
+                    <span style={{ color: "var(--text-secondary)", fontSize: "0.88rem" }}>Sales: {app.purchase_count}</span>
                     <span style={{ fontWeight: 600 }}>
                       ${(app.total_revenue_cents / 100).toFixed(2)}
                     </span>

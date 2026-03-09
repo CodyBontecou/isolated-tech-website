@@ -306,7 +306,7 @@ export function PurchaseCard({
         ) : null}
 
         {!isValidPrice && priceInCents > 0 && (
-          <p style={{ color: "#f87171", fontSize: "0.75rem", marginBottom: "1rem" }}>
+          <p style={{ color: "#f87171", fontSize: "0.84rem", marginBottom: "1rem", lineHeight: 1.6 }}>
             Minimum price is ${minPrice}
           </p>
         )}
@@ -351,9 +351,10 @@ export function PurchaseCard({
             {discountResult && (
               <p
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.84rem",
                   color: discountResult.valid ? "#4ade80" : "#f87171",
-                  marginTop: "0.5rem",
+                  marginTop: "0.55rem",
+                  lineHeight: 1.6,
                 }}
               >
                 {discountResult.valid
@@ -369,12 +370,13 @@ export function PurchaseCard({
             style={{
               background: "none",
               border: "none",
-              color: "var(--gray)",
-              fontSize: "0.7rem",
-              cursor: "crosshair",
+              color: "var(--text-secondary)",
+              fontSize: "0.82rem",
+              cursor: "pointer",
               marginBottom: "1rem",
               textDecoration: "underline",
               textUnderlineOffset: "2px",
+              lineHeight: 1.5,
             }}
           >
             Have a discount code?
@@ -390,13 +392,13 @@ export function PurchaseCard({
               border: "1px solid #4ade80",
             }}
           >
-            <div style={{ fontSize: "0.65rem", color: "#4ade80", marginBottom: "0.25rem" }}>
+            <div style={{ fontSize: "0.76rem", color: "#4ade80", marginBottom: "0.3rem", letterSpacing: "0.08em" }}>
               DISCOUNTED PRICE
             </div>
             <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#4ade80" }}>
               ${(finalPriceCents / 100).toFixed(2)}
             </div>
-            <div style={{ fontSize: "0.7rem", color: "var(--gray)", textDecoration: "line-through" }}>
+            <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "line-through" }}>
               Was ${price}
             </div>
           </div>
@@ -456,7 +458,7 @@ export function PurchaseCard({
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: "0.65rem", color: "var(--gray)", marginBottom: "0.25rem" }}>
+            <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "0.3rem", letterSpacing: "0.08em" }}>
               iOS
             </div>
             <div style={{ fontSize: "0.85rem", color: "var(--foreground)" }}>

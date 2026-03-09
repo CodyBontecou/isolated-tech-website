@@ -129,7 +129,7 @@ export function SettingsForm({ user }: { user: User }) {
             disabled
             style={{ opacity: 0.6, cursor: "not-allowed" }}
           />
-          <p style={{ fontSize: "0.7rem", color: "var(--gray)", marginTop: "0.5rem" }}>
+          <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", marginTop: "0.55rem", lineHeight: 1.6 }}>
             Email cannot be changed.
           </p>
         </div>
@@ -166,12 +166,12 @@ export function SettingsForm({ user }: { user: User }) {
                 <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>
                   {PROVIDER_NAMES[provider] || provider}
                 </span>
-                <span style={{ fontSize: "0.7rem", color: "#4ade80" }}>CONNECTED</span>
+                <span style={{ fontSize: "0.8rem", color: "#4ade80", letterSpacing: "0.06em" }}>CONNECTED</span>
               </div>
             ))}
           </div>
         ) : (
-          <p style={{ color: "var(--gray)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", marginBottom: "1rem", lineHeight: 1.7 }}>
             No accounts connected. Sign in with a provider to link it.
           </p>
         )}
@@ -226,7 +226,7 @@ export function SettingsForm({ user }: { user: User }) {
 
         {!showDeleteConfirm ? (
           <>
-            <p style={{ color: "var(--gray)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", marginBottom: "1rem", lineHeight: 1.75 }}>
               Permanently delete your account and all associated data. This action cannot be undone.
             </p>
             <button
@@ -250,10 +250,10 @@ export function SettingsForm({ user }: { user: User }) {
               border: "1px solid #f87171",
             }}
           >
-            <p style={{ color: "#f87171", fontSize: "0.85rem", marginBottom: "1rem" }}>
+            <p style={{ color: "#f87171", fontSize: "0.92rem", marginBottom: "1rem", lineHeight: 1.6 }}>
               Are you sure? This will permanently delete:
             </p>
-            <ul style={{ color: "var(--gray)", fontSize: "0.8rem", marginLeft: "1.5rem", marginBottom: "1rem" }}>
+            <ul style={{ color: "var(--text-secondary)", fontSize: "0.92rem", marginLeft: "1.5rem", marginBottom: "1rem", lineHeight: 1.75 }}>
               <li>Your account and profile</li>
               <li>All your reviews</li>
               <li>Access to purchased apps (purchase records kept for tax purposes)</li>

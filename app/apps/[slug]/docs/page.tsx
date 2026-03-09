@@ -142,54 +142,82 @@ export default async function DocsPage({ params }: Props) {
       <style>{`
         .docs-page {
           min-height: 100vh;
-          padding: 2rem 1.5rem;
+          padding: 6rem 1.5rem 3rem;
         }
+
         .docs-page__container {
           max-width: 900px;
           margin: 0 auto;
         }
+
         .docs-page__header {
-          margin-bottom: 2rem;
+          margin-bottom: 2.25rem;
         }
+
         .docs-page__back {
-          font-size: 0.75rem;
-          color: var(--gray);
+          font-size: 0.82rem;
+          color: var(--text-secondary);
           text-decoration: none;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.06em;
         }
+
         .docs-page__back:hover {
           color: var(--text);
         }
+
         .docs-page__title-row {
           display: flex;
           align-items: center;
           gap: 1rem;
           margin-top: 1rem;
         }
+
         .docs-page__app-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 10px;
+          width: 52px;
+          height: 52px;
+          border-radius: 12px;
         }
+
         .docs-page__title {
-          font-size: 1.75rem;
+          font-size: clamp(1.9rem, 4vw, 2.4rem);
           font-weight: 700;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.03em;
+          line-height: 1.1;
           margin: 0;
         }
+
         .docs-page__subtitle {
-          font-size: 0.85rem;
-          color: var(--gray);
-          margin: 0.25rem 0 0;
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          margin: 0.35rem 0 0;
         }
+
         .docs-empty {
           text-align: center;
-          padding: 3rem;
-          color: var(--gray);
-          font-size: 0.9rem;
+          padding: 3rem 2rem;
+          color: var(--text-secondary);
+          font-size: 0.98rem;
+          line-height: 1.8;
+          background: var(--bg-elevated);
+          border: 1px solid #2f2f2f;
         }
+
         .docs-empty a {
           color: var(--text);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        @media (max-width: 600px) {
+          .docs-page {
+            padding: 5.5rem 1.25rem 2.5rem;
+          }
+
+          .docs-page__back,
+          .docs-page__subtitle,
+          .docs-empty {
+            font-size: 0.92rem;
+          }
         }
       `}</style>
     </>

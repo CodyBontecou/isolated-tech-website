@@ -205,7 +205,7 @@ export default async function AdminDashboardPage() {
           <h2 className="admin-section__title">RECENT PURCHASES</h2>
           <Link
             href="/admin/purchases"
-            style={{ fontSize: "0.7rem", color: "var(--gray)" }}
+            style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5 }}
           >
             View all →
           </Link>
@@ -266,7 +266,7 @@ export default async function AdminDashboardPage() {
             </table>
           </div>
         ) : (
-          <p style={{ color: "var(--gray)", fontSize: "0.8rem" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", lineHeight: 1.7 }}>
             No purchases yet.
           </p>
         )}

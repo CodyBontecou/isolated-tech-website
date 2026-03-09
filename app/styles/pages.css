@@ -8,7 +8,7 @@
   align-items: center;
   padding: 0.25rem 0.5rem;
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -71,9 +71,9 @@
 .store-hero__label {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.26em;
   color: var(--gray);
   margin-bottom: 2rem;
   padding: 0.5rem 0;
@@ -90,10 +90,10 @@
 }
 
 .store-hero__subtitle {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--gray);
-  max-width: 500px;
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  max-width: 560px;
 }
 
 .store-hero__app {
@@ -151,17 +151,17 @@
 .store-hero__tagline {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 .store-hero__desc {
-  font-size: 0.9rem;
-  line-height: 1.7;
-  color: var(--gray);
-  max-width: 480px;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  max-width: 54ch;
   margin-bottom: 2rem;
 }
 
@@ -177,7 +177,7 @@
   justify-content: center;
   padding: 1rem 2rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -213,9 +213,9 @@
 
 .store-hero__rail-label {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   color: var(--gray);
   margin-bottom: 0.85rem;
 }
@@ -280,7 +280,7 @@
 
 .store-hero__rail-name {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--white);
   white-space: nowrap;
@@ -296,13 +296,13 @@
 
 .store-hero__rail-badges .store-badge {
   padding: 0.15rem 0.35rem;
-  font-size: 0.45rem;
+  font-size: 0.52rem;
 }
 
 .store-hero__rail-tagline {
-  font-size: 0.6rem;
-  letter-spacing: 0.04em;
-  color: var(--gray);
+  font-size: 0.74rem;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -334,10 +334,10 @@
 }
 
 .store-stats__label {
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--gray);
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
 }
 
 .store-stats__divider {
@@ -362,15 +362,15 @@
 
 .store-section__title {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.14em;
 }
 
 .store-section__count {
-  font-size: 0.7rem;
-  color: var(--gray);
-  letter-spacing: 0.1em;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
 }
 
 /* Store Grid */
@@ -457,9 +457,9 @@
 }
 
 .store-card__tagline {
-  font-size: 0.8rem;
-  color: var(--gray);
-  line-height: 1.5;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -477,7 +477,7 @@
 
 .store-card__price {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--white);
 }
@@ -502,7 +502,7 @@
 .store-empty {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--gray);
+  color: var(--text-secondary);
 }
 
 .store-empty__reset {
@@ -512,7 +512,7 @@
   border: 1px solid #333;
   color: var(--white);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   cursor: pointer;
@@ -540,12 +540,12 @@
   display: none;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 0.9rem;
   background: var(--gray-dark);
   border: 1px solid #333;
   color: var(--white);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   cursor: pointer;
@@ -567,7 +567,7 @@
   background: var(--white);
   color: var(--black);
   border-radius: 9px;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
 }
 
@@ -591,10 +591,10 @@
 
 .store-filters__label {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--gray);
+  letter-spacing: 0.14em;
+  color: var(--text-secondary);
 }
 
 .store-filters__options {
@@ -604,13 +604,13 @@
 }
 
 .store-filters__btn {
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 0.9rem;
   background: transparent;
   border: none;
   border-right: 1px solid #333;
-  color: var(--gray);
+  color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -644,12 +644,12 @@
 }
 
 .store-filters__select {
-  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  padding: 0.65rem 2rem 0.65rem 0.85rem;
   background: var(--gray-dark);
   border: 1px solid #333;
   color: var(--white);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -682,12 +682,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+  padding: 0.45rem 0.6rem 0.45rem 0.8rem;
   background: var(--gray-dark);
   border: 1px solid #333;
   color: var(--white);
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.05em;
 }
@@ -712,12 +712,12 @@
 }
 
 .store-filters__clear {
-  padding: 0.35rem 0.75rem;
+  padding: 0.45rem 0.85rem;
   background: transparent;
   border: 1px solid #333;
-  color: var(--gray);
+  color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -801,26 +801,28 @@
 
 .store-footer__logo {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
 
 .store-footer__tagline {
-  font-size: 0.75rem;
-  color: var(--gray);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 .store-footer__links {
   display: flex;
-  gap: 2rem;
+  gap: 1.25rem 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .store-footer__links a {
-  font-size: 0.65rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--gray);
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
   transition: color 0.2s;
 }
 
@@ -829,8 +831,8 @@
 }
 
 .store-footer__copy {
-  font-size: 0.6rem;
-  color: #444;
+  font-size: 0.72rem;
+  color: var(--gray);
   letter-spacing: 0.1em;
 }
 
@@ -844,8 +846,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   background: transparent;
   border: 1px solid #333;
@@ -893,6 +895,11 @@
     border-radius: 24px;
   }
 
+  .store-hero__subtitle,
+  .store-hero__desc {
+    max-width: 100%;
+  }
+
   .store-hero__rail {
     max-width: 100%;
   }
@@ -900,6 +907,10 @@
   .store-stats {
     flex-wrap: wrap;
     gap: 1rem 1.5rem;
+  }
+
+  .store-stats__item {
+    min-width: 220px;
   }
 
   .store-stats__divider {
@@ -916,6 +927,30 @@
     padding: 7rem 1.5rem 2.5rem;
   }
 
+  .store-hero__label {
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+  }
+
+  .store-hero__title {
+    font-size: clamp(2.8rem, 12vw, 4rem);
+    line-height: 1;
+  }
+
+  .store-hero__subtitle {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .store-hero__tagline {
+    font-size: 1.2rem;
+  }
+
+  .store-hero__desc {
+    font-size: 0.98rem;
+    line-height: 1.75;
+  }
+
   .store-hero__icon {
     width: 100px;
     height: 100px;
@@ -928,6 +963,7 @@
 
   .store-hero__btn {
     width: 100%;
+    min-height: 52px;
   }
 
   .store-hero__rail {
@@ -937,7 +973,7 @@
   .store-hero__rail-item {
     grid-template-columns: 40px 1fr;
     gap: 0.6rem;
-    padding: 0.5rem;
+    padding: 0.65rem;
   }
 
   .store-hero__rail-icon {
@@ -945,8 +981,21 @@
     height: 40px;
   }
 
+  .store-hero__rail-name {
+    font-size: 0.88rem;
+  }
+
+  .store-hero__rail-tagline {
+    font-size: 0.76rem;
+  }
+
   .store-stats {
     padding: 1.25rem 1rem;
+  }
+
+  .store-stats__item {
+    min-width: 0;
+    width: 100%;
   }
 
   .store-section {
@@ -2351,10 +2400,10 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .feedback-header__subtitle {
-  font-size: 0.9rem;
-  color: var(--gray);
-  line-height: 1.6;
-  max-width: 500px;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  max-width: 560px;
 }
 
 .feedback-header__actions {
@@ -2365,9 +2414,9 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.9rem 1.75rem;
+  padding: 1rem 1.85rem;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   background: var(--white);
@@ -2419,10 +2468,10 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .feedback-stats__label {
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--gray);
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
 }
 
 .feedback-stats__divider {
@@ -2449,9 +2498,9 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 
 .feedback-filters__input {
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.95rem 1rem;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   background: var(--gray-dark);
   border: 1px solid #333;
   color: var(--white);
@@ -2486,10 +2535,10 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 
 .feedback-filters__label {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--gray);
+  letter-spacing: 0.14em;
+  color: var(--text-secondary);
 }
 
 .feedback-filters__options {
@@ -2499,13 +2548,13 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .feedback-filters__btn {
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 0.9rem;
   background: transparent;
   border: none;
   border-right: 1px solid #333;
-  color: var(--gray);
+  color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -2533,12 +2582,12 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .feedback-filters__select {
-  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  padding: 0.65rem 2rem 0.65rem 0.85rem;
   background: var(--gray-dark);
   border: 1px solid #333;
   color: var(--white);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -2566,9 +2615,9 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .feedback-results__count {
-  font-size: 0.7rem;
-  color: var(--gray);
-  letter-spacing: 0.1em;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
 }
 
 /* Feedback List */
@@ -2601,12 +2650,12 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  width: 56px;
-  min-height: 56px;
+  width: 60px;
+  min-height: 60px;
   padding: 0.5rem;
   background: transparent;
   border: 1px solid #333;
-  color: var(--gray);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
@@ -2635,13 +2684,13 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .feedback-vote-btn__arrow {
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1;
 }
 
 .feedback-vote-btn__count {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
@@ -2671,8 +2720,8 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 .feedback-type-badge,
 .feedback-status-badge {
   display: inline-block;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.55rem;
+  padding: 0.28rem 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   border: 1px solid;
@@ -2682,8 +2731,8 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.7rem;
-  color: var(--gray);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
 }
 
 .feedback-card__app-icon {
@@ -2695,18 +2744,18 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 
 .feedback-card__title {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.3;
+  line-height: 1.35;
   margin: 0;
   color: var(--white);
 }
 
 .feedback-card__body {
-  font-size: 0.85rem;
-  color: #888;
-  line-height: 1.5;
+  font-size: 0.96rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
   margin: 0;
 }
 
@@ -2722,8 +2771,8 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--gray);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
 }
 
 .feedback-card__avatar {
@@ -2747,8 +2796,8 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 0.7rem;
-  color: var(--gray);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
 }
 
 .feedback-card__comments {
@@ -2761,18 +2810,18 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 .feedback-empty {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--gray);
+  color: var(--text-secondary);
 }
 
 .feedback-empty__btn {
   display: inline-block;
   margin-top: 1rem;
-  padding: 0.6rem 1.25rem;
+  padding: 0.7rem 1.35rem;
   background: transparent;
   border: 1px solid #333;
   color: var(--white);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-decoration: none;
@@ -2794,14 +2843,14 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .feedback-load-more__btn {
-  padding: 0.75rem 2rem;
-  font-size: 0.7rem;
+  padding: 0.85rem 2rem;
+  font-size: 0.78rem;
   font-weight: 600;
   font-family: var(--font-mono);
   letter-spacing: 0.1em;
   background: transparent;
   border: 1px solid var(--border);
-  color: var(--gray);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -2825,9 +2874,24 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
     align-items: flex-start;
   }
 
+  .feedback-header__subtitle {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  .feedback-submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .feedback-stats {
     flex-wrap: wrap;
     gap: 1rem;
+    justify-content: flex-start;
+  }
+
+  .feedback-stats__item {
+    min-width: 140px;
   }
 
   .feedback-stats__divider {
@@ -2863,12 +2927,17 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
     gap: 1rem;
   }
 
+  .feedback-card__footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .feedback-vote-btn {
     width: 100%;
     flex-direction: row;
     gap: 0.5rem;
     min-height: auto;
-    padding: 0.75rem;
+    padding: 0.85rem;
   }
 }
 
@@ -3851,9 +3920,9 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 }
 
 .roadmap-header__subtitle {
-  font-size: 0.9rem;
-  color: var(--gray);
-  line-height: 1.6;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
 }
 
 .roadmap-header__link {
@@ -3896,7 +3965,7 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 
 .roadmap-column__title {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   margin: 0;
@@ -3906,10 +3975,10 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  font-size: 0.7rem;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 0.55rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--black);
 }
@@ -3926,8 +3995,8 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 .roadmap-column__empty {
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--gray);
-  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
 /* Roadmap Card */
@@ -3950,15 +4019,15 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .roadmap-card__app {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.7rem;
-  color: var(--gray);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .roadmap-card__app-icon {
@@ -3970,10 +4039,10 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 
 .roadmap-card__title {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--white);
-  line-height: 1.3;
+  line-height: 1.45;
   margin: 0 0 0.75rem;
 }
 
@@ -3981,8 +4050,8 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 0.7rem;
-  color: var(--gray);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
 }
 
 .roadmap-card__votes {
@@ -4009,6 +4078,18 @@ html.light .refund-modal__btn--cancel:hover:not(:disabled) {
 @media (max-width: 600px) {
   .roadmap-header {
     padding: 6rem 1.5rem 2rem;
+  }
+
+  .roadmap-header__subtitle {
+    font-size: 1rem;
+  }
+
+  .roadmap-column__header {
+    padding: 1rem 1.1rem;
+  }
+
+  .roadmap-column__list {
+    padding: 0.85rem;
   }
 }
 
@@ -4753,9 +4834,10 @@ html.light .feedback-modal__btn--submit {
 }
 
 .changelog-page__subtitle {
-  color: var(--gray);
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
   margin: 0;
+  line-height: 1.7;
 }
 
 .changelog-page__feeds {
@@ -4766,8 +4848,8 @@ html.light .feedback-modal__btn--submit {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--gray);
-  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition: color 0.2s;
@@ -4784,7 +4866,7 @@ html.light .feedback-modal__btn--submit {
 .changelog-page__empty {
   text-align: center;
   padding: 3rem 0;
-  color: var(--gray);
+  color: var(--text-secondary);
 }
 
 .changelog-page__content {
@@ -4797,11 +4879,11 @@ html.light .feedback-modal__btn--submit {
 
 .changelog-page .changelog-month__header {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--gray);
+  color: var(--text-secondary);
   padding: 0.5rem 0;
   border-bottom: 1px solid #222;
   margin-bottom: 1rem;
@@ -4871,22 +4953,22 @@ html.light .feedback-modal__btn--submit {
 
 .changelog-page .changelog-entry__name {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   margin-right: auto;
 }
 
 .changelog-page .changelog-entry__version {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: var(--gray);
+  color: var(--text-secondary);
 }
 
 .changelog-page .changelog-entry__date {
   display: block;
   margin-top: 0.35rem;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--gray);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -4896,9 +4978,9 @@ html.light .feedback-modal__btn--submit {
   margin-top: 0.8rem;
   padding-top: 0.75rem;
   border-top: 1px solid #222;
-  font-size: 0.85rem;
-  line-height: 1.65;
-  color: var(--gray);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
 }
 
 .changelog-page .changelog-entry__notes p {
@@ -4938,8 +5020,12 @@ html.light .changelog-page .changelog-entry__notes {
     padding: 6.25rem 1rem 0;
   }
 
+  .changelog-page__subtitle {
+    font-size: 1rem;
+  }
+
   .changelog-page .changelog-entry {
-    padding: 0.9rem;
+    padding: 1rem;
   }
 
   .changelog-page .changelog-entry__name {
@@ -4949,5 +5035,335 @@ html.light .changelog-page .changelog-entry__notes {
 
   .changelog-page .changelog-entry__version {
     margin-left: 0;
+  }
+}
+
+/* ============================================
+   SECOND-PASS READABILITY POLISH
+   ============================================ */
+
+.store-badge,
+.store-hero__label,
+.store-hero__rail-label,
+.store-stats__label,
+.store-section__count,
+.store-filters__label,
+.store-footer__copy,
+.legal-eyebrow,
+.legal-updated,
+.source-info__req-label,
+.source-info__instructions-title,
+.app-updates__label,
+.app-updates__date,
+.app-updates__changelog-link,
+.app-version-pill,
+.changelog-nav__label,
+.changelog-section__label,
+.changelog-entry__date,
+.changelog-entry__meta,
+.reviews-section__title,
+.reviews-section__count,
+.reviews-section__breakdown,
+.feedback-modal__label,
+.refund-modal__label,
+.refund-modal__option-hint,
+.feedback-filters__label,
+.feedback-results__count,
+.feedback-comments__count,
+.feedback-comment__time,
+.feedback-author-actions__timer,
+.feedback-header__link,
+.help-category__title,
+.help-article__updated,
+.help-article__app,
+.help-article__footer p,
+.help-article__footer-link {
+  color: var(--text-secondary);
+}
+
+.store-badge,
+.app-version-pill,
+.feedback-type-badge,
+.feedback-status-badge,
+.review-card__source,
+.review-card__territory {
+  font-size: 0.72rem;
+}
+
+.store-filters__toggle,
+.store-filters__btn,
+.store-filters__select,
+.store-filters__tag,
+.store-filters__clear,
+.feedback-submit-btn,
+.feedback-filters__btn,
+.feedback-filters__select,
+.feedback-load-more__btn,
+.help-contact__btn,
+.help-article__footer-btn,
+.store-footer__links a,
+.refund-modal__btn,
+.feedback-modal__btn,
+.feedback-comments__btn,
+.feedback-comments__login-btn,
+.feedback-author-actions__btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.store-hero__rail-tagline,
+.store-footer__tagline,
+.legal-section p,
+.legal-section li,
+.source-info__subtitle,
+.changelog-entry__notes p,
+.changelog-entry__notes li,
+.changelog__text,
+.changelog__item,
+.review-card__body,
+.feedback-header__subtitle,
+.feedback-card__app,
+.feedback-card__body,
+.feedback-card__author,
+.feedback-card__meta,
+.feedback-detail__author,
+.feedback-detail__date,
+.feedback-detail__body,
+.feedback-detail__response-body,
+.feedback-comments__empty,
+.feedback-comment__body,
+.help-header__subtitle,
+.help-empty,
+.help-article-card__app,
+.help-contact__text,
+.help-article__body {
+  color: var(--text-secondary);
+}
+
+.store-filters__toggle,
+.store-filters__btn,
+.store-filters__select,
+.feedback-filters__btn,
+.feedback-filters__select,
+.feedback-load-more__btn,
+.help-contact__btn,
+.help-article__footer-btn,
+.help-article__footer-link {
+  font-size: 0.8rem;
+}
+
+.store-footer__links a {
+  font-size: 0.82rem;
+}
+
+.legal-section p,
+.legal-section li,
+.source-info__subtitle,
+.changelog-entry__notes p,
+.changelog-entry__notes li,
+.changelog__text,
+.changelog__item,
+.review-card__body,
+.feedback-card__body,
+.feedback-detail__body,
+.feedback-detail__response-body,
+.feedback-comment__body,
+.help-contact__text,
+.help-article__body {
+  font-size: 0.98rem;
+  line-height: 1.8;
+}
+
+.review-card {
+  padding: 1.35rem;
+}
+
+.review-card__date,
+.review-card__name,
+.review-card__territory,
+.reviews-section__count,
+.reviews-section__breakdown {
+  font-size: 0.82rem;
+}
+
+.feedback-modal__label,
+.refund-modal__label,
+.feedback-filters__label,
+.help-category__title {
+  font-size: 0.74rem;
+}
+
+.feedback-modal__input,
+.feedback-modal__textarea,
+.refund-modal__value,
+.refund-modal__checkbox-text,
+.feedback-filters__input,
+.feedback-comments__textarea {
+  font-size: 0.95rem;
+}
+
+.feedback-card__title {
+  line-height: 1.4;
+}
+
+.feedback-card__meta,
+.feedback-card__author,
+.feedback-card__app,
+.feedback-detail__author,
+.feedback-detail__date,
+.feedback-comment__name,
+.feedback-comments__empty,
+.help-article-card__app,
+.help-article__updated,
+.help-article__app {
+  font-size: 0.84rem;
+}
+
+.help-header__subtitle {
+  font-size: 1rem;
+  line-height: 1.75;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.help-article-card {
+  padding: 1.1rem 1.25rem;
+  border-color: #333;
+}
+
+.help-article-card__title {
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.help-contact {
+  padding: 2.5rem 2rem;
+}
+
+.help-contact__text,
+.help-article__footer p {
+  font-size: 0.95rem;
+}
+
+.help-article__body {
+  font-size: 1rem;
+  line-height: 1.85;
+}
+
+.help-article__body h2 {
+  font-size: 1.18rem;
+}
+
+.help-article__body h3 {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .store-filters__controls {
+    padding: 1rem;
+  }
+
+  .help-header__subtitle,
+  .legal-section p,
+  .legal-section li,
+  .source-info__subtitle,
+  .review-card__body,
+  .feedback-card__body,
+  .feedback-detail__body,
+  .feedback-detail__response-body,
+  .feedback-comment__body,
+  .help-contact__text,
+  .help-article__body {
+    font-size: 0.96rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .store-badge,
+  .app-version-pill,
+  .feedback-type-badge,
+  .feedback-status-badge,
+  .review-card__source,
+  .review-card__territory,
+  .store-hero__label,
+  .store-hero__rail-label,
+  .store-stats__label,
+  .store-section__count,
+  .store-filters__label,
+  .store-footer__copy,
+  .legal-eyebrow,
+  .legal-updated,
+  .source-info__req-label,
+  .source-info__instructions-title,
+  .app-updates__label,
+  .app-updates__date,
+  .app-updates__changelog-link,
+  .changelog-nav__label,
+  .changelog-section__label,
+  .changelog-entry__date,
+  .changelog-entry__meta,
+  .reviews-section__title,
+  .reviews-section__count,
+  .reviews-section__breakdown,
+  .feedback-modal__label,
+  .refund-modal__label,
+  .refund-modal__option-hint,
+  .feedback-filters__label,
+  .feedback-results__count,
+  .feedback-comments__count,
+  .feedback-comment__time,
+  .feedback-author-actions__timer,
+  .help-category__title,
+  .help-article__updated,
+  .help-article__app,
+  .help-article__footer p,
+  .help-article__footer-link {
+    font-size: 0.78rem;
+  }
+
+  .store-footer__links a,
+  .store-filters__toggle,
+  .store-filters__btn,
+  .store-filters__select,
+  .store-filters__tag,
+  .store-filters__clear,
+  .feedback-submit-btn,
+  .feedback-filters__btn,
+  .feedback-filters__select,
+  .feedback-load-more__btn,
+  .help-contact__btn,
+  .help-article__footer-btn,
+  .refund-modal__btn,
+  .feedback-modal__btn,
+  .feedback-comments__btn,
+  .feedback-comments__login-btn,
+  .feedback-author-actions__btn {
+    font-size: 0.82rem;
+  }
+
+  .review-card__date,
+  .review-card__name,
+  .review-card__territory,
+  .feedback-card__meta,
+  .feedback-card__author,
+  .feedback-card__app,
+  .feedback-detail__author,
+  .feedback-detail__date,
+  .feedback-comment__name,
+  .feedback-comments__empty,
+  .help-article-card__app,
+  .help-article__updated,
+  .help-article__app {
+    font-size: 0.88rem;
+  }
+
+  .help-article-card,
+  .help-contact,
+  .feedback-card,
+  .review-card {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }

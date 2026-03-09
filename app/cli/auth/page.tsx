@@ -50,10 +50,11 @@ export default async function CLIAuthPage({
             <h1 className="auth-card__title">CLI Authorization</h1>
             <p className="auth-card__subtitle">
               Run <code style={{ 
-                background: "rgba(255,255,255,0.1)", 
+                background: "rgba(255,255,255,0.12)", 
                 padding: "2px 6px", 
                 borderRadius: "4px",
-                fontFamily: "monospace"
+                fontFamily: "monospace",
+                color: "var(--white)"
               }}>isolated login</code> in your terminal to get started.
             </p>
           </div>
@@ -91,10 +92,11 @@ export default async function CLIAuthPage({
               This authorization code is invalid or has expired.
               <br />
               Run <code style={{ 
-                background: "rgba(255,255,255,0.1)", 
+                background: "rgba(255,255,255,0.12)", 
                 padding: "2px 6px", 
                 borderRadius: "4px",
-                fontFamily: "monospace"
+                fontFamily: "monospace",
+                color: "var(--white)"
               }}>isolated login</code> again to get a new code.
             </p>
           </div>
@@ -121,16 +123,16 @@ export default async function CLIAuthPage({
         </div>
         
         <div style={{
-          background: "rgba(255,255,255,0.05)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          background: "rgba(255,255,255,0.07)",
+          border: "1px solid rgba(255,255,255,0.14)",
           borderRadius: "8px",
           padding: "20px",
           marginBottom: "24px",
           textAlign: "center",
         }}>
           <div style={{ 
-            fontSize: "12px", 
-            color: "rgba(255,255,255,0.5)",
+            fontSize: "13px", 
+            color: "var(--text-secondary)",
             marginBottom: "8px",
             textTransform: "uppercase",
             letterSpacing: "1px",
@@ -142,17 +144,17 @@ export default async function CLIAuthPage({
             fontFamily: "monospace",
             fontWeight: "bold",
             letterSpacing: "4px",
-            color: "#fff",
+            color: "var(--white)",
           }}>
             {code}
           </div>
         </div>
         
         <div style={{
-          fontSize: "14px",
-          color: "rgba(255,255,255,0.6)",
+          fontSize: "15px",
+          color: "var(--text-secondary)",
           marginBottom: "24px",
-          lineHeight: "1.5",
+          lineHeight: "1.65",
         }}>
           Make sure this code matches what's shown in your terminal.
           <br />

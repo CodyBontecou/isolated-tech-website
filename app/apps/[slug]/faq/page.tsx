@@ -170,109 +170,151 @@ export default async function FAQPage({ params }: Props) {
       <style>{`
         .faq-page {
           min-height: 100vh;
-          padding: 2rem 1.5rem;
+          padding: 6rem 1.5rem 3rem;
         }
+
         .faq-page__container {
-          max-width: 800px;
+          max-width: 820px;
           margin: 0 auto;
         }
+
         .faq-page__header {
           margin-bottom: 3rem;
         }
+
         .faq-page__back {
-          font-size: 0.75rem;
-          color: var(--gray);
+          font-size: 0.82rem;
+          color: var(--text-secondary);
           text-decoration: none;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.06em;
         }
+
         .faq-page__back:hover {
           color: var(--text);
         }
+
         .faq-page__title-row {
           display: flex;
           align-items: center;
           gap: 1rem;
           margin-top: 1rem;
         }
+
         .faq-page__app-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 10px;
+          width: 52px;
+          height: 52px;
+          border-radius: 12px;
         }
+
         .faq-page__title {
-          font-size: 1.75rem;
+          font-size: clamp(1.9rem, 4vw, 2.4rem);
           font-weight: 700;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.03em;
+          line-height: 1.1;
           margin: 0;
         }
+
         .faq-page__subtitle {
-          font-size: 0.85rem;
-          color: var(--gray);
-          margin: 0.25rem 0 0;
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          margin: 0.35rem 0 0;
         }
 
         .faq-content {
           margin-bottom: 3rem;
         }
+
         .faq-section {
           margin-bottom: 2.5rem;
         }
+
         .faq-section__title {
-          font-size: 0.7rem;
+          font-size: 0.78rem;
           font-weight: 700;
-          letter-spacing: 0.1em;
-          color: #666;
+          letter-spacing: 0.12em;
+          color: var(--text-secondary);
           text-transform: uppercase;
           margin: 0 0 1rem;
         }
 
         .faq-empty {
           text-align: center;
-          padding: 3rem;
-          color: var(--gray);
-          font-size: 0.9rem;
+          padding: 3rem 2rem;
+          color: var(--text-secondary);
+          font-size: 0.98rem;
+          line-height: 1.8;
+          background: var(--bg-elevated);
+          border: 1px solid #2f2f2f;
         }
+
         .faq-empty a {
           color: var(--text);
+          text-decoration: underline;
+          text-underline-offset: 3px;
         }
 
         .faq-footer {
           text-align: center;
-          padding: 2rem;
+          padding: 2rem 0 0;
           border-top: 1px solid #222;
         }
+
         .faq-footer p {
-          font-size: 0.9rem;
-          color: var(--gray);
+          font-size: 0.98rem;
+          color: var(--text-secondary);
           margin: 0 0 1rem;
+          line-height: 1.7;
         }
+
         .faq-footer__actions {
           display: flex;
           justify-content: center;
           gap: 1rem;
           flex-wrap: wrap;
         }
-        .faq-footer__btn {
-          padding: 0.75rem 1.5rem;
-          font-size: 0.7rem;
-          font-weight: 600;
+
+        .faq-footer__btn,
+        .faq-footer__link {
+          min-height: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.8rem 1.45rem;
+          font-size: 0.8rem;
+          font-weight: 700;
           letter-spacing: 0.1em;
+          text-decoration: none;
+        }
+
+        .faq-footer__btn {
           background: var(--white);
           color: var(--black);
-          text-decoration: none;
         }
+
         .faq-footer__link {
-          padding: 0.75rem 1.5rem;
-          font-size: 0.7rem;
-          font-weight: 600;
-          letter-spacing: 0.1em;
-          color: var(--gray);
-          text-decoration: none;
+          color: var(--text-secondary);
           border: 1px solid #333;
         }
+
         .faq-footer__link:hover {
           color: var(--text);
           border-color: #555;
+          background: rgba(255, 255, 255, 0.03);
+        }
+
+        @media (max-width: 600px) {
+          .faq-page {
+            padding: 5.5rem 1.25rem 2.5rem;
+          }
+
+          .faq-page__back,
+          .faq-page__subtitle,
+          .faq-empty,
+          .faq-footer p,
+          .faq-footer__btn,
+          .faq-footer__link {
+            font-size: 0.92rem;
+          }
         }
       `}</style>
     </>

@@ -174,105 +174,143 @@ export default async function GuidesPage({ params }: Props) {
       <style>{`
         .guides-page {
           min-height: 100vh;
-          padding: 2rem 1.5rem;
+          padding: 6rem 1.5rem 3rem;
         }
+
         .guides-page__container {
-          max-width: 900px;
+          max-width: 920px;
           margin: 0 auto;
         }
+
         .guides-page__header {
           margin-bottom: 3rem;
         }
+
         .guides-page__back {
-          font-size: 0.75rem;
-          color: var(--gray);
+          font-size: 0.82rem;
+          color: var(--text-secondary);
           text-decoration: none;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.06em;
         }
+
         .guides-page__back:hover {
           color: var(--text);
         }
+
         .guides-page__title-row {
           display: flex;
           align-items: center;
           gap: 1rem;
           margin-top: 1rem;
         }
+
         .guides-page__app-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 10px;
+          width: 52px;
+          height: 52px;
+          border-radius: 12px;
         }
+
         .guides-page__title {
-          font-size: 1.75rem;
+          font-size: clamp(1.9rem, 4vw, 2.4rem);
           font-weight: 700;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.03em;
+          line-height: 1.1;
           margin: 0;
         }
+
         .guides-page__subtitle {
-          font-size: 0.85rem;
-          color: var(--gray);
-          margin: 0.25rem 0 0;
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          margin: 0.35rem 0 0;
         }
 
         .guides-empty {
           text-align: center;
-          padding: 3rem;
-          color: var(--gray);
-          font-size: 0.9rem;
+          padding: 3rem 2rem;
+          color: var(--text-secondary);
+          font-size: 0.98rem;
+          line-height: 1.8;
+          background: var(--bg-elevated);
+          border: 1px solid #2f2f2f;
         }
+
         .guides-empty a {
           color: var(--text);
+          text-decoration: underline;
+          text-underline-offset: 3px;
         }
 
         .guides-section {
           margin-bottom: 2.5rem;
         }
+
         .guides-section__title {
-          font-size: 0.7rem;
+          font-size: 0.78rem;
           font-weight: 700;
-          letter-spacing: 0.1em;
-          color: #666;
+          letter-spacing: 0.12em;
+          color: var(--text-secondary);
           text-transform: uppercase;
           margin: 0 0 1rem;
         }
+
         .guides-section__list {
           display: grid;
           gap: 1rem;
         }
+
         @media (min-width: 640px) {
           .guides-section__list {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
 
         .guide-card {
           display: block;
-          padding: 1.25rem;
-          border: 1px solid #222;
+          padding: 1.35rem;
+          border: 1px solid #2f2f2f;
           text-decoration: none;
-          transition: border-color 0.15s, background 0.15s;
+          transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
         }
+
         .guide-card:hover {
-          border-color: #444;
-          background: rgba(255, 255, 255, 0.02);
+          border-color: #4a4a4a;
+          background: rgba(255, 255, 255, 0.03);
+          transform: translateY(-1px);
         }
+
         .guide-card__title {
-          font-size: 1rem;
-          font-weight: 600;
+          font-size: 1.02rem;
+          font-weight: 700;
           color: var(--text);
-          margin: 0 0 0.5rem;
+          line-height: 1.4;
+          margin: 0 0 0.55rem;
         }
+
         .guide-card__excerpt {
-          font-size: 0.85rem;
-          color: #888;
-          line-height: 1.5;
-          margin: 0 0 0.75rem;
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          line-height: 1.75;
+          margin: 0 0 0.9rem;
         }
+
         .guide-card__meta {
-          font-size: 0.7rem;
-          color: #555;
-          letter-spacing: 0.05em;
+          font-size: 0.82rem;
+          color: var(--text-secondary);
+          letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 600px) {
+          .guides-page {
+            padding: 5.5rem 1.25rem 2.5rem;
+          }
+
+          .guides-page__back,
+          .guides-page__subtitle,
+          .guides-empty,
+          .guide-card__excerpt,
+          .guide-card__meta {
+            font-size: 0.92rem;
+          }
         }
       `}</style>
     </>

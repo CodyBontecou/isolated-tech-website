@@ -65,33 +65,35 @@ function ReviewCard({ review }: { review: Review }) {
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "space-between",
+          gap: "1rem",
           marginBottom: "1rem",
+          flexWrap: "wrap",
         }}
       >
         <div>
           <Link
             href={`/apps/${review.app_slug}`}
-            style={{ fontSize: "1rem", fontWeight: 700 }}
+            style={{ fontSize: "1.05rem", fontWeight: 700, lineHeight: 1.35 }}
           >
             {review.app_name}
           </Link>
-          <div style={{ marginTop: "0.25rem" }}>
+          <div style={{ marginTop: "0.35rem" }}>
             <StarRating rating={review.rating} />
           </div>
         </div>
-        <span style={{ fontSize: "0.7rem", color: "var(--gray)" }}>
+        <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
           {formatDate(review.created_at)}
         </span>
       </div>
 
       {review.title && (
-        <h3 style={{ fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.5rem" }}>
+        <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.6rem", lineHeight: 1.4 }}>
           {review.title}
         </h3>
       )}
 
       {review.body && (
-        <p style={{ fontSize: "0.85rem", color: "#aaa", lineHeight: 1.6 }}>
+        <p style={{ fontSize: "0.95rem", color: "var(--text-secondary)", lineHeight: 1.75 }}>
           {review.body}
         </p>
       )}
@@ -103,6 +105,7 @@ function ReviewCard({ review }: { review: Review }) {
           marginTop: "1rem",
           paddingTop: "1rem",
           borderTop: "var(--border)",
+          flexWrap: "wrap",
         }}
       >
         <Link

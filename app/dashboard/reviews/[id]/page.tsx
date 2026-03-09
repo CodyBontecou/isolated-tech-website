@@ -122,13 +122,15 @@ export default async function ViewReviewPage({
                 display: "flex",
                 alignItems: "flex-start",
                 justifyContent: "space-between",
+                gap: "1rem",
                 marginBottom: "1.5rem",
+                flexWrap: "wrap",
               }}
             >
               <div>
                 <Link
                   href={`/apps/${review.app_slug}`}
-                  style={{ fontSize: "1.25rem", fontWeight: 700 }}
+                  style={{ fontSize: "1.3rem", fontWeight: 700, lineHeight: 1.3 }}
                 >
                   {review.app_name}
                 </Link>
@@ -136,11 +138,11 @@ export default async function ViewReviewPage({
                   <StarRating rating={review.rating} />
                 </div>
               </div>
-              <span style={{ fontSize: "0.75rem", color: "var(--gray)" }}>
+              <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
                 {formatDate(review.created_at)}
                 {review.updated_at !== review.created_at && (
                   <span style={{ display: "block", marginTop: "0.25rem" }}>
-                    (edited {formatDate(review.updated_at)})
+                    Edited {formatDate(review.updated_at)}
                   </span>
                 )}
               </span>
@@ -149,8 +151,9 @@ export default async function ViewReviewPage({
             {review.title && (
               <h2
                 style={{
-                  fontSize: "1.1rem",
-                  fontWeight: 600,
+                  fontSize: "1.12rem",
+                  fontWeight: 700,
+                  lineHeight: 1.4,
                   marginBottom: "0.75rem",
                 }}
               >
@@ -161,9 +164,9 @@ export default async function ViewReviewPage({
             {review.body && (
               <p
                 style={{
-                  fontSize: "0.95rem",
-                  color: "#ccc",
-                  lineHeight: 1.7,
+                  fontSize: "1rem",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.8,
                   whiteSpace: "pre-wrap",
                 }}
               >
@@ -179,6 +182,7 @@ export default async function ViewReviewPage({
                   marginTop: "1.5rem",
                   paddingTop: "1.5rem",
                   borderTop: "var(--border)",
+                  flexWrap: "wrap",
                 }}
               >
                 <Link

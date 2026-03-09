@@ -99,13 +99,17 @@ export default async function AdminHelpArticlesPage() {
           <Link
             href="/admin/help-articles/new"
             style={{
-              padding: "0.65rem 1.25rem",
-              fontSize: "0.7rem",
+              padding: "0.75rem 1.35rem",
+              fontSize: "0.8rem",
               fontWeight: 700,
               letterSpacing: "0.1em",
               background: "var(--white)",
               color: "var(--black)",
               textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "44px",
             }}
           >
             + NEW ARTICLE
@@ -118,8 +122,9 @@ export default async function AdminHelpArticlesPage() {
           style={{
             textAlign: "center",
             padding: "3rem",
-            color: "var(--gray)",
-            fontSize: "0.85rem",
+            color: "var(--text-secondary)",
+            fontSize: "0.95rem",
+            lineHeight: 1.7,
           }}
         >
           No help articles yet. Create your first article to help users.
@@ -143,10 +148,10 @@ export default async function AdminHelpArticlesPage() {
                 <tr key={article.id}>
                   <td>
                     <div>
-                      <div style={{ fontWeight: 600, color: "var(--text)" }}>
+                      <div style={{ fontWeight: 700, color: "var(--text)", lineHeight: 1.4 }}>
                         {article.title}
                       </div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--gray)" }}>
+                      <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                         {getArticleUrl(article)}
                       </div>
                     </div>
@@ -155,12 +160,12 @@ export default async function AdminHelpArticlesPage() {
                     <span
                       style={{
                         padding: "0.2rem 0.5rem",
-                        fontSize: "0.6rem",
-                        fontWeight: 600,
-                        letterSpacing: "0.05em",
-                        background: article.article_type === "help" ? "rgba(255,255,255,0.05)" : "rgba(59, 130, 246, 0.1)",
-                        color: article.article_type === "help" ? "#888" : "#3b82f6",
-                        border: article.article_type === "help" ? "1px solid #333" : "1px solid rgba(59, 130, 246, 0.3)",
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.06em",
+                        background: article.article_type === "help" ? "rgba(255,255,255,0.06)" : "rgba(59, 130, 246, 0.12)",
+                        color: article.article_type === "help" ? "var(--text-secondary)" : "#60a5fa",
+                        border: article.article_type === "help" ? "1px solid #444" : "1px solid rgba(96, 165, 250, 0.35)",
                       }}
                     >
                       {TYPE_LABELS[article.article_type || "help"]}
@@ -170,11 +175,11 @@ export default async function AdminHelpArticlesPage() {
                     <span
                       style={{
                         padding: "0.2rem 0.5rem",
-                        fontSize: "0.6rem",
-                        fontWeight: 600,
-                        letterSpacing: "0.05em",
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid #333",
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.06em",
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid #444",
                       }}
                     >
                       {article.category.toUpperCase()}
@@ -190,11 +195,11 @@ export default async function AdminHelpArticlesPage() {
                       <span
                         style={{
                           padding: "0.2rem 0.5rem",
-                          fontSize: "0.6rem",
-                          fontWeight: 600,
-                          background: "rgba(34, 197, 94, 0.1)",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          background: "rgba(34, 197, 94, 0.12)",
                           color: "#22c55e",
-                          border: "1px solid rgba(34, 197, 94, 0.3)",
+                          border: "1px solid rgba(34, 197, 94, 0.35)",
                         }}
                       >
                         PUBLISHED
@@ -203,11 +208,11 @@ export default async function AdminHelpArticlesPage() {
                       <span
                         style={{
                           padding: "0.2rem 0.5rem",
-                          fontSize: "0.6rem",
-                          fontWeight: 600,
-                          background: "rgba(107, 114, 128, 0.1)",
-                          color: "#6b7280",
-                          border: "1px solid rgba(107, 114, 128, 0.3)",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          background: "rgba(107, 114, 128, 0.14)",
+                          color: "#9ca3af",
+                          border: "1px solid rgba(156, 163, 175, 0.35)",
                         }}
                       >
                         DRAFT

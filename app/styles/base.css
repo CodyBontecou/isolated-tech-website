@@ -14,10 +14,11 @@
   
   /* Dark theme (default) */
   --black: #0a0a0a;
-  --white: #f0f0f0;
-  --gray: #666;
+  --white: #f3f3f3;
+  --gray: #b7b7b7;
   --gray-dark: #1a1a1a;
   --gray-mid: #2a2a2a;
+  --gray-light: #3a3a3a;
   --accent: #fff;
   --border: 1px solid #333;
   --border-heavy: 2px solid var(--white);
@@ -26,9 +27,13 @@
   --bg-primary: var(--black);
   --bg-secondary: var(--gray-dark);
   --bg-tertiary: var(--gray-mid);
+  --bg-elevated: rgba(255, 255, 255, 0.04);
   --text-primary: var(--white);
-  --text-secondary: var(--gray);
+  --text-secondary: #d7d7d7;
+  --text: var(--text-primary);
+  --text-muted: var(--gray);
   --foreground: var(--white);
+  --bg: var(--bg-primary);
   --nav-bg: rgba(10, 10, 10, 0.85);
   --card-bg: var(--gray-dark);
   --input-bg: var(--gray-dark);
@@ -44,6 +49,7 @@ html.light {
   --gray: #525252;
   --gray-dark: #f5f5f5;
   --gray-mid: #e5e5e5;
+  --gray-light: #d4d4d4;
   --accent: #0a0a0a;
   --border: 1px solid #d4d4d4;
   --border-heavy: 2px solid var(--white);
@@ -51,8 +57,12 @@ html.light {
   --bg-primary: #ffffff;
   --bg-secondary: #f5f5f5;
   --bg-tertiary: #e5e5e5;
+  --bg-elevated: rgba(0, 0, 0, 0.035);
   --text-primary: #0a0a0a;
   --text-secondary: #404040;
+  --text: var(--text-primary);
+  --text-muted: var(--gray);
+  --bg: var(--bg-primary);
   --nav-bg: rgba(255, 255, 255, 0.85);
   --card-bg: #f5f5f5;
   --input-bg: #ffffff;
@@ -69,6 +79,7 @@ html.light {
     --gray: #525252;
     --gray-dark: #f5f5f5;
     --gray-mid: #e5e5e5;
+    --gray-light: #d4d4d4;
     --accent: #0a0a0a;
     --border: 1px solid #d4d4d4;
     --border-heavy: 2px solid var(--white);
@@ -76,8 +87,12 @@ html.light {
     --bg-primary: #ffffff;
     --bg-secondary: #f5f5f5;
     --bg-tertiary: #e5e5e5;
+    --bg-elevated: rgba(0, 0, 0, 0.035);
     --text-primary: #0a0a0a;
     --text-secondary: #404040;
+    --text: var(--text-primary);
+    --text-muted: var(--gray);
+    --bg: var(--bg-primary);
     --nav-bg: rgba(255, 255, 255, 0.85);
     --card-bg: #f5f5f5;
     --input-bg: #ffffff;
@@ -101,6 +116,8 @@ html {
   scroll-behavior: smooth;
   font-size: 16px;
   color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html.light {
@@ -112,7 +129,9 @@ body {
   background: var(--black);
   color: var(--white);
   overflow-x: hidden;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -124,6 +143,26 @@ a {
 img {
   display: block;
   max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
 }
 
 /* ============================================

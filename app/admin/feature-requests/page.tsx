@@ -93,10 +93,10 @@ function StatusBadge({ status }: { status: string }) {
     <span
       style={{
         display: "inline-block",
-        padding: "0.2rem 0.5rem",
-        fontSize: "0.6rem",
-        fontWeight: 600,
-        letterSpacing: "0.05em",
+        padding: "0.24rem 0.55rem",
+        fontSize: "0.72rem",
+        fontWeight: 700,
+        letterSpacing: "0.06em",
         background: color.bg,
         color: color.text,
         border: `1px solid ${color.text}30`,
@@ -119,11 +119,11 @@ function TypeBadge({ type }: { type: "feature" | "bug" | "improvement" }) {
     <span
       style={{
         display: "inline-block",
-        padding: "0.2rem 0.5rem",
-        fontSize: "0.6rem",
-        fontWeight: 600,
-        letterSpacing: "0.05em",
-        background: `${color}15`,
+        padding: "0.24rem 0.55rem",
+        fontSize: "0.72rem",
+        fontWeight: 700,
+        letterSpacing: "0.06em",
+        background: `${color}18`,
         color,
         border: `1px solid ${color}30`,
       }}
@@ -174,8 +174,9 @@ export default async function AdminFeatureRequestsPage() {
           style={{
             textAlign: "center",
             padding: "3rem",
-            color: "var(--gray)",
-            fontSize: "0.85rem",
+            color: "var(--text-secondary)",
+            fontSize: "0.95rem",
+            lineHeight: 1.7,
           }}
         >
           No feature requests yet. When users submit feedback, they'll appear here.
@@ -210,20 +211,22 @@ export default async function AdminFeatureRequestsPage() {
                     <div style={{ maxWidth: "250px" }}>
                       <div
                         style={{
-                          fontWeight: 500,
+                          fontWeight: 700,
                           color: "var(--text)",
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
+                          lineHeight: 1.4,
                         }}
                       >
                         {request.title}
                       </div>
                       <div
                         style={{
-                          fontSize: "0.7rem",
-                          color: "var(--gray)",
-                          marginTop: "0.2rem",
+                          fontSize: "0.82rem",
+                          color: "var(--text-secondary)",
+                          marginTop: "0.28rem",
+                          lineHeight: 1.5,
                         }}
                       >
                         {request.comment_count} comments

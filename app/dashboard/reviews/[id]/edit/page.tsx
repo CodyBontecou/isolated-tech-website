@@ -114,7 +114,7 @@ export default async function EditReviewPage({
           <h1 className="dashboard__title">
             Edit Review<span className="dot">.</span>
           </h1>
-          <p style={{ color: "var(--gray)", marginTop: "0.5rem" }}>
+          <p style={{ color: "var(--text-secondary)", marginTop: "0.65rem", fontSize: "0.95rem", lineHeight: 1.6 }}>
             {review.app_name}
           </p>
         </header>
