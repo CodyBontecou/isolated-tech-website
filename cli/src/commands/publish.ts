@@ -11,7 +11,7 @@ import { output, success, error, warn, info, banner, isJsonMode } from '../lib/o
 interface PublishOptions {
   zip?: string;
   notes?: string;
-  version?: string;
+  appVersion?: string;
   build?: string;
   slug?: string;
   bump?: boolean;
@@ -22,7 +22,7 @@ export const publishCommand = new Command('publish')
   .description('Publish a release to isolated.tech')
   .option('--zip <path>', 'Path to the .zip file (auto-detected if not provided)')
   .option('--notes <text>', 'Release notes (extracted from CHANGELOG.md if not provided)')
-  .option('--version <version>', 'Version string (read from Xcode project if not provided)')
+  .option('-V, --app-version <version>', 'Version string (read from Xcode project if not provided)')
   .option('--build <number>', 'Build number (read from Xcode project if not provided)')
   .option('--slug <slug>', 'App slug (derived from project if not provided)')
   .option('--bump', 'Bump build number after publish', true)
@@ -44,14 +44,14 @@ export const publishCommand = new Command('publish')
     
     // Detect project
     const project = detectXcodeProject();
-    if (!project && (!options.version || !options.build || !options.slug)) {
+    if (!project && (!options.appVersion || !options.build || !options.slug)) {
       spinner?.fail('No Xcode project found');
       error('no_project', 'No Xcode project found', 'Run from a project directory or provide --version, --build, --slug');
       process.exit(1);
     }
     
     // Determine values (CLI args override auto-detected)
-    const version = options.version || project?.marketingVersion;
+    const version = options.appVersion || project?.marketingVersion;
     const build = options.build || project?.buildNumber;
     const slug = options.slug || (project ? deriveSlug(project) : undefined);
     

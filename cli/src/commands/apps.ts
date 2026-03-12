@@ -62,6 +62,10 @@ appsCommand
   .option('--publish', 'Make the app publicly visible')
   .option('--unpublish', 'Hide the app from public listings')
   .option('--platforms <platforms>', 'Comma-separated platforms (ios,macos)')
+  .option('--privacy-policy <text>', 'Privacy policy content (markdown)')
+  .option('--privacy-policy-file <file>', 'Privacy policy from file (markdown)')
+  .option('--terms-of-service <text>', 'Terms of service content (markdown)')
+  .option('--terms-of-service-file <file>', 'Terms of service from file (markdown)')
   .action(async (slug: string, options: {
     name?: string;
     tagline?: string;
@@ -69,11 +73,18 @@ appsCommand
     publish?: boolean;
     unpublish?: boolean;
     platforms?: string;
+    privacyPolicy?: string;
+    privacyPolicyFile?: string;
+    termsOfService?: string;
+    termsOfServiceFile?: string;
   }) => {
     if (!isAuthenticated()) {
       error('not_authenticated', 'Not logged in', 'Run: isolated login');
       process.exit(1);
     }
+
+    const fs = await import('fs');
+    const path = await import('path');
 
     // Build update payload
     const updates: {
@@ -82,6 +93,8 @@ appsCommand
       description?: string;
       is_published?: boolean;
       platforms?: string[];
+      privacy_policy?: string;
+      terms_of_service?: string;
     } = {};
 
     if (options.name) updates.name = options.name;
@@ -91,8 +104,32 @@ appsCommand
     if (options.unpublish) updates.is_published = false;
     if (options.platforms) updates.platforms = options.platforms.split(',').map(p => p.trim());
 
+    // Handle privacy policy
+    if (options.privacyPolicyFile) {
+      const filePath = path.resolve(options.privacyPolicyFile);
+      if (!fs.existsSync(filePath)) {
+        error('file_not_found', `Privacy policy file not found: ${options.privacyPolicyFile}`);
+        process.exit(1);
+      }
+      updates.privacy_policy = fs.readFileSync(filePath, 'utf-8');
+    } else if (options.privacyPolicy) {
+      updates.privacy_policy = options.privacyPolicy;
+    }
+
+    // Handle terms of service
+    if (options.termsOfServiceFile) {
+      const filePath = path.resolve(options.termsOfServiceFile);
+      if (!fs.existsSync(filePath)) {
+        error('file_not_found', `Terms of service file not found: ${options.termsOfServiceFile}`);
+        process.exit(1);
+      }
+      updates.terms_of_service = fs.readFileSync(filePath, 'utf-8');
+    } else if (options.termsOfService) {
+      updates.terms_of_service = options.termsOfService;
+    }
+
     if (Object.keys(updates).length === 0) {
-      error('no_updates', 'No updates specified', 'Use --name, --tagline, --description, --publish, or --unpublish');
+      error('no_updates', 'No updates specified', 'Use --name, --tagline, --description, --publish, --unpublish, --privacy-policy-file, or --terms-of-service-file');
       process.exit(1);
     }
 
@@ -224,6 +261,79 @@ appsCommand
     console.log(chalk.green(`  ✓ Icon uploaded for ${slug}`));
     console.log(chalk.gray(`    Size: ${(response.data.size / 1024).toFixed(1)} KB`));
     console.log(chalk.gray(`    URL: https://isolated.tech${response.data.icon_url}`));
+    console.log();
+  });
+
+appsCommand
+  .command('legal <slug>')
+  .description('Upload privacy policy and/or terms of service')
+  .option('--privacy <file>', 'Privacy policy markdown file')
+  .option('--terms <file>', 'Terms of service markdown file')
+  .action(async (slug: string, options: { privacy?: string; terms?: string }) => {
+    if (!isAuthenticated()) {
+      error('not_authenticated', 'Not logged in', 'Run: isolated login');
+      process.exit(1);
+    }
+
+    if (!options.privacy && !options.terms) {
+      error('no_files', 'No files specified', 'Use --privacy <file> and/or --terms <file>');
+      process.exit(1);
+    }
+
+    const fs = await import('fs');
+    const path = await import('path');
+
+    const updates: { privacy_policy?: string; terms_of_service?: string } = {};
+
+    if (options.privacy) {
+      const filePath = path.resolve(options.privacy);
+      if (!fs.existsSync(filePath)) {
+        error('file_not_found', `Privacy policy file not found: ${options.privacy}`);
+        process.exit(1);
+      }
+      updates.privacy_policy = fs.readFileSync(filePath, 'utf-8');
+    }
+
+    if (options.terms) {
+      const filePath = path.resolve(options.terms);
+      if (!fs.existsSync(filePath)) {
+        error('file_not_found', `Terms of service file not found: ${options.terms}`);
+        process.exit(1);
+      }
+      updates.terms_of_service = fs.readFileSync(filePath, 'utf-8');
+    }
+
+    const spinner = isJsonMode() ? null : ora('Uploading legal pages...').start();
+
+    const response = await api.updateApp(slug, updates);
+
+    if (!response.success || !response.data) {
+      spinner?.fail('Failed to upload legal pages');
+      error('upload_failed', response.message || 'Failed to upload legal pages');
+      process.exit(1);
+    }
+
+    spinner?.succeed('Legal pages uploaded!');
+
+    if (isJsonMode()) {
+      output({ 
+        success: true, 
+        app: slug,
+        privacy_url: updates.privacy_policy ? `https://isolated.tech/apps/${slug}/privacy` : null,
+        terms_url: updates.terms_of_service ? `https://isolated.tech/apps/${slug}/terms` : null,
+      });
+      return;
+    }
+
+    console.log();
+    if (updates.privacy_policy) {
+      console.log(chalk.green(`  ✓ Privacy policy uploaded`));
+      console.log(chalk.gray(`    ${chalk.underline(`https://isolated.tech/apps/${slug}/privacy`)}`));
+    }
+    if (updates.terms_of_service) {
+      console.log(chalk.green(`  ✓ Terms of service uploaded`));
+      console.log(chalk.gray(`    ${chalk.underline(`https://isolated.tech/apps/${slug}/terms`)}`));
+    }
     console.log();
   });
 

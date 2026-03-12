@@ -132,6 +132,8 @@ class ApiClient {
     description?: string;
     is_published?: boolean;
     platforms?: string[];
+    privacy_policy?: string;
+    terms_of_service?: string;
   }): Promise<ApiResponse<App>> {
     return this.request('PATCH', `/api/cli/apps/${slug}`, data);
   }
