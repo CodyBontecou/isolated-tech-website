@@ -254,6 +254,48 @@ export function parseChangelog(dir: string = process.cwd()): string | null {
 }
 
 /**
+ * Parse CHANGELOG.md and extract release notes for a specific version
+ */
+export function parseChangelogForVersion(version: string, filePath: string): string | null {
+  if (!existsSync(filePath)) return null;
+  
+  try {
+    const content = readFileSync(filePath, 'utf-8');
+    const lines = content.split('\n');
+    
+    let inTargetVersion = false;
+    let notes: string[] = [];
+    
+    // Normalize version (remove leading 'v' if present)
+    const normalizedVersion = version.replace(/^v/, '');
+    
+    for (const line of lines) {
+      // Match version headers like "## [1.2.3]" or "## 1.2.3" or "## v1.2.3"
+      const versionMatch = line.match(/^##\s+\[?v?(\d+\.\d+\.\d+)/);
+      if (versionMatch) {
+        if (inTargetVersion) {
+          // We've hit the next version, stop
+          break;
+        }
+        // Check if this is the version we're looking for
+        if (versionMatch[1] === normalizedVersion) {
+          inTargetVersion = true;
+        }
+        continue;
+      }
+      
+      if (inTargetVersion && line.trim()) {
+        notes.push(line);
+      }
+    }
+    
+    return notes.length > 0 ? notes.join('\n').trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Derive app slug from bundle ID or project name
  */
 export function deriveSlug(project: XcodeProject): string {

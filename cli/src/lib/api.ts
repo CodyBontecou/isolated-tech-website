@@ -47,6 +47,46 @@ export interface DeviceAuthPoll {
   user?: User;
 }
 
+export interface BlogPost {
+  id: string;
+  app_id: string;
+  app_slug?: string;
+  app_name?: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  body: string;
+  cover_image_url?: string;
+  author_name?: string;
+  is_published: boolean;
+  published_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateBlogPostData {
+  appSlug: string;
+  title: string;
+  slug?: string;
+  excerpt?: string;
+  body: string;
+  coverImageUrl?: string;
+  authorName?: string;
+  isPublished?: boolean;
+  publishedAt?: string;
+}
+
+export interface UpdateBlogPostData {
+  title?: string;
+  slug?: string;
+  excerpt?: string;
+  body?: string;
+  coverImageUrl?: string;
+  authorName?: string;
+  isPublished?: boolean;
+  publishedAt?: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -265,6 +305,12 @@ class ApiClient {
     return this.request('POST', `/api/cli/apps/${appSlug}/versions/confirm`, data);
   }
 
+  async updateVersion(appSlug: string, version: string, data: {
+    releaseNotes: string;
+  }): Promise<ApiResponse<Version>> {
+    return this.request('PATCH', `/api/cli/apps/${appSlug}/versions/${version}`, data);
+  }
+
   // Media endpoints
   async uploadMedia(
     appId: string,
@@ -312,6 +358,36 @@ class ApiClient {
       const message = err instanceof Error ? err.message : 'Unknown error';
       return { success: false, error: 'network_error', message };
     }
+  }
+
+  // Blog endpoints
+  async listBlogPosts(appSlug?: string): Promise<ApiResponse<BlogPost[]>> {
+    const path = appSlug ? `/api/cli/blog?app=${appSlug}` : '/api/cli/blog';
+    return this.request('GET', path);
+  }
+
+  async getBlogPost(id: string): Promise<ApiResponse<BlogPost>> {
+    return this.request('GET', `/api/cli/blog/${id}`);
+  }
+
+  async createBlogPost(data: CreateBlogPostData): Promise<ApiResponse<BlogPost>> {
+    return this.request('POST', '/api/cli/blog', data);
+  }
+
+  async updateBlogPost(id: string, data: UpdateBlogPostData): Promise<ApiResponse<BlogPost>> {
+    return this.request('PATCH', `/api/cli/blog/${id}`, data);
+  }
+
+  async deleteBlogPost(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+    return this.request('DELETE', `/api/cli/blog/${id}`);
+  }
+
+  async publishBlogPost(id: string): Promise<ApiResponse<BlogPost>> {
+    return this.request('POST', `/api/cli/blog/${id}/publish`);
+  }
+
+  async unpublishBlogPost(id: string): Promise<ApiResponse<BlogPost>> {
+    return this.request('POST', `/api/cli/blog/${id}/unpublish`);
   }
 }
 

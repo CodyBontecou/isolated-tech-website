@@ -95,6 +95,8 @@ export async function PATCH(
     description?: string;
     is_published?: boolean;
     platforms?: string[];
+    privacy_policy?: string;
+    terms_of_service?: string;
   };
 
   try {
@@ -130,6 +132,16 @@ export async function PATCH(
   if (body.platforms !== undefined) {
     updates.push("platforms = ?");
     values.push(JSON.stringify(body.platforms));
+  }
+
+  if (body.privacy_policy !== undefined) {
+    updates.push("privacy_policy = ?");
+    values.push(body.privacy_policy);
+  }
+
+  if (body.terms_of_service !== undefined) {
+    updates.push("terms_of_service = ?");
+    values.push(body.terms_of_service);
   }
 
   if (updates.length === 0) {

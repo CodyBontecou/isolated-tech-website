@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { isAuthenticated } from '../lib/config.js';
 import { api } from '../lib/api.js';
 import { output, error, banner, isJsonMode } from '../lib/output.js';
+import { parseChangelogForVersion } from '../lib/xcode.js';
 
 export const appsCommand = new Command('apps')
   .description('Manage your apps');
@@ -383,4 +384,83 @@ appsCommand
       }
       console.log();
     }
+  });
+
+appsCommand
+  .command('update-version <slug> <version>')
+  .description('Update release notes for an existing version')
+  .option('--notes <text>', 'New release notes')
+  .option('--notes-file <path>', 'Read notes from a file (extracts version section from CHANGELOG.md)')
+  .action(async (slug: string, version: string, options: {
+    notes?: string;
+    notesFile?: string;
+  }) => {
+    if (!isAuthenticated()) {
+      error('not_authenticated', 'Not logged in', 'Run: isolated login');
+      process.exit(1);
+    }
+
+    const fs = await import('fs');
+    const path = await import('path');
+
+    let releaseNotes: string | null = null;
+
+    // Handle --notes-file
+    if (options.notesFile) {
+      const filePath = path.resolve(options.notesFile);
+      if (!fs.existsSync(filePath)) {
+        error('file_not_found', `File not found: ${options.notesFile}`);
+        process.exit(1);
+      }
+
+      // If it's a CHANGELOG.md file, extract just the section for this version
+      if (filePath.endsWith('CHANGELOG.md')) {
+        releaseNotes = parseChangelogForVersion(version, filePath);
+        if (!releaseNotes) {
+          error('version_not_found', `Could not find version ${version} in ${options.notesFile}`, 
+            'Make sure the changelog has a section like "## [' + version + ']"');
+          process.exit(1);
+        }
+      } else {
+        // For other files, read the entire content
+        releaseNotes = fs.readFileSync(filePath, 'utf-8').trim();
+      }
+    } else if (options.notes) {
+      // Handle --notes (replace literal \n with actual newlines)
+      releaseNotes = options.notes.replace(/\\n/g, '\n');
+    }
+
+    if (!releaseNotes) {
+      error('no_notes', 'No release notes specified', 'Use --notes <text> or --notes-file <path>');
+      process.exit(1);
+    }
+
+    const spinner = isJsonMode() ? null : ora('Updating version...').start();
+
+    const response = await api.updateVersion(slug, version, { releaseNotes });
+
+    if (!response.success || !response.data) {
+      spinner?.fail('Failed to update version');
+      error('update_failed', response.message || 'Failed to update version');
+      process.exit(1);
+    }
+
+    spinner?.succeed('Version updated!');
+
+    if (isJsonMode()) {
+      output({ success: true, app: slug, version: response.data });
+      return;
+    }
+
+    const v = response.data;
+    console.log();
+    console.log(chalk.green(`  ✓ Updated release notes for ${slug} v${v.version}`));
+    if (v.release_notes) {
+      const preview = v.release_notes.split('\n').slice(0, 3).join('\n');
+      console.log(chalk.gray(`    ${preview.replace(/\n/g, '\n    ')}`));
+      if (v.release_notes.split('\n').length > 3) {
+        console.log(chalk.gray(`    ...`));
+      }
+    }
+    console.log();
   });

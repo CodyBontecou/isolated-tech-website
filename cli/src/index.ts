@@ -12,6 +12,7 @@ import { publishCommand } from './commands/publish.js';
 import { appsCommand } from './commands/apps.js';
 import { ntfyCommand } from './commands/ntfy.js';
 import { screenshotsCommand } from './commands/screenshots.js';
+import { blogCommand } from './commands/blog.js';
 
 const program = new Command();
 
@@ -48,6 +49,9 @@ program.addCommand(ntfyCommand);
 
 // Screenshots
 program.addCommand(screenshotsCommand);
+
+// Blog
+program.addCommand(blogCommand);
 
 // Default action (no command) - show status
 program.action(async () => {

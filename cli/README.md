@@ -55,6 +55,33 @@ isolated publish           # Publish a release (auto-detects everything)
 isolated publish --dry-run # Preview without uploading
 ```
 
+### Blog Posts
+
+Create and manage blog posts for your apps.
+
+```bash
+# List all blog posts
+isolated blog list
+
+# List posts for a specific app
+isolated blog list --app healthmd
+
+# Create a blog post from a markdown file
+isolated blog create --app healthmd --title "Introducing Health Insights" --file post.md
+
+# Create and publish immediately
+isolated blog create --app healthmd --title "New Feature" --body "..." --publish
+
+# Publish a draft
+isolated blog publish <post-id>
+
+# Update a post
+isolated blog update <post-id> --title "New Title" --file updated.md
+
+# Delete a post
+isolated blog delete <post-id>
+```
+
 ### Alerting (ntfy.sh)
 
 Push notifications to your phone when errors occur in your apps.

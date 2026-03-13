@@ -44,27 +44,36 @@ interface ArticleCounts {
   docs: number;
   faq: number;
   guides: number;
+  blog: number;
 }
 
 async function getArticleCounts(appId: string): Promise<ArticleCounts> {
   const env = getEnv();
-  if (!env?.DB) return { docs: 0, faq: 0, guides: 0 };
+  if (!env?.DB) return { docs: 0, faq: 0, guides: 0, blog: 0 };
 
-  const result = await env.DB.prepare(
-    `SELECT article_type, COUNT(*) as count
-     FROM help_articles
-     WHERE app_id = ? AND is_published = 1 AND article_type IN ('docs', 'faq', 'guide')
-     GROUP BY article_type`
-  )
-    .bind(appId)
-    .all<{ article_type: string; count: number }>();
+  const [helpResult, blogResult] = await Promise.all([
+    env.DB.prepare(
+      `SELECT article_type, COUNT(*) as count
+       FROM help_articles
+       WHERE app_id = ? AND is_published = 1 AND article_type IN ('docs', 'faq', 'guide')
+       GROUP BY article_type`
+    )
+      .bind(appId)
+      .all<{ article_type: string; count: number }>(),
+    env.DB.prepare(
+      `SELECT COUNT(*) as count FROM app_blog_posts WHERE app_id = ? AND is_published = 1`
+    )
+      .bind(appId)
+      .first<{ count: number }>(),
+  ]);
 
-  const counts: ArticleCounts = { docs: 0, faq: 0, guides: 0 };
-  for (const row of result.results || []) {
+  const counts: ArticleCounts = { docs: 0, faq: 0, guides: 0, blog: 0 };
+  for (const row of helpResult.results || []) {
     if (row.article_type === "docs") counts.docs = row.count;
     if (row.article_type === "faq") counts.faq = row.count;
     if (row.article_type === "guide") counts.guides = row.count;
   }
+  counts.blog = blogResult?.count || 0;
   return counts;
 }
 
@@ -351,6 +360,23 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
             <MediaShowcase media={media} />
 
             <ReviewsSection reviews={reviews} appStoreReviews={appStoreReviews} stats={reviewStats} appStoreUrl={iosAppStoreUrl} />
+
+            {/* Blog Section */}
+            {articleCounts.blog > 0 && (
+              <section className="app-page__help">
+                <h2 className="app-page__section-title">Blog</h2>
+                <div className="app-page__help-links">
+                  <Link href={`/apps/${app.slug}/blog`} className="app-page__help-link">
+                    <span className="app-page__help-icon">✎</span>
+                    <span className="app-page__help-text">
+                      <strong>Latest Posts</strong>
+                      <span>{articleCounts.blog} post{articleCounts.blog !== 1 ? "s" : ""}</span>
+                    </span>
+                    <span className="app-page__help-arrow">→</span>
+                  </Link>
+                </div>
+              </section>
+            )}
 
             {/* Help & Documentation Links */}
             {(articleCounts.docs > 0 || articleCounts.faq > 0 || articleCounts.guides > 0) && (

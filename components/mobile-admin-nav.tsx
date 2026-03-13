@@ -29,6 +29,12 @@ const navSections = [
     links: [
       { href: "/admin/feedback", icon: "∴", text: "Feedback" },
       { href: "/admin/feature-requests", icon: "★", text: "Feature Requests" },
+    ],
+  },
+  {
+    label: "CONTENT",
+    links: [
+      { href: "/admin/blog-posts", icon: "✎", text: "Blog Posts" },
       { href: "/admin/help-articles", icon: "≡", text: "Help Articles" },
     ],
   },
