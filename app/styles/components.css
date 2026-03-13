@@ -1845,6 +1845,227 @@ html.light .hero__image-overlay {
 }
 
 /* ============================================
+   APP PAGE TABS
+   ============================================ */
+
+.app-tabs {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-tabs__nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #222;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.app-tabs__nav::-webkit-scrollbar {
+  display: none;
+}
+
+.app-tabs__tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.app-tabs__tab:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.app-tabs__tab--active {
+  color: var(--white);
+}
+
+.app-tabs__tab--active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--white);
+}
+
+.app-tabs__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--black);
+  background: var(--gray);
+  border-radius: 9px;
+}
+
+.app-tabs__tab--active .app-tabs__count {
+  background: var(--white);
+}
+
+.app-tabs__content {
+  min-height: 400px;
+}
+
+.app-tabs__panel {
+  animation: tabFadeIn 0.2s ease-out;
+}
+
+.app-tabs__panel[hidden] {
+  display: none;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-tabs__empty {
+  padding: 3rem 0;
+  text-align: center;
+  color: var(--gray);
+}
+
+.app-tabs__loading {
+  padding: 2rem 0;
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+
+/* Blog Posts Grid (for tabs) */
+.blog-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.blog-post-card {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: 1px solid #222;
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.blog-post-card:hover {
+  border-color: #444;
+  transform: translateY(-2px);
+}
+
+.blog-post-card__image {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-bottom: 1px solid #222;
+}
+
+.blog-post-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.blog-post-card:hover .blog-post-card__image img {
+  transform: scale(1.03);
+}
+
+.blog-post-card__content {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.blog-post-card__date {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--gray);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.blog-post-card__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.35;
+  margin: 0 0 0.5rem;
+}
+
+.blog-post-card__excerpt {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blog-posts-grid__see-all {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  text-decoration: none;
+  border: 1px solid #222;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.blog-posts-grid__see-all:hover {
+  color: var(--white);
+  border-color: #444;
+}
+
+@media (max-width: 600px) {
+  .app-tabs__tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.68rem;
+  }
+
+  .blog-posts-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ============================================
    USER DASHBOARD
    ============================================ */
 

@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PurchaseCard } from "./purchase-card";
 import { MediaShowcase, MediaItem } from "./media-showcase";
+import { AppTabs, TabId } from "./app-tabs";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queries } from "@/lib/db";
@@ -47,6 +49,16 @@ interface ArticleCounts {
   blog: number;
 }
 
+interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  cover_image_url: string | null;
+  author_name: string | null;
+  published_at: string;
+}
+
 async function getArticleCounts(appId: string): Promise<ArticleCounts> {
   const env = getEnv();
   if (!env?.DB) return { docs: 0, faq: 0, guides: 0, blog: 0 };
@@ -75,6 +87,23 @@ async function getArticleCounts(appId: string): Promise<ArticleCounts> {
   }
   counts.blog = blogResult?.count || 0;
   return counts;
+}
+
+async function getBlogPosts(appId: string): Promise<BlogPost[]> {
+  const env = getEnv();
+  if (!env?.DB) return [];
+
+  const result = await env.DB.prepare(
+    `SELECT id, slug, title, excerpt, cover_image_url, author_name, published_at
+     FROM app_blog_posts
+     WHERE app_id = ? AND is_published = 1
+     ORDER BY published_at DESC
+     LIMIT 6`
+  )
+    .bind(appId)
+    .all<BlogPost>();
+
+  return result.results || [];
 }
 
 export async function generateMetadata({
@@ -245,6 +274,93 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function BlogPostsGrid({ posts, appSlug }: { posts: BlogPost[]; appSlug: string }) {
+  if (posts.length === 0) {
+    return (
+      <div className="app-tabs__empty">
+        <p>No blog posts yet. Check back soon!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="blog-posts-grid">
+      {posts.map((post) => (
+        <Link
+          key={post.id}
+          href={`/apps/${appSlug}/blog/${post.slug}`}
+          className="blog-post-card"
+        >
+          {post.cover_image_url && (
+            <div className="blog-post-card__image">
+              <img src={post.cover_image_url} alt="" />
+            </div>
+          )}
+          <div className="blog-post-card__content">
+            <time className="blog-post-card__date">{formatDate(post.published_at)}</time>
+            <h3 className="blog-post-card__title">{post.title}</h3>
+            {post.excerpt && <p className="blog-post-card__excerpt">{post.excerpt}</p>}
+          </div>
+        </Link>
+      ))}
+      <Link href={`/apps/${appSlug}/blog`} className="blog-posts-grid__see-all">
+        View all posts →
+      </Link>
+    </div>
+  );
+}
+
+function HelpSection({ articleCounts, appSlug }: { articleCounts: ArticleCounts; appSlug: string }) {
+  const hasHelp = articleCounts.docs > 0 || articleCounts.faq > 0 || articleCounts.guides > 0;
+  if (!hasHelp) return null;
+
+  return (
+    <section className="app-page__help">
+      <h2 className="app-page__section-title">Help & Documentation</h2>
+      <div className="app-page__help-links">
+        {articleCounts.docs > 0 && (
+          <Link href={`/apps/${appSlug}/docs`} className="app-page__help-link">
+            <span className="app-page__help-icon">📖</span>
+            <span className="app-page__help-text">
+              <strong>Documentation</strong>
+              <span>{articleCounts.docs} article{articleCounts.docs !== 1 ? "s" : ""}</span>
+            </span>
+            <span className="app-page__help-arrow">→</span>
+          </Link>
+        )}
+        {articleCounts.faq > 0 && (
+          <Link href={`/apps/${appSlug}/faq`} className="app-page__help-link">
+            <span className="app-page__help-icon">❓</span>
+            <span className="app-page__help-text">
+              <strong>FAQ</strong>
+              <span>{articleCounts.faq} question{articleCounts.faq !== 1 ? "s" : ""}</span>
+            </span>
+            <span className="app-page__help-arrow">→</span>
+          </Link>
+        )}
+        {articleCounts.guides > 0 && (
+          <Link href={`/apps/${appSlug}/guides`} className="app-page__help-link">
+            <span className="app-page__help-icon">🎓</span>
+            <span className="app-page__help-text">
+              <strong>Guides & Tutorials</strong>
+              <span>{articleCounts.guides} guide{articleCounts.guides !== 1 ? "s" : ""}</span>
+            </span>
+            <span className="app-page__help-arrow">→</span>
+          </Link>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default async function AppPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const app = await getApp(slug);
@@ -254,7 +370,7 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
   }
 
   const env = getEnv();
-  const [user, media, latestUpdates, reviews, appStoreReviews, reviewStats, articleCounts] = await Promise.all([
+  const [user, media, latestUpdates, reviews, appStoreReviews, reviewStats, articleCounts, blogPosts] = await Promise.all([
     env ? getCurrentUser(env) : null,
     getAppMedia(app.id),
     queries.getLatestUpdates(app.id, env || undefined),
@@ -264,6 +380,7 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
       queries.getAppReviewStats(app.id, env || undefined)
     ) as Promise<CombinedReviewStats | null>,
     getArticleCounts(app.id),
+    getBlogPosts(app.id),
   ]);
 
   // Check if user already owns this app
@@ -279,6 +396,24 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
   const subscriptionNote = pageConfig?.subscription_note?.trim() || null;
   const hasMacOS = platforms.includes("macos");
   const hasIOS = platforms.includes("ios");
+
+  // Build tabs array - only include tabs that have content
+  const tabs: { id: TabId; label: string; count?: number }[] = [
+    { id: "overview", label: "Overview" },
+  ];
+
+  if (media.length > 0) {
+    tabs.push({ id: "screenshots", label: "Screenshots", count: media.length });
+  }
+
+  const totalReviews = (reviews?.length || 0) + (appStoreReviews?.length || 0);
+  if (totalReviews > 0) {
+    tabs.push({ id: "reviews", label: "Reviews", count: totalReviews });
+  }
+
+  if (articleCounts.blog > 0) {
+    tabs.push({ id: "blog", label: "Blog", count: articleCounts.blog });
+  }
 
   // Structured data for rich search results
   const jsonLd = {
@@ -355,67 +490,32 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
 
         <div className="app-page__content">
           <div className="app-page__main">
-            {app.description && <MarkdownContent content={app.description} />}
-
-            <MediaShowcase media={media} />
-
-            <ReviewsSection reviews={reviews} appStoreReviews={appStoreReviews} stats={reviewStats} appStoreUrl={iosAppStoreUrl} />
-
-            {/* Blog Section */}
-            {articleCounts.blog > 0 && (
-              <section className="app-page__help">
-                <h2 className="app-page__section-title">Blog</h2>
-                <div className="app-page__help-links">
-                  <Link href={`/apps/${app.slug}/blog`} className="app-page__help-link">
-                    <span className="app-page__help-icon">✎</span>
-                    <span className="app-page__help-text">
-                      <strong>Latest Posts</strong>
-                      <span>{articleCounts.blog} post{articleCounts.blog !== 1 ? "s" : ""}</span>
-                    </span>
-                    <span className="app-page__help-arrow">→</span>
-                  </Link>
-                </div>
-              </section>
-            )}
-
-            {/* Help & Documentation Links */}
-            {(articleCounts.docs > 0 || articleCounts.faq > 0 || articleCounts.guides > 0) && (
-              <section className="app-page__help">
-                <h2 className="app-page__section-title">Help & Documentation</h2>
-                <div className="app-page__help-links">
-                  {articleCounts.docs > 0 && (
-                    <Link href={`/apps/${app.slug}/docs`} className="app-page__help-link">
-                      <span className="app-page__help-icon">📖</span>
-                      <span className="app-page__help-text">
-                        <strong>Documentation</strong>
-                        <span>{articleCounts.docs} article{articleCounts.docs !== 1 ? "s" : ""}</span>
-                      </span>
-                      <span className="app-page__help-arrow">→</span>
-                    </Link>
-                  )}
-                  {articleCounts.faq > 0 && (
-                    <Link href={`/apps/${app.slug}/faq`} className="app-page__help-link">
-                      <span className="app-page__help-icon">❓</span>
-                      <span className="app-page__help-text">
-                        <strong>FAQ</strong>
-                        <span>{articleCounts.faq} question{articleCounts.faq !== 1 ? "s" : ""}</span>
-                      </span>
-                      <span className="app-page__help-arrow">→</span>
-                    </Link>
-                  )}
-                  {articleCounts.guides > 0 && (
-                    <Link href={`/apps/${app.slug}/guides`} className="app-page__help-link">
-                      <span className="app-page__help-icon">🎓</span>
-                      <span className="app-page__help-text">
-                        <strong>Guides & Tutorials</strong>
-                        <span>{articleCounts.guides} guide{articleCounts.guides !== 1 ? "s" : ""}</span>
-                      </span>
-                      <span className="app-page__help-arrow">→</span>
-                    </Link>
-                  )}
-                </div>
-              </section>
-            )}
+            <Suspense fallback={<div className="app-tabs__loading">Loading...</div>}>
+              <AppTabs tabs={tabs}>
+                {{
+                  overview: (
+                    <>
+                      {app.description && <MarkdownContent content={app.description} />}
+                      <HelpSection articleCounts={articleCounts} appSlug={app.slug} />
+                    </>
+                  ),
+                  screenshots: (
+                    <MediaShowcase media={media} />
+                  ),
+                  reviews: (
+                    <ReviewsSection 
+                      reviews={reviews} 
+                      appStoreReviews={appStoreReviews} 
+                      stats={reviewStats} 
+                      appStoreUrl={iosAppStoreUrl} 
+                    />
+                  ),
+                  blog: (
+                    <BlogPostsGrid posts={blogPosts} appSlug={app.slug} />
+                  ),
+                }}
+              </AppTabs>
+            </Suspense>
           </div>
 
           <aside>
