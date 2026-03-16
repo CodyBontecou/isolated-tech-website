@@ -191,7 +191,7 @@ export default async function GuideArticlePage({ params }: Props) {
           <div className="guide-article__footer">
             <p>Was this guide helpful?</p>
             <div className="guide-article__footer-actions">
-              <Link href="/feedback" className="guide-article__footer-btn">
+              <Link href={`/feedback?app=${slug}`} className="guide-article__footer-btn">
                 Give Feedback
               </Link>
               <Link href={`/apps/${slug}/faq`} className="guide-article__footer-link">

@@ -131,7 +131,7 @@ export default async function DocsPage({ params }: Props) {
             <p>
               Have questions? Check out our{" "}
               <Link href={`/apps/${slug}/faq`}>FAQ</Link> or{" "}
-              <Link href="/feedback">submit a request</Link>.
+              <Link href={`/feedback?app=${slug}`}>submit a request</Link>.
             </p>
           </div>
         </div>

@@ -24,15 +24,29 @@ async function getApps(): Promise<{ id: string; name: string; slug: string; icon
   );
 }
 
-export default async function SubmitFeedbackPage() {
+export default async function SubmitFeedbackPage({
+  searchParams,
+}: {
+  searchParams: { app?: string };
+}) {
   const env = getEnv();
   const user = env ? await getCurrentUser(env) : null;
+  const appFilter = searchParams.app?.trim() || undefined;
+  const submitPath = appFilter
+    ? `/feedback/submit?app=${encodeURIComponent(appFilter)}`
+    : "/feedback/submit";
 
   if (!user) {
-    redirect("/auth/login?redirect=/feedback/submit");
+    redirect(`/auth/login?redirect=${encodeURIComponent(submitPath)}`);
   }
 
   const apps = await getApps();
+  const initialAppId = appFilter
+    ? (apps.find((app) => app.id === appFilter || app.slug === appFilter)?.id ?? "")
+    : "";
+  const backHref = initialAppId
+    ? `/feedback?app=${encodeURIComponent(initialAppId)}`
+    : "/feedback";
 
   return (
     <>
@@ -42,7 +56,7 @@ export default async function SubmitFeedbackPage() {
       {/* MAIN */}
       <main className="submit-page">
         <div className="submit-card">
-          <Link href="/feedback" className="submit-back">
+          <Link href={backHref} className="submit-back">
             ← Back to Feedback
           </Link>
 
@@ -54,7 +68,7 @@ export default async function SubmitFeedbackPage() {
             </p>
           </header>
 
-          <SubmitForm apps={apps} />
+          <SubmitForm apps={apps} initialAppId={initialAppId} backHref={backHref} />
         </div>
       </main>
 

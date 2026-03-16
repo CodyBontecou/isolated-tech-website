@@ -361,6 +361,32 @@ function HelpSection({ articleCounts, appSlug }: { articleCounts: ArticleCounts;
   );
 }
 
+function CommunitySection({ appSlug }: { appSlug: string }) {
+  return (
+    <section className="app-page__help">
+      <h2 className="app-page__section-title">Community</h2>
+      <div className="app-page__help-links">
+        <Link href={`/feedback?app=${appSlug}`} className="app-page__help-link">
+          <span className="app-page__help-icon">💬</span>
+          <span className="app-page__help-text">
+            <strong>App Feedback</strong>
+            <span>Request features and report issues for this app</span>
+          </span>
+          <span className="app-page__help-arrow">→</span>
+        </Link>
+        <Link href={`/roadmap?app=${appSlug}`} className="app-page__help-link">
+          <span className="app-page__help-icon">🗺️</span>
+          <span className="app-page__help-text">
+            <strong>App Roadmap</strong>
+            <span>Track what&apos;s planned and in progress</span>
+          </span>
+          <span className="app-page__help-arrow">→</span>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export default async function AppPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const app = await getApp(slug);
@@ -496,6 +522,7 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
                   overview: (
                     <>
                       {app.description && <MarkdownContent content={app.description} />}
+                      <CommunitySection appSlug={app.slug} />
                       <HelpSection articleCounts={articleCounts} appSlug={app.slug} />
                     </>
                   ),

@@ -40,9 +40,22 @@ interface FeedbackStats {
   in_progress: number;
 }
 
-async function getFeatureRequests(userId?: string): Promise<{ items: FeatureRequest[]; hasMore: boolean; nextCursor: string | null }> {
+async function getFeatureRequests(
+  userId?: string,
+  appFilter?: string
+): Promise<{ items: FeatureRequest[]; hasMore: boolean; nextCursor: string | null }> {
   const env = getEnv();
   if (!env?.DB) return { items: [], hasMore: false, nextCursor: null };
+
+  const hasAppFilter = !!appFilter;
+  const appWhere = hasAppFilter ? " AND (fr.app_id = ? OR a.slug = ?)" : "";
+  const params: unknown[] = [userId || ""];
+
+  if (hasAppFilter) {
+    params.push(appFilter, appFilter);
+  }
+
+  params.push(PAGE_SIZE + 1);
 
   const items = await query<FeatureRequest>(
     `SELECT 
@@ -65,10 +78,10 @@ async function getFeatureRequests(userId?: string): Promise<{ items: FeatureRequ
      FROM feature_requests fr
      JOIN "user" u ON fr.user_id = u.id
      LEFT JOIN apps a ON fr.app_id = a.id
-     WHERE fr.status != 'closed'
+     WHERE fr.status != 'closed'${appWhere}
      ORDER BY fr.vote_count DESC, fr.created_at DESC
      LIMIT ?`,
-    [userId || "", PAGE_SIZE + 1],
+    params,
     env
   );
 
@@ -79,13 +92,20 @@ async function getFeatureRequests(userId?: string): Promise<{ items: FeatureRequ
   return { items: results, hasMore, nextCursor };
 }
 
-async function getFeedbackStats(): Promise<FeedbackStats> {
+async function getFeedbackStats(appFilter?: string): Promise<FeedbackStats> {
   const env = getEnv();
   if (!env?.DB) return { total: 0, open: 0, planned: 0, in_progress: 0 };
 
+  const hasAppFilter = !!appFilter;
+  const appJoin = hasAppFilter ? " LEFT JOIN apps a ON fr.app_id = a.id" : "";
+  const appWhere = hasAppFilter ? " AND (fr.app_id = ? OR a.slug = ?)" : "";
+
   const stats = await query<{ status: string; count: number }>(
-    `SELECT status, COUNT(*) as count FROM feature_requests WHERE status != 'closed' GROUP BY status`,
-    [],
+    `SELECT fr.status as status, COUNT(*) as count
+     FROM feature_requests fr${appJoin}
+     WHERE fr.status != 'closed'${appWhere}
+     GROUP BY fr.status`,
+    hasAppFilter ? [appFilter, appFilter] : [],
     env
   );
 
@@ -110,14 +130,28 @@ async function getApps(): Promise<{ id: string; name: string; slug: string; icon
   );
 }
 
-export default async function FeedbackPage() {
+export default async function FeedbackPage({
+  searchParams,
+}: {
+  searchParams: { app?: string };
+}) {
   const env = getEnv();
   const user = env ? await getCurrentUser(env) : null;
+  const appFilter = searchParams.app?.trim() || undefined;
+
   const [feedbackData, apps, stats] = await Promise.all([
-    getFeatureRequests(user?.id),
+    getFeatureRequests(user?.id, appFilter),
     getApps(),
-    getFeedbackStats(),
+    getFeedbackStats(appFilter),
   ]);
+
+  const initialAppFilter = appFilter
+    ? (apps.find((app) => app.id === appFilter || app.slug === appFilter)?.id ?? "all")
+    : "all";
+
+  const submitHref = appFilter
+    ? `/feedback/submit?app=${encodeURIComponent(appFilter)}`
+    : "/feedback/submit";
 
   const { items: requests, hasMore, nextCursor } = feedbackData;
 
@@ -140,11 +174,11 @@ export default async function FeedbackPage() {
         
         <div className="feedback-header__actions">
           {user ? (
-            <Link href="/feedback/submit" className="feedback-submit-btn">
+            <Link href={submitHref} className="feedback-submit-btn">
               + SUBMIT IDEA
             </Link>
           ) : (
-            <a href="/auth/login?redirect=/feedback/submit" className="feedback-submit-btn">
+            <a href={`/auth/login?redirect=${encodeURIComponent(submitHref)}`} className="feedback-submit-btn">
               SIGN IN TO SUBMIT
             </a>
           )}
@@ -183,6 +217,7 @@ export default async function FeedbackPage() {
           isLoggedIn={!!user}
           initialHasMore={hasMore}
           initialCursor={nextCursor}
+          initialAppFilter={initialAppFilter}
         />
       </main>
 

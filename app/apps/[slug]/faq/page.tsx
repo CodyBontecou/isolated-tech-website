@@ -129,7 +129,7 @@ export default async function FAQPage({ params }: Props) {
               <p>No FAQ available yet.</p>
               <p>
                 Have a question?{" "}
-                <Link href="/feedback">Submit it here</Link> and we'll add it to our FAQ.
+                <Link href={`/feedback?app=${slug}`}>Submit it here</Link> and we'll add it to our FAQ.
               </p>
             </div>
           ) : (
@@ -154,7 +154,7 @@ export default async function FAQPage({ params }: Props) {
           <div className="faq-footer">
             <p>Still have questions?</p>
             <div className="faq-footer__actions">
-              <Link href="/feedback" className="faq-footer__btn">
+              <Link href={`/feedback?app=${slug}`} className="faq-footer__btn">
                 Submit a Question
               </Link>
               <Link href={`/apps/${slug}/docs`} className="faq-footer__link">

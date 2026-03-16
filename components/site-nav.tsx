@@ -24,9 +24,6 @@ export function SiteNav({ user, activePage, redirectPath }: SiteNavProps) {
         <a href="/apps" {...(activePage === "apps" ? { style: { opacity: 1 } } : {})}>APPS</a>
         <a href="/work" {...(activePage === "work" ? { style: { opacity: 1 } } : {})}>WORK</a>
         <a href="/hire" {...(activePage === "hire" ? { style: { opacity: 1 } } : {})}>HIRE</a>
-        <a href="/changelog" {...(activePage === "changelog" ? { style: { opacity: 1 } } : {})}>UPDATES</a>
-        <a href="/feedback" {...(activePage === "feedback" ? { style: { opacity: 1 } } : {})}>FEEDBACK</a>
-        <a href="/roadmap" {...(activePage === "roadmap" ? { style: { opacity: 1 } } : {})}>ROADMAP</a>
         {user ? (
           <>
             {user.isAdmin && <a href="/admin">ADMIN</a>}

@@ -23,8 +23,7 @@ export function SiteFooter({ showTagline = true }: SiteFooterProps) {
         <Link href="/work">CLIENT WORK</Link>
         <Link href="/hire">HIRE</Link>
         <Link href="/seller">SELL WITH US</Link>
-        <a href="/feedback">FEEDBACK</a>
-        <a href="/roadmap">ROADMAP</a>
+        <Link href="/changelog">UPDATES</Link>
         <a href="/help">HELP</a>
         <a href="https://instagram.com/isolated.tech" target="_blank" rel="noopener">
           INSTAGRAM

@@ -12,10 +12,18 @@ interface App {
 
 type FeedbackType = "feature" | "bug" | "improvement";
 
-export function SubmitForm({ apps }: { apps: App[] }) {
+export function SubmitForm({
+  apps,
+  initialAppId = "",
+  backHref = "/feedback",
+}: {
+  apps: App[];
+  initialAppId?: string;
+  backHref?: string;
+}) {
   const router = useRouter();
   const [type, setType] = useState<FeedbackType>("feature");
-  const [appId, setAppId] = useState<string>("");
+  const [appId, setAppId] = useState<string>(initialAppId);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -152,7 +160,7 @@ export function SubmitForm({ apps }: { apps: App[] }) {
       <div className="submit-actions">
         <button
           type="button"
-          onClick={() => router.push("/feedback")}
+          onClick={() => router.push(backHref)}
           className="submit-btn submit-btn--cancel"
           disabled={isSubmitting}
         >

@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface FeatureRequest {
   id: string;
@@ -41,6 +40,7 @@ interface FeedbackFiltersProps {
   isLoggedIn: boolean;
   initialHasMore: boolean;
   initialCursor: string | null;
+  initialAppFilter?: string;
 }
 
 function formatTimeAgo(dateStr: string): string {
@@ -201,12 +201,12 @@ export function FeedbackFilters({
   isLoggedIn,
   initialHasMore,
   initialCursor,
+  initialAppFilter = "all",
 }: FeedbackFiltersProps) {
-  const router = useRouter();
   const [requests, setRequests] = useState(initialRequests);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [appFilter, setAppFilter] = useState<string>("all");
+  const [appFilter, setAppFilter] = useState<string>(initialAppFilter);
   const [sortBy, setSortBy] = useState<SortOption>("votes");
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -275,6 +275,10 @@ export function FeedbackFilters({
         cursor,
         sort: sortBy,
       });
+
+      if (appFilter !== "all") {
+        params.set("app", appFilter);
+      }
       
       const res = await fetch(`/api/feedback?${params}`);
       if (!res.ok) throw new Error("Failed to load more");
@@ -299,7 +303,12 @@ export function FeedbackFilters({
     
     // Fetch fresh data with new sort
     try {
-      const res = await fetch(`/api/feedback?sort=${newSort}`);
+      const params = new URLSearchParams({ sort: newSort });
+      if (appFilter !== "all") {
+        params.set("app", appFilter);
+      }
+
+      const res = await fetch(`/api/feedback?${params}`);
       if (res.ok) {
         const data = await res.json();
         setRequests(data.items);
@@ -308,6 +317,27 @@ export function FeedbackFilters({
       }
     } catch (err) {
       console.error("Sort change error:", err);
+    }
+  };
+
+  const handleAppFilterChange = async (newAppFilter: string) => {
+    setAppFilter(newAppFilter);
+
+    try {
+      const params = new URLSearchParams({ sort: sortBy });
+      if (newAppFilter !== "all") {
+        params.set("app", newAppFilter);
+      }
+
+      const res = await fetch(`/api/feedback?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRequests(data.items);
+        setHasMore(data.hasMore);
+        setCursor(data.nextCursor);
+      }
+    } catch (err) {
+      console.error("App filter change error:", err);
     }
   };
 
@@ -409,7 +439,7 @@ export function FeedbackFilters({
               <label className="feedback-filters__label">APP</label>
               <select
                 value={appFilter}
-                onChange={(e) => setAppFilter(e.target.value)}
+                onChange={(e) => void handleAppFilterChange(e.target.value)}
                 className="feedback-filters__select"
               >
                 <option value="all">All Apps</option>

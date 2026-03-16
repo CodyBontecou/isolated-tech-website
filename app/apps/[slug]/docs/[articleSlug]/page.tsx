@@ -192,8 +192,11 @@ export default async function DocArticlePage({ params }: Props) {
             <Link href={`/apps/${slug}/faq`} className="docs-sidebar__extra">
               FAQ
             </Link>
-            <Link href="/feedback" className="docs-sidebar__extra">
+            <Link href={`/feedback?app=${slug}`} className="docs-sidebar__extra">
               Feedback
+            </Link>
+            <Link href={`/roadmap?app=${slug}`} className="docs-sidebar__extra">
+              Roadmap
             </Link>
           </div>
         </aside>

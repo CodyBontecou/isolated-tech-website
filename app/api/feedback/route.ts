@@ -29,6 +29,7 @@ interface FeatureRequest {
  * Query params:
  *   - cursor: ID of last item from previous page
  *   - sort: 'votes' | 'newest' | 'comments' (default: votes)
+ *   - app: app ID or slug to scope feedback to a single app
  */
 export async function GET(request: Request) {
   const env = getEnv();
@@ -38,12 +39,18 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
   const sort = url.searchParams.get("sort") || "votes";
+  const appFilter = url.searchParams.get("app")?.trim() || null;
 
   try {
     // Build the ORDER BY clause based on sort
     let orderBy: string;
     let cursorCondition = "";
+    const appWhere = appFilter ? " AND (fr.app_id = ? OR a.slug = ?)" : "";
     const params: unknown[] = [userId];
+
+    if (appFilter) {
+      params.push(appFilter, appFilter);
+    }
 
     switch (sort) {
       case "newest":
@@ -129,7 +136,7 @@ export async function GET(request: Request) {
        FROM feature_requests fr
        JOIN "user" u ON fr.user_id = u.id
        LEFT JOIN apps a ON fr.app_id = a.id
-       WHERE fr.status != 'closed' ${cursorCondition}
+       WHERE fr.status != 'closed'${appWhere} ${cursorCondition}
        ORDER BY ${orderBy}
        LIMIT ?`,
       params,

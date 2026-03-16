@@ -25,7 +25,7 @@ interface FeatureRequest {
   priority: number;
 }
 
-async function getRoadmapItems(): Promise<{
+async function getRoadmapItems(appFilter?: string): Promise<{
   planned: FeatureRequest[];
   inProgress: FeatureRequest[];
   completed: FeatureRequest[];
@@ -34,6 +34,9 @@ async function getRoadmapItems(): Promise<{
   if (!env?.DB) {
     return { planned: [], inProgress: [], completed: [] };
   }
+
+  const hasAppFilter = !!appFilter;
+  const appWhere = hasAppFilter ? " AND (fr.app_id = ? OR a.slug = ?)" : "";
 
   const items = await query<FeatureRequest>(
     `SELECT 
@@ -50,9 +53,9 @@ async function getRoadmapItems(): Promise<{
        fr.priority
      FROM feature_requests fr
      LEFT JOIN apps a ON fr.app_id = a.id
-     WHERE fr.status IN ('planned', 'in_progress', 'completed')
+     WHERE fr.status IN ('planned', 'in_progress', 'completed')${appWhere}
      ORDER BY fr.priority DESC, fr.vote_count DESC`,
-    [],
+    hasAppFilter ? [appFilter, appFilter] : [],
     env
   );
 
@@ -125,11 +128,20 @@ function RoadmapColumn({
   );
 }
 
-export default async function RoadmapPage() {
+export default async function RoadmapPage({
+  searchParams,
+}: {
+  searchParams: { app?: string };
+}) {
   const env = getEnv();
+  const appFilter = searchParams.app?.trim() || undefined;
+  const feedbackHref = appFilter
+    ? `/feedback?app=${encodeURIComponent(appFilter)}`
+    : "/feedback";
+
   const [user, { planned, inProgress, completed }] = await Promise.all([
     env ? getCurrentUser(env) : null,
-    getRoadmapItems(),
+    getRoadmapItems(appFilter),
   ]);
 
   return (
@@ -143,7 +155,7 @@ export default async function RoadmapPage() {
           <h1 className="roadmap-header__title">Public Roadmap</h1>
           <p className="roadmap-header__subtitle">
             See what we're working on. This roadmap is shaped by community feedback and votes.
-            <Link href="/feedback" className="roadmap-header__link">Submit your ideas →</Link>
+            <Link href={feedbackHref} className="roadmap-header__link">Submit your ideas →</Link>
           </p>
         </div>
       </header>
