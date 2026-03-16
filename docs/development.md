@@ -140,6 +140,16 @@ npm test
 npm run typecheck
 ```
 
+## Client Work Screenshot Pipeline
+
+Use local screenshot generation for client showcase cards:
+
+```bash
+npm run screenshots:client-work
+```
+
+See [Client Work Screenshots](./client-work-screenshots.md) for target configuration and update workflow.
+
 ## Debugging
 
 ### View Worker Logs

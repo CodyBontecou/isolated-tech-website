@@ -9,7 +9,7 @@ interface SiteNavUser {
 interface SiteNavProps {
   user: SiteNavUser | null;
   /** Current page identifier for highlighting active link */
-  activePage?: "apps" | "feedback" | "roadmap" | "changelog";
+  activePage?: "apps" | "work" | "hire" | "feedback" | "roadmap" | "changelog";
   /** Login redirect path (defaults to current page) */
   redirectPath?: string;
 }
@@ -21,7 +21,9 @@ export function SiteNav({ user, activePage, redirectPath }: SiteNavProps) {
         ISOLATED<span className="dot">.</span>TECH
       </a>
       <div className="nav__links">
-        <a href="/#apps" {...(activePage === "apps" ? { style: { opacity: 1 } } : {})}>APPS</a>
+        <a href="/apps" {...(activePage === "apps" ? { style: { opacity: 1 } } : {})}>APPS</a>
+        <a href="/work" {...(activePage === "work" ? { style: { opacity: 1 } } : {})}>WORK</a>
+        <a href="/hire" {...(activePage === "hire" ? { style: { opacity: 1 } } : {})}>HIRE</a>
         <a href="/changelog" {...(activePage === "changelog" ? { style: { opacity: 1 } } : {})}>UPDATES</a>
         <a href="/feedback" {...(activePage === "feedback" ? { style: { opacity: 1 } } : {})}>FEEDBACK</a>
         <a href="/roadmap" {...(activePage === "roadmap" ? { style: { opacity: 1 } } : {})}>ROADMAP</a>

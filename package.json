@@ -20,6 +20,7 @@
     "test:migrations": "./scripts/test-migrations.sh",
     "test:visual": "playwright test --project=visual-desktop --project=visual-mobile tests/e2e/visual/",
     "test:visual:update": "playwright test --project=visual-desktop --project=visual-mobile tests/e2e/visual/ --update-snapshots",
+    "screenshots:client-work": "node scripts/capture-client-work-screenshots.mjs",
     "test:all": "npm run test:run && npm run test:e2e"
   },
   "dependencies": {

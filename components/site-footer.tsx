@@ -15,10 +15,13 @@ export function SiteFooter({ showTagline = true }: SiteFooterProps) {
           ISOLATED<span className="dot">.</span>TECH
         </span>
         {showTagline && (
-          <span className="store-footer__tagline">Software that ships.</span>
+          <span className="store-footer__tagline">Apps + client websites. Built to ship.</span>
         )}
       </div>
       <div className="store-footer__links">
+        <Link href="/apps">APPS</Link>
+        <Link href="/work">CLIENT WORK</Link>
+        <Link href="/hire">HIRE</Link>
         <Link href="/seller">SELL WITH US</Link>
         <a href="/feedback">FEEDBACK</a>
         <a href="/roadmap">ROADMAP</a>

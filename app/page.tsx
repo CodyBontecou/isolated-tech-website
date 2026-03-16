@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { ViewTransitionLink } from "./components/view-transition-link";
@@ -5,10 +6,11 @@ import { HeroAppLink } from "./components/hero-app-link";
 import { queries } from "@/lib/db";
 import { getPlatforms, isIOSOnly } from "@/lib/platform";
 import { formatPrice } from "@/lib/formatting";
-import { PlatformBadge, StarRatingCompact } from "@/components/ui";
+import { PlatformBadge } from "@/components/ui";
 import { AppFilters } from "./components/app-filters";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
+import { CLIENT_WORK } from "@/lib/client-work";
 
 interface App {
   id: string;
@@ -213,11 +215,38 @@ export default async function HomePage() {
 
   const totalApps = (featured ? 1 : 0) + apps.length;
   const allApps = featured ? [featured, ...apps] : apps;
+  const featuredClientWork = CLIENT_WORK.slice(0, 2);
 
   return (
     <>
       {/* NAV */}
-      <SiteNav user={user} activePage="apps" />
+      <SiteNav user={user} />
+
+      <section className="studio-split">
+        <div className="studio-split__intro">
+          <p className="studio-split__label">ISOLATED.TECH</p>
+          <h2 className="studio-split__title">
+            Product studio + client web partner.
+          </h2>
+          <p className="studio-split__subtitle">
+            I design and ship polished software — from privacy-first apps to
+            conversion-focused client websites. Client sites launch free, then run on a
+            $200/month unlimited-edits model.
+          </p>
+        </div>
+        <div className="studio-split__actions">
+          <Link href="/apps" className="studio-split__card">
+            <span className="studio-split__card-label">PRODUCTS</span>
+            <strong>Browse Apps</strong>
+            <p>iOS and macOS tools built and maintained by ISOLATED.TECH.</p>
+          </Link>
+          <Link href="/work" className="studio-split__card">
+            <span className="studio-split__card-label">SERVICES</span>
+            <strong>View Client Work</strong>
+            <p>Websites built for businesses that need trust, speed, and leads.</p>
+          </Link>
+        </div>
+      </section>
 
       {/* HERO */}
       {featured ? (
@@ -255,6 +284,37 @@ export default async function HomePage() {
           <span className="store-stats__label">ON-DEVICE</span>
         </div>
       </div>
+
+      <section className="home-work-preview" aria-label="Recent client websites">
+        <div className="home-work-preview__header">
+          <div>
+            <p className="home-work-preview__label">CLIENT SHOWCASE</p>
+            <h2 className="home-work-preview__title">Recent websites</h2>
+          </div>
+          <div className="home-work-preview__actions">
+            <Link href="/work" className="work-btn work-btn--ghost">VIEW ALL WORK</Link>
+            <Link href="/hire" className="work-btn work-btn--primary">HIRE ME</Link>
+          </div>
+        </div>
+
+        <div className="home-work-preview__grid">
+          {featuredClientWork.map((project) => (
+            <article key={project.slug} className="home-work-preview__card">
+              <a href={project.primaryUrl} target="_blank" rel="noopener" className="home-work-preview__image-wrap">
+                <img src={project.previewImage} alt={`${project.client} website preview`} />
+              </a>
+              <div className="home-work-preview__body">
+                <p className="home-work-preview__client">{project.client}</p>
+                <h3>{project.headline}</h3>
+                <p>{project.summary}</p>
+                <a href={project.primaryUrl} target="_blank" rel="noopener" className="home-work-preview__link">
+                  Visit live site ↗
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {/* APPS GRID */}
       <section className="store-section" id="apps">

@@ -23,7 +23,9 @@ export function MobileSiteNav({ isLoggedIn, isAdmin, isSeller }: MobileSiteNavPr
 
   const navLinks: NavLink[] = [
     { href: "/", icon: "◉", text: "Home" },
-    { href: "/#apps", icon: "☎", text: "Apps" },
+    { href: "/apps", icon: "☎", text: "Apps" },
+    { href: "/work", icon: "◆", text: "Client Work" },
+    { href: "/hire", icon: "✦", text: "Hire" },
     { href: "/changelog", icon: "◈", text: "Updates" },
     { href: "/feedback", icon: "∴", text: "Feedback" },
     { href: "/roadmap", icon: "★", text: "Roadmap" },

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s — ISOLATED.TECH",
   },
   description:
-    "Isolated Tech is a software studio building brutalist websites and iOS apps. We ship fast, we ship raw.",
+    "Isolated Tech is a product studio and client web partner building polished apps and high-converting websites.",
   keywords: [
     "macOS apps",
     "iOS apps",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     siteName: "ISOLATED.TECH",
     title: "ISOLATED.TECH — We build software.",
     description:
-      "Indie software studio. macOS and iOS apps with pay-what-you-want pricing.",
+      "Product studio and client web partner. iOS/macOS apps plus conversion-focused websites.",
     images: [
       {
         url: "/og-image.png",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ISOLATED.TECH — We build software.",
     description:
-      "Indie software studio. macOS and iOS apps with pay-what-you-want pricing.",
+      "Product studio and client web partner. iOS/macOS apps plus conversion-focused websites.",
     images: ["/og-image.png"],
     creator: "@codybontecou",
   },

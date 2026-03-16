@@ -15,6 +15,7 @@ export default defineConfig({
     }),
     cloudflare({
       viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
+      remoteBindings: true,
     }),
   ],
   optimizeDeps: {

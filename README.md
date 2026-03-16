@@ -63,6 +63,7 @@ docs/               # Documentation
 - [Development Guide](docs/development.md) — Local setup and deployment
 - [Sparkle Setup](docs/sparkle-setup.md) — Integrating auto-updates
 - [Marketplace Setup](docs/marketplace-setup.md) — Multi-tenant sellers + Stripe Connect + CLI onboarding
+- [Client Work Screenshots](docs/client-work-screenshots.md) — Generate and maintain local showcase screenshots (no thum.io)
 
 ## Environment Setup
 
@@ -75,9 +76,10 @@ See [Development Guide](docs/development.md) for required secrets:
 ## Commands
 
 ```bash
-npm run dev       # Start development server
-npm run build     # Build for production
-npm run deploy    # Deploy to Cloudflare Workers
+npm run dev                    # Start development server
+npm run build                  # Build for production
+npm run deploy                 # Deploy to Cloudflare Workers
+npm run screenshots:client-work # Capture/update client showcase screenshots
 ```
 
 ## Database Migrations
