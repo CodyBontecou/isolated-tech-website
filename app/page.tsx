@@ -254,11 +254,6 @@ export default async function HomePage() {
           <span className="store-stats__number">●</span>
           <span className="store-stats__label">ON-DEVICE</span>
         </div>
-        <div className="store-stats__divider" />
-        <div className="store-stats__item">
-          <span className="store-stats__number">●</span>
-          <span className="store-stats__label">NO SUBSCRIPTIONS</span>
-        </div>
       </div>
 
       {/* APPS GRID */}
