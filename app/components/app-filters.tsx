@@ -170,8 +170,8 @@ export function AppFilters({ apps, showFeaturedSort = true }: AppFiltersProps) {
       <div className="store-filters">
         <div className="store-filters__row">
           {/* Mobile filter toggle */}
-          <button 
-            className="store-filters__toggle"
+          <button
+            className="store-filters__toggle store-filters__toggle--mobile"
             onClick={() => setIsFiltersOpen(!isFiltersOpen)}
             aria-expanded={isFiltersOpen}
           >
@@ -217,22 +217,31 @@ export function AppFilters({ apps, showFeaturedSort = true }: AppFiltersProps) {
             </div>
           </div>
 
-          {/* Sort dropdown */}
-          <div className="store-filters__sort">
-            <label className="store-filters__label">SORT BY</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="store-filters__select"
-            >
-              {showFeaturedSort && <option value="featured">Featured</option>}
-              <option value="newest">Newest</option>
-              <option value="recent">Recently Updated</option>
-              <option value="rating">Highest Rated</option>
-              <option value="name">Name A-Z</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
+          <div className="store-filters__actions">
+            {activeFilterCount > 0 && (
+              <div className="store-filters__toggle store-filters__toggle--desktop">
+                <span>FILTERS</span>
+                <span className="store-filters__badge">{activeFilterCount}</span>
+              </div>
+            )}
+
+            {/* Sort dropdown */}
+            <div className="store-filters__sort">
+              <label className="store-filters__label">SORT BY</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="store-filters__select"
+              >
+                {showFeaturedSort && <option value="featured">Featured</option>}
+                <option value="newest">Newest</option>
+                <option value="recent">Recently Updated</option>
+                <option value="rating">Highest Rated</option>
+                <option value="name">Name A-Z</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
           </div>
         </div>
 
