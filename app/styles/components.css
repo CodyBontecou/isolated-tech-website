@@ -2537,7 +2537,7 @@ html.light .hero__image-overlay {
   width: 220px;
   background: var(--gray-dark);
   border-right: var(--border);
-  padding: 1.5rem 0;
+  padding: 2.25rem 0 1.5rem;
   flex-shrink: 0;
   position: fixed;
   top: 60px;
