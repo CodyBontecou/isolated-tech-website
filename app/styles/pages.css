@@ -539,6 +539,7 @@
 .store-filters__toggle {
   display: none;
   align-items: center;
+  align-self: flex-end;
   gap: 0.5rem;
   padding: 0.65rem 0.9rem;
   background: var(--gray-dark);
@@ -740,6 +741,7 @@
 @media (max-width: 768px) {
   .store-filters__toggle {
     display: flex;
+    align-self: flex-start;
   }
 
   .store-filters__row {
