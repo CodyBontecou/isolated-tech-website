@@ -1,6 +1,5 @@
 .vercel
-.env*.local
-.env.production
+.env*
 .dev.vars
 node_modules/
 dist/
