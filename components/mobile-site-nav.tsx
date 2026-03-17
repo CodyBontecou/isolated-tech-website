@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 interface NavLink {
   href: string;
   text: string;
-  icon: string;
 }
 
 interface MobileSiteNavProps {
@@ -22,19 +21,19 @@ export function MobileSiteNav({ isLoggedIn, isAdmin, isSeller }: MobileSiteNavPr
   const pathname = usePathname();
 
   const navLinks: NavLink[] = [
-    { href: "/", icon: "◉", text: "Home" },
-    { href: "/apps", icon: "☎", text: "Apps" },
-    { href: "/work", icon: "◆", text: "Client Work" },
-    { href: "/hire", icon: "✦", text: "Hire" },
+    { href: "/", text: "Home" },
+    { href: "/apps", text: "Apps" },
+    { href: "/work", text: "Client Work" },
+    { href: "/hire", text: "Hire" },
   ];
 
   const userLinks: NavLink[] = isLoggedIn
     ? [
-        ...(isAdmin ? [{ href: "/admin", icon: "⚙", text: "Admin" }] : []),
-        ...(isSeller && !isAdmin ? [{ href: "/seller", icon: "$", text: "Seller" }] : []),
-        { href: "/dashboard", icon: "◎", text: "Dashboard" },
+        ...(isAdmin ? [{ href: "/admin", text: "Admin" }] : []),
+        ...(isSeller && !isAdmin ? [{ href: "/seller", text: "Seller" }] : []),
+        { href: "/dashboard", text: "Dashboard" },
       ]
-    : [{ href: "/auth/login", icon: "→", text: "Sign In" }];
+    : [{ href: "/auth/login", text: "Sign In" }];
 
   // Ensure portal target is available (client-side only)
   useEffect(() => {
@@ -102,7 +101,6 @@ export function MobileSiteNav({ isLoggedIn, isAdmin, isSeller }: MobileSiteNavPr
                 }`}
                 onClick={() => setIsOpen(false)}
               >
-                <span className="mobile-site-menu__icon">{link.icon}</span>
                 <span>{link.text}</span>
               </a>
             ))}
@@ -119,7 +117,6 @@ export function MobileSiteNav({ isLoggedIn, isAdmin, isSeller }: MobileSiteNavPr
                 }`}
                 onClick={() => setIsOpen(false)}
               >
-                <span className="mobile-site-menu__icon">{link.icon}</span>
                 <span>{link.text}</span>
               </a>
             ))}
@@ -128,7 +125,6 @@ export function MobileSiteNav({ isLoggedIn, isAdmin, isSeller }: MobileSiteNavPr
                 onClick={handleSignOut}
                 className="mobile-site-menu__link mobile-site-menu__link--button"
               >
-                <span className="mobile-site-menu__icon">←</span>
                 <span>Sign Out</span>
               </button>
             )}

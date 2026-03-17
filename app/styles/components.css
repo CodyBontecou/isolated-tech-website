@@ -2567,7 +2567,7 @@ html.light .hero__image-overlay {
 .admin-sidebar__link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: flex-start;
   padding: 0.6rem 1.5rem;
   font-size: 0.75rem;
   font-weight: 500;
@@ -2584,12 +2584,6 @@ html.light .hero__image-overlay {
   background: rgba(255, 255, 255, 0.08);
   color: var(--white);
   border-left: 2px solid var(--white);
-}
-
-.admin-sidebar__icon {
-  font-size: 1rem;
-  width: 20px;
-  text-align: center;
 }
 
 .admin-main {
@@ -2767,26 +2761,7 @@ html.light .hero__image-overlay {
 
 /* Responsive Admin */
 @media (max-width: 900px) {
-  .admin-sidebar {
-    width: 60px;
-    padding: 1rem 0;
-  }
-
-  .admin-sidebar__label {
-    display: none;
-  }
-
-  .admin-sidebar__link {
-    justify-content: center;
-    padding: 0.75rem;
-  }
-
-  .admin-sidebar__link span:not(.admin-sidebar__icon) {
-    display: none;
-  }
-
   .admin-main {
-    margin-left: 60px;
     padding: 1.5rem;
   }
 }
@@ -2949,7 +2924,7 @@ html.light .hero__image-overlay {
 .mobile-admin-menu__link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: flex-start;
   padding: 0.75rem 1.5rem;
   font-size: 0.85rem;
   font-weight: 500;
@@ -2966,12 +2941,6 @@ html.light .hero__image-overlay {
   background: rgba(255, 255, 255, 0.08);
   color: var(--white);
   border-left: 2px solid var(--white);
-}
-
-.mobile-admin-menu__icon {
-  font-size: 1.1rem;
-  width: 24px;
-  text-align: center;
 }
 
 @media (max-width: 600px) {
@@ -3129,7 +3098,7 @@ html.light .hero__image-overlay {
 .mobile-site-menu__link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: flex-start;
   padding: 0.95rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
@@ -3156,12 +3125,6 @@ html.light .hero__image-overlay {
   cursor: pointer;
   text-align: left;
   font-family: inherit;
-}
-
-.mobile-site-menu__icon {
-  font-size: 1.1rem;
-  width: 24px;
-  text-align: center;
 }
 
 @media (max-width: 900px) {
@@ -3871,7 +3834,6 @@ html.light .hero__image-overlay {
 .auth-back-link,
 .app-page__back,
 .dashboard__nav-link,
-.admin-sidebar__link,
 .admin-table__btn,
 .purchased-card__btn,
 .purchase-card__btn,

@@ -43,7 +43,6 @@ export default function AdminLoading() {
             <div className="admin-sidebar__label">OVERVIEW</div>
             <nav className="admin-sidebar__nav">
               <span className="admin-sidebar__link admin-sidebar__link--active">
-                <span className="admin-sidebar__icon">◉</span>
                 <span>Dashboard</span>
               </span>
             </nav>

@@ -7,47 +7,47 @@ import { usePathname } from "next/navigation";
 const navSections = [
   {
     label: "OVERVIEW",
-    links: [{ href: "/admin", icon: "◉", text: "Dashboard" }],
+    links: [{ href: "/admin", text: "Dashboard" }],
   },
   {
     label: "CATALOG",
     links: [
-      { href: "/admin/apps", icon: "☎", text: "Apps" },
-      { href: "/admin/codes", icon: "%", text: "Discount Codes" },
+      { href: "/admin/apps", text: "Apps" },
+      { href: "/admin/codes", text: "Discount Codes" },
     ],
   },
   {
     label: "CUSTOMERS",
     links: [
-      { href: "/admin/purchases", icon: "$", text: "Purchases" },
-      { href: "/admin/downloads", icon: "↓", text: "Downloads" },
-      { href: "/admin/users", icon: "◎", text: "Users" },
+      { href: "/admin/purchases", text: "Purchases" },
+      { href: "/admin/downloads", text: "Downloads" },
+      { href: "/admin/users", text: "Users" },
     ],
   },
   {
     label: "SUPPORT",
     links: [
-      { href: "/admin/feedback", icon: "∴", text: "Feedback" },
-      { href: "/admin/feature-requests", icon: "★", text: "Feature Requests" },
+      { href: "/admin/feedback", text: "Feedback" },
+      { href: "/admin/feature-requests", text: "Feature Requests" },
     ],
   },
   {
     label: "CONTENT",
     links: [
-      { href: "/admin/blog-posts", icon: "✎", text: "Blog Posts" },
-      { href: "/admin/help-articles", icon: "≡", text: "Help Articles" },
+      { href: "/admin/blog-posts", text: "Blog Posts" },
+      { href: "/admin/help-articles", text: "Help Articles" },
     ],
   },
   {
     label: "MARKETING",
     links: [
-      { href: "/admin/subscribers", icon: "@", text: "Subscribers" },
-      { href: "/admin/broadcasts", icon: "✉", text: "Broadcasts" },
+      { href: "/admin/subscribers", text: "Subscribers" },
+      { href: "/admin/broadcasts", text: "Broadcasts" },
     ],
   },
   {
     label: "SETTINGS",
-    links: [{ href: "/admin/api-keys", icon: "⚿", text: "API Keys" }],
+    links: [{ href: "/admin/api-keys", text: "API Keys" }],
   },
 ];
 
@@ -112,7 +112,6 @@ export function MobileAdminNav() {
                   }`}
                   onClick={() => setIsOpen(false)}
                 >
-                  <span className="mobile-admin-menu__icon">{link.icon}</span>
                   <span>{link.text}</span>
                 </a>
               ))}
