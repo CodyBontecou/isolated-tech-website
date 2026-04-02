@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "isolated-tech-web",
+  "account_id": "e4265f322e6380ee832b83ad45e3e8c0",
+  "compatibility_date": "2026-03-20",
+  "main": "index.ts",
+
+  // More specific route takes priority over *.isolated.tech/* wildcard
+  "routes": [
+    { "pattern": "web.isolated.tech/*", "zone_name": "isolated.tech" }
+  ]
+}
