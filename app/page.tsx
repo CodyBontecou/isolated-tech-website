@@ -230,8 +230,8 @@ export default async function HomePage() {
           </h2>
           <p className="studio-split__subtitle">
             I design and ship polished software — from privacy-first apps to
-            conversion-focused client websites. Client sites launch free, then run on a
-            $200/month unlimited-edits model.
+            conversion-focused client websites. Client sites launch free, then run on an
+            unlimited-edits subscription.
           </p>
         </div>
         <div className="studio-split__actions">
