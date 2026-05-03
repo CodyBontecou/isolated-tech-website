@@ -136,7 +136,7 @@ describe('publish command', () => {
         const { publishCommand } = await import('../../src/commands/publish.js');
         
         // Only version provided, missing build and slug
-        await expect(publishCommand.parseAsync(['--version', '1.0.0'], { from: 'user' }))
+        await expect(publishCommand.parseAsync(['--app-version', '1.0.0'], { from: 'user' }))
           .rejects.toThrow(/process\.exit/);
       });
     });
@@ -146,7 +146,7 @@ describe('publish command', () => {
         const { publishCommand } = await import('../../src/commands/publish.js');
         
         await expect(publishCommand.parseAsync([
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app'
         ], { from: 'user' }))
@@ -172,7 +172,7 @@ describe('publish command', () => {
         
         await publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app',
           '--no-bump'
@@ -197,7 +197,7 @@ describe('publish command', () => {
         
         await expect(publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app'
         ], { from: 'user' }))
@@ -212,7 +212,7 @@ describe('publish command', () => {
         
         await expect(publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app'
         ], { from: 'user' }))
@@ -236,7 +236,7 @@ describe('publish command', () => {
         
         await expect(publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'nonexistent-app'
         ], { from: 'user' }))
@@ -251,7 +251,7 @@ describe('publish command', () => {
         
         await expect(publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app'
         ], { from: 'user' }))
@@ -267,7 +267,7 @@ describe('publish command', () => {
         
         await expect(publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app'
         ], { from: 'user' }))
@@ -284,7 +284,7 @@ describe('publish command', () => {
         
         await expect(publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app'
         ], { from: 'user' }))
@@ -312,7 +312,7 @@ describe('publish command', () => {
         
         await publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app',
           '--notes', 'Initial release',
@@ -332,7 +332,7 @@ describe('publish command', () => {
         
         await publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '2.0.0',
+          '--app-version', '2.0.0',
           '--build', '42',
           '--slug', 'my-app',
           '--notes', 'Major update!',
@@ -358,7 +358,7 @@ describe('publish command', () => {
           
           await publishCommand.parseAsync([
             '--zip', '/path/to/app.zip',
-            '--version', '1.0.0',
+            '--app-version', '1.0.0',
             '--build', '1',
             '--slug', 'my-app',
             '--no-bump'
@@ -402,7 +402,7 @@ describe('publish command', () => {
         
         await publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app',
           '--dry-run'
@@ -422,7 +422,7 @@ describe('publish command', () => {
           
           await publishCommand.parseAsync([
             '--zip', '/path/to/app.zip',
-            '--version', '1.0.0',
+            '--app-version', '1.0.0',
             '--build', '1',
             '--slug', 'my-app',
             '--dry-run'
@@ -465,7 +465,7 @@ describe('publish command', () => {
         
         await publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app',
           '--notes', 'Custom release notes',
@@ -482,7 +482,7 @@ describe('publish command', () => {
         
         await publishCommand.parseAsync([
           '--zip', '/path/to/app.zip',
-          '--version', '1.0.0',
+          '--app-version', '1.0.0',
           '--build', '1',
           '--slug', 'my-app',
           '--no-bump'
