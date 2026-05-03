@@ -16,6 +16,8 @@ export interface App {
   icon_url?: string;
   platforms: string;
   is_published: boolean;
+  github_url?: string | null;
+  custom_page_config?: string | null;
 }
 
 export interface Version {
@@ -174,6 +176,8 @@ class ApiClient {
     platforms?: string[];
     privacy_policy?: string;
     terms_of_service?: string;
+    page_config?: Record<string, unknown> | null;
+    github_url?: string | null;
   }): Promise<ApiResponse<App>> {
     return this.request('PATCH', `/api/cli/apps/${slug}`, data);
   }
@@ -313,51 +317,66 @@ class ApiClient {
 
   // Media endpoints
   async uploadMedia(
-    appId: string,
+    slug: string,
     filePath: string,
     title: string,
     sortOrder: number = 0
-  ): Promise<ApiResponse<{ id: string; url: string }>> {
-    const url = `${this.baseUrl}/api/cli/apps/${appId}/media`;
+  ): Promise<ApiResponse<{ id: string; url: string; title: string | null; sort_order: number; size: number }>> {
+    const url = `${this.baseUrl}/api/cli/apps/${slug}/media`;
     const token = getToken();
-    
-    // Read file
+
     const fs = await import('fs');
     const path = await import('path');
     const fileBuffer = fs.readFileSync(filePath);
     const filename = path.basename(filePath);
-    
-    // Create form data
+
+    const ext = path.extname(filePath).toLowerCase();
+    const contentTypes: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+    };
+    const contentType = contentTypes[ext] || 'image/png';
+
     const formData = new FormData();
-    formData.append('file', new Blob([fileBuffer]), filename);
-    formData.append('title', title);
-    formData.append('type', 'image');
+    formData.append('file', new Blob([fileBuffer], { type: contentType }), filename);
+    if (title) formData.append('title', title);
     formData.append('sort_order', sortOrder.toString());
-    
+
+    let response: Response;
     try {
-      const response = await fetch(url, {
+      response = await fetch(url, {
         method: 'POST',
         headers: {
           ...(token && { 'X-API-Key': token }),
         },
         body: formData,
       });
-      
-      const data = await response.json() as { id?: string; url?: string; error?: string };
-      
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.error || `HTTP ${response.status}`,
-          message: data.error || response.statusText,
-        };
-      }
-      
-      return { success: true, data: data as { id: string; url: string } };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       return { success: false, error: 'network_error', message };
     }
+
+    // Parse body once as text, then attempt JSON. Servers that return HTML 404s
+    // would otherwise blow up response.json() and look like a network error.
+    const bodyText = await response.text();
+    let parsed: { id?: string; url?: string; error?: string; title?: string | null; sort_order?: number; size?: number } = {};
+    try {
+      parsed = bodyText ? JSON.parse(bodyText) : {};
+    } catch {
+      // Non-JSON body — fall through with parsed = {}
+    }
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: parsed.error || `HTTP ${response.status}`,
+        message: parsed.error || `${response.status} ${response.statusText}`.trim(),
+      };
+    }
+
+    return { success: true, data: parsed as { id: string; url: string; title: string | null; sort_order: number; size: number } };
   }
 
   // Blog endpoints

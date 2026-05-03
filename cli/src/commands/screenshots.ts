@@ -532,25 +532,17 @@ function uploadCommand(): Command {
         return;
       }
       
-      // Get app ID from slug
-      const appResponse = await api.getApp(opts.slug);
-      if (!appResponse.success || !appResponse.data) {
-        error('app_not_found', `App not found: ${opts.slug}`);
-        return;
-      }
-      
-      const appId = appResponse.data.id;
       const results: Array<{ file: string; success: boolean; error?: string }> = [];
-      
+
       for (let i = 0; i < screenshots.length; i++) {
         const s = screenshots[i];
-        
+
         if (!isJsonMode()) {
           process.stdout.write(`Uploading ${s.file}... `);
         }
-        
+
         try {
-          const uploadResult = await api.uploadMedia(appId, s.path, s.title, i);
+          const uploadResult = await api.uploadMedia(opts.slug, s.path, s.title, i);
           
           if (uploadResult.success) {
             results.push({ file: s.file, success: true });

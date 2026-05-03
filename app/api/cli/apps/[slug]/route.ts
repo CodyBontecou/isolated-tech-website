@@ -12,6 +12,8 @@ interface App {
   icon_url: string | null;
   platforms: string;
   is_published: number;
+  github_url: string | null;
+  custom_page_config: string | null;
 }
 
 /**
@@ -32,7 +34,7 @@ export async function GET(
   }
 
   const app = await queryOne<App>(
-    `SELECT id, slug, name, tagline, description, icon_url, platforms, is_published
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, is_published, github_url, custom_page_config
      FROM apps
      WHERE slug = ?`,
     [slug],
@@ -71,7 +73,7 @@ export async function PATCH(
   }
 
   const app = await queryOne<App>(
-    `SELECT id, slug, name, tagline, description, icon_url, platforms, is_published
+    `SELECT id, slug, name, tagline, description, icon_url, platforms, is_published, github_url, custom_page_config
      FROM apps
      WHERE slug = ?`,
     [slug],
@@ -97,6 +99,8 @@ export async function PATCH(
     platforms?: string[];
     privacy_policy?: string;
     terms_of_service?: string;
+    page_config?: Record<string, unknown> | null;
+    github_url?: string | null;
   };
 
   try {
@@ -107,7 +111,7 @@ export async function PATCH(
 
   // Build dynamic update query
   const updates: string[] = [];
-  const values: (string | number)[] = [];
+  const values: (string | number | null)[] = [];
 
   if (body.name !== undefined) {
     updates.push("name = ?");
@@ -144,6 +148,43 @@ export async function PATCH(
     values.push(body.terms_of_service);
   }
 
+  if (body.github_url !== undefined) {
+    updates.push("github_url = ?");
+    values.push(body.github_url || null);
+  }
+
+  // page_config merges into existing custom_page_config.
+  // Setting a key to null deletes it; passing null replaces the whole config.
+  if (body.page_config !== undefined) {
+    const existing = await queryOne<{ custom_page_config: string | null }>(
+      `SELECT custom_page_config FROM apps WHERE slug = ?`,
+      [slug],
+      env
+    );
+
+    let merged: Record<string, unknown> | null = null;
+
+    if (body.page_config === null) {
+      merged = null;
+    } else {
+      const current: Record<string, unknown> = existing?.custom_page_config
+        ? (JSON.parse(existing.custom_page_config) as Record<string, unknown>)
+        : {};
+      merged = { ...current };
+      for (const [k, v] of Object.entries(body.page_config)) {
+        if (v === null) {
+          delete merged[k];
+        } else {
+          merged[k] = v;
+        }
+      }
+      if (Object.keys(merged).length === 0) merged = null;
+    }
+
+    updates.push("custom_page_config = ?");
+    values.push(merged ? JSON.stringify(merged) : null);
+  }
+
   if (updates.length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
@@ -163,7 +204,7 @@ export async function PATCH(
 
     // Fetch updated app
     const updated = await queryOne<App>(
-      `SELECT id, slug, name, tagline, description, icon_url, platforms, is_published
+      `SELECT id, slug, name, tagline, description, icon_url, platforms, is_published, github_url, custom_page_config
        FROM apps
        WHERE slug = ?`,
       [slug],

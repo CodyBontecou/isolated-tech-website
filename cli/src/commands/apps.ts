@@ -67,6 +67,11 @@ appsCommand
   .option('--privacy-policy-file <file>', 'Privacy policy from file (markdown)')
   .option('--terms-of-service <text>', 'Terms of service content (markdown)')
   .option('--terms-of-service-file <file>', 'Terms of service from file (markdown)')
+  .option('--github-url <url>', 'Public source repository URL (use "" to clear)')
+  .option('--app-store-url <url>', 'iOS App Store listing URL (renders Download CTA)')
+  .option('--app-store-id <id>', 'Numeric App Store ID (e.g. 6761960794) — enables review sync')
+  .option('--app-store-label <label>', 'Custom label for the App Store CTA')
+  .option('--page-config <json>', 'Merge raw JSON keys into custom_page_config. Use null values to delete keys.')
   .action(async (slug: string, options: {
     name?: string;
     tagline?: string;
@@ -78,6 +83,11 @@ appsCommand
     privacyPolicyFile?: string;
     termsOfService?: string;
     termsOfServiceFile?: string;
+    githubUrl?: string;
+    appStoreUrl?: string;
+    appStoreId?: string;
+    appStoreLabel?: string;
+    pageConfig?: string;
   }) => {
     if (!isAuthenticated()) {
       error('not_authenticated', 'Not logged in', 'Run: isolated login');
@@ -96,6 +106,8 @@ appsCommand
       platforms?: string[];
       privacy_policy?: string;
       terms_of_service?: string;
+      github_url?: string | null;
+      page_config?: Record<string, unknown> | null;
     } = {};
 
     if (options.name) updates.name = options.name;
@@ -104,6 +116,40 @@ appsCommand
     if (options.publish) updates.is_published = true;
     if (options.unpublish) updates.is_published = false;
     if (options.platforms) updates.platforms = options.platforms.split(',').map(p => p.trim());
+
+    // Empty string clears github_url; otherwise set it.
+    if (options.githubUrl !== undefined) {
+      updates.github_url = options.githubUrl === '' ? null : options.githubUrl;
+    }
+
+    // Build page_config patch from individual flags + raw --page-config JSON.
+    // Raw JSON is merged first, then individual flags overlay.
+    const pageConfigPatch: Record<string, unknown> = {};
+    if (options.pageConfig) {
+      try {
+        const parsed = JSON.parse(options.pageConfig);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          error('invalid_page_config', '--page-config must be a JSON object');
+          process.exit(1);
+        }
+        Object.assign(pageConfigPatch, parsed);
+      } catch (e) {
+        error('invalid_page_config', `--page-config is not valid JSON: ${(e as Error).message}`);
+        process.exit(1);
+      }
+    }
+    if (options.appStoreUrl !== undefined) {
+      pageConfigPatch.ios_app_store_url = options.appStoreUrl === '' ? null : options.appStoreUrl;
+    }
+    if (options.appStoreId !== undefined) {
+      pageConfigPatch.app_store_id = options.appStoreId === '' ? null : options.appStoreId;
+    }
+    if (options.appStoreLabel !== undefined) {
+      pageConfigPatch.ios_app_store_label = options.appStoreLabel === '' ? null : options.appStoreLabel;
+    }
+    if (Object.keys(pageConfigPatch).length > 0) {
+      updates.page_config = pageConfigPatch;
+    }
 
     // Handle privacy policy
     if (options.privacyPolicyFile) {
@@ -130,7 +176,7 @@ appsCommand
     }
 
     if (Object.keys(updates).length === 0) {
-      error('no_updates', 'No updates specified', 'Use --name, --tagline, --description, --publish, --unpublish, --privacy-policy-file, or --terms-of-service-file');
+      error('no_updates', 'No updates specified', 'Use --name, --tagline, --description, --publish, --unpublish, --privacy-policy-file, --terms-of-service-file, --github-url, --app-store-url, --app-store-id, --app-store-label, or --page-config');
       process.exit(1);
     }
 
