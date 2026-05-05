@@ -115,6 +115,12 @@ export default function RootLayout({
           title="ISOLATED.TECH Updates"
           href="/feed/updates.xml"
         />
+        <link
+          rel="alternate"
+          type="application/json"
+          title="ISOLATED.TECH Agentic Commerce Catalog"
+          href="/api/acp/feed"
+        />
       </head>
       <body>
         <ThemeProvider>

@@ -2,14 +2,18 @@
  * POST /api/webhooks/stripe
  *
  * Handle Stripe webhook events for payment processing.
- * Creates purchase records and notifies sellers for marketplace purchases.
+ * Records purchases and notifies sellers for both:
+ *   - Hosted Checkout Session flows (humans)
+ *   - PaymentIntent flows with Shared Payment Tokens (AI agents)
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getEnv } from "@/lib/cloudflare-context";
+import type { Env } from "@/lib/env";
 import { createStripeClient } from "@/lib/stripe";
 import { nanoid, queryOne } from "@/lib/db";
+import { recordPurchase } from "@/lib/purchases";
 
 export async function POST(request: NextRequest) {
   const env = getEnv();
@@ -29,7 +33,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Get raw body and signature
     const body = await request.text();
     const signature = request.headers.get("stripe-signature");
 
@@ -40,26 +43,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify webhook signature
     let event: Stripe.Event;
     try {
       event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
     console.log(`Webhook received: ${event.type}`);
 
-    // Handle the event
     switch (event.type) {
       case "checkout.session.completed":
         await handleCheckoutComplete(
           event.data.object as Stripe.Checkout.Session,
           env
+        );
+        break;
+
+      case "payment_intent.succeeded":
+        await handlePaymentIntentSucceeded(
+          event.data.object as Stripe.PaymentIntent,
+          env
+        );
+        break;
+
+      case "payment_intent.payment_failed":
+        await handlePaymentIntentFailed(
+          event.data.object as Stripe.PaymentIntent
         );
         break;
 
@@ -74,150 +85,88 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Webhook error:", error);
-    // Return 200 to acknowledge receipt (prevent retries for processing errors)
     return NextResponse.json({ received: true, error: "Processing error" });
   }
 }
 
-/**
- * Handle successful checkout completion
- */
+interface PurchaseMetadata {
+  app_id?: string;
+  user_id?: string;
+  discount_code_id?: string;
+  platform_fee_cents?: string;
+  seller_amount_cents?: string;
+  seller_id?: string;
+}
+
+function parsePurchaseMetadata(
+  metadata: Stripe.Metadata | null | undefined
+): PurchaseMetadata {
+  return (metadata ?? {}) as PurchaseMetadata;
+}
+
 async function handleCheckoutComplete(
   session: Stripe.Checkout.Session,
   env: Env
 ) {
-  const metadata = session.metadata || {};
-  const { 
-    app_id, 
-    user_id, 
-    discount_code_id,
-    platform_fee_cents,
-    seller_amount_cents,
-    seller_id,
-  } = metadata;
+  const meta = parsePurchaseMetadata(session.metadata);
 
-  if (!app_id || !user_id) {
-    console.error("Webhook: Missing metadata", metadata);
+  if (!meta.app_id || !meta.user_id) {
+    console.error("Webhook: Missing metadata on session", session.id);
     return;
   }
 
-  // Check for duplicate (idempotency)
-  const existing = await env.DB.prepare(
-    `SELECT id FROM purchases WHERE stripe_checkout_session_id = ?`
-  )
-    .bind(session.id)
-    .first<{ id: string }>();
+  const result = await recordPurchase(env, {
+    userId: meta.user_id,
+    appId: meta.app_id,
+    amountCents: session.amount_total || 0,
+    platformFeeCents: parseInt(meta.platform_fee_cents || "0", 10),
+    sellerAmountCents: parseInt(meta.seller_amount_cents || "0", 10),
+    discountCodeId: meta.discount_code_id || null,
+    sellerId: meta.seller_id || null,
+    stripePaymentIntentId: (session.payment_intent as string) || null,
+    stripeCheckoutSessionId: session.id,
+  });
 
-  if (existing) {
-    console.log(`Webhook: Purchase already exists for session ${session.id}`);
-    return;
-  }
-
-  // Create purchase record
-  const purchaseId = nanoid();
-  const now = new Date().toISOString();
-
-  await env.DB.prepare(
-    `INSERT INTO purchases (id, user_id, app_id, stripe_payment_intent_id, stripe_checkout_session_id, amount_cents, platform_fee_cents, seller_amount_cents, discount_code_id, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?)`
-  )
-    .bind(
-      purchaseId,
-      user_id,
-      app_id,
-      session.payment_intent as string,
-      session.id,
-      session.amount_total || 0,
-      parseInt(platform_fee_cents || "0", 10),
-      parseInt(seller_amount_cents || "0", 10),
-      discount_code_id || null,
-      now
-    )
-    .run();
-
-  console.log(`Webhook: Created purchase ${purchaseId} for user ${user_id}`);
-
-  // Increment discount code usage
-  if (discount_code_id) {
-    await env.DB.prepare(
-      `UPDATE discount_codes SET times_used = times_used + 1 WHERE id = ?`
-    )
-      .bind(discount_code_id)
-      .run();
-    console.log(`Webhook: Incremented discount code ${discount_code_id}`);
-  }
-
-  // Log purchase
-  await env.DB.prepare(
-    `INSERT INTO email_log (id, user_id, event_type, subject, sent_at)
-     VALUES (?, ?, 'purchase_receipt', ?, ?)`
-  )
-    .bind(nanoid(), user_id, `Purchase completed`, now)
-    .run();
-
-  // Notify seller if this is a marketplace purchase
-  if (seller_id) {
-    await notifySeller(env, seller_id, purchaseId, app_id, session.amount_total || 0);
-  }
-
-  console.log(`Webhook: Purchase ${purchaseId} completed for user ${user_id}`);
+  console.log(
+    `Webhook: checkout.session.completed -> purchase ${result.purchaseId} (existed=${result.alreadyExisted})`
+  );
 }
 
-/**
- * Notify seller of a new sale
- */
-async function notifySeller(
-  env: Env,
-  sellerId: string,
-  purchaseId: string,
-  appId: string,
-  amountCents: number
+async function handlePaymentIntentSucceeded(
+  pi: Stripe.PaymentIntent,
+  env: Env
 ) {
-  try {
-    // Get app name
-    const app = await queryOne<{ name: string }>(
-      `SELECT name FROM apps WHERE id = ?`,
-      [appId],
-      env
-    );
+  const meta = parsePurchaseMetadata(pi.metadata);
 
-    // Get seller info
-    const seller = await queryOne<{ email: string; name: string | null }>(
-      `SELECT email, name FROM user WHERE id = ?`,
-      [sellerId],
-      env
-    );
-
-    if (!app || !seller) {
-      console.error("Webhook: Could not find app or seller for notification");
-      return;
-    }
-
-    const amountFormatted = `$${(amountCents / 100).toFixed(2)}`;
-    const message = `New sale: ${app.name} for ${amountFormatted}`;
-
-    // Create notification record
-    await env.DB.prepare(
-      `INSERT INTO seller_notifications (id, seller_id, type, purchase_id, message, sent_at)
-       VALUES (?, ?, 'sale', ?, ?, datetime('now'))`
-    )
-      .bind(nanoid(), sellerId, purchaseId, message)
-      .run();
-
-    console.log(`Webhook: Created sale notification for seller ${sellerId}`);
-
-    // TODO: Send email notification to seller
-    // For now, just log it - email integration can be added later
-    console.log(`Webhook: [EMAIL] Would send to ${seller.email}: ${message}`);
-  } catch (error) {
-    console.error("Webhook: Failed to notify seller:", error);
-    // Don't throw - notification failure shouldn't fail the webhook
+  if (!meta.app_id || !meta.user_id) {
+    // Not one of ours (could be from a Checkout Session — handled separately
+    // via checkout.session.completed). Skip silently.
+    return;
   }
+
+  const result = await recordPurchase(env, {
+    userId: meta.user_id,
+    appId: meta.app_id,
+    amountCents: pi.amount_received || pi.amount || 0,
+    platformFeeCents: parseInt(meta.platform_fee_cents || "0", 10),
+    sellerAmountCents: parseInt(meta.seller_amount_cents || "0", 10),
+    discountCodeId: meta.discount_code_id || null,
+    sellerId: meta.seller_id || null,
+    stripePaymentIntentId: pi.id,
+    stripeCheckoutSessionId: null,
+  });
+
+  console.log(
+    `Webhook: payment_intent.succeeded -> purchase ${result.purchaseId} (existed=${result.alreadyExisted})`
+  );
 }
 
-/**
- * Handle charge refunded
- */
+async function handlePaymentIntentFailed(pi: Stripe.PaymentIntent) {
+  console.log(
+    `Webhook: payment_intent.payment_failed pi=${pi.id} reason=${pi.last_payment_error?.message ?? "unknown"}`
+  );
+}
+
 async function handleChargeRefunded(charge: Stripe.Charge, env: Env) {
   const paymentIntentId = charge.payment_intent as string;
 
@@ -226,58 +175,48 @@ async function handleChargeRefunded(charge: Stripe.Charge, env: Env) {
     return;
   }
 
-  // Get the purchase to find the seller
   const purchase = await queryOne<{
     id: string;
     app_id: string;
     amount_cents: number;
   }>(
-    `SELECT p.id, p.app_id, p.amount_cents 
-     FROM purchases p 
+    `SELECT p.id, p.app_id, p.amount_cents
+     FROM purchases p
      WHERE p.stripe_payment_intent_id = ?`,
     [paymentIntentId],
     env
   );
 
-  // Update purchase status
   const result = await env.DB.prepare(
     `UPDATE purchases SET status = 'refunded', refunded_at = datetime('now') WHERE stripe_payment_intent_id = ?`
   )
     .bind(paymentIntentId)
     .run();
 
-  if (result.meta.changes > 0) {
-    console.log(`Webhook: Marked purchase as refunded for ${paymentIntentId}`);
-
-    // Notify seller of refund if applicable
-    if (purchase) {
-      const app = await queryOne<{ owner_id: string | null }>(
-        `SELECT owner_id FROM apps WHERE id = ?`,
-        [purchase.app_id],
-        env
-      );
-
-      if (app?.owner_id) {
-        const appInfo = await queryOne<{ name: string }>(
-          `SELECT name FROM apps WHERE id = ?`,
-          [purchase.app_id],
-          env
-        );
-
-        const amountFormatted = `$${(purchase.amount_cents / 100).toFixed(2)}`;
-        const message = `Refund processed: ${appInfo?.name || 'Unknown app'} for ${amountFormatted}`;
-
-        await env.DB.prepare(
-          `INSERT INTO seller_notifications (id, seller_id, type, purchase_id, message, sent_at)
-           VALUES (?, ?, 'refund', ?, ?, datetime('now'))`
-        )
-          .bind(nanoid(), app.owner_id, purchase.id, message)
-          .run();
-
-        console.log(`Webhook: Created refund notification for seller ${app.owner_id}`);
-      }
-    }
-  } else {
-    console.log(`Webhook: No purchase found for ${paymentIntentId}`);
+  if (result.meta.changes === 0) {
+    console.log(`Webhook: No purchase found for refund ${paymentIntentId}`);
+    return;
   }
+
+  console.log(`Webhook: Marked purchase as refunded for ${paymentIntentId}`);
+
+  if (!purchase) return;
+
+  const app = await queryOne<{ owner_id: string | null; name: string }>(
+    `SELECT owner_id, name FROM apps WHERE id = ?`,
+    [purchase.app_id],
+    env
+  );
+
+  if (!app?.owner_id) return;
+
+  const amountFormatted = `$${(purchase.amount_cents / 100).toFixed(2)}`;
+  const message = `Refund processed: ${app.name} for ${amountFormatted}`;
+
+  await env.DB.prepare(
+    `INSERT INTO seller_notifications (id, seller_id, type, purchase_id, message, sent_at)
+     VALUES (?, ?, 'refund', ?, ?, datetime('now'))`
+  )
+    .bind(nanoid(), app.owner_id, purchase.id, message)
+    .run();
 }

@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        // /api/ is disallowed as a general rule, but expose the public ACP
+        // feed and agent-checkout schema so AI agents can discover and buy.
+        allow: ["/", "/api/acp/"],
         disallow: [
           "/dashboard/",
           "/admin/",
@@ -17,5 +19,6 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   };
 }

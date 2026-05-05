@@ -210,6 +210,64 @@ export async function checkAccountStatus(
 }
 
 /**
+ * Accept a payment from an AI agent using a Shared Payment Token (SPT).
+ *
+ * Per Stripe's Agentic Commerce docs, the merchant creates a PaymentIntent
+ * with `payment_method_data[shared_payment_granted_token]` set to the SPT
+ * the agent obtained from the buyer's wallet (e.g. Stripe Link). The SPT is
+ * scoped to this merchant + amount and expires within minutes, so we confirm
+ * inline.
+ *
+ * For seller-owned apps we apply the same Connect destination-charge model
+ * used by hosted Checkout: application_fee_amount + transfer_data.destination.
+ */
+export interface AgentPaymentInput {
+  amountCents: number;
+  currency?: string;
+  sharedPaymentToken: string;
+  /** Used as Stripe-Idempotency-Key so retries don't double-charge. */
+  idempotencyKey: string;
+  metadata: Record<string, string>;
+  /** Connect destination + fee for marketplace (seller-owned) apps. */
+  connect?: {
+    destinationAccountId: string;
+    applicationFeeCents: number;
+  };
+  description?: string;
+  receiptEmail?: string;
+}
+
+export async function acceptAgentPayment(
+  stripe: Stripe,
+  input: AgentPaymentInput
+): Promise<Stripe.PaymentIntent> {
+  const params: Stripe.PaymentIntentCreateParams = {
+    amount: input.amountCents,
+    currency: input.currency ?? "usd",
+    confirm: true,
+    payment_method_data: {
+      // SDK type doesn't yet enumerate shared_payment_granted_token; cast.
+      ...({ shared_payment_granted_token: input.sharedPaymentToken } as unknown as Stripe.PaymentIntentCreateParams.PaymentMethodData),
+    },
+    metadata: input.metadata,
+    description: input.description,
+    receipt_email: input.receiptEmail,
+    // Off-session because the agent is acting on behalf of the buyer who
+    // already approved the SPT in their wallet.
+    off_session: true,
+  };
+
+  if (input.connect) {
+    params.application_fee_amount = input.connect.applicationFeeCents;
+    params.transfer_data = { destination: input.connect.destinationAccountId };
+  }
+
+  return stripe.paymentIntents.create(params, {
+    idempotencyKey: input.idempotencyKey,
+  });
+}
+
+/**
  * Create a login link for the Stripe Express dashboard
  */
 export async function createDashboardLink(
