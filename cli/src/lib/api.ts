@@ -89,6 +89,25 @@ export interface UpdateBlogPostData {
   publishedAt?: string;
 }
 
+export interface ApiKeySummary {
+  id: string;
+  name: string;
+  keyPrefix: string;
+  createdAt: string;
+  expiresAt: string;
+  lastUsedAt: string | null;
+  isRevoked: boolean;
+  isExpired: boolean;
+  userId: string | null;
+  ownerEmail: string | null;
+}
+
+export interface CreatedApiKey {
+  key: string;
+  expiresAt: string;
+  message?: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -407,6 +426,19 @@ class ApiClient {
 
   async unpublishBlogPost(id: string): Promise<ApiResponse<BlogPost>> {
     return this.request('POST', `/api/cli/blog/${id}/unpublish`);
+  }
+
+  // API key management (admin endpoints — auth via X-API-Key)
+  async listApiKeys(): Promise<ApiResponse<{ keys: ApiKeySummary[] }>> {
+    return this.request('GET', '/api/admin/api-keys');
+  }
+
+  async createApiKey(name: string): Promise<ApiResponse<CreatedApiKey>> {
+    return this.request('POST', '/api/admin/api-keys', { name });
+  }
+
+  async revokeApiKey(keyPrefix: string): Promise<ApiResponse<{ success: boolean }>> {
+    return this.request('DELETE', '/api/admin/api-keys', { keyPrefix });
   }
 }
 

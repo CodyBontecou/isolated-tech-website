@@ -1,11 +1,16 @@
 {
-  "name": "@isolated/cli",
-  "version": "0.1.0",
+  "name": "@isolatedtech/cli",
+  "version": "0.1.4",
   "description": "CLI for isolated.tech - publish macOS apps with Sparkle auto-updates",
   "type": "module",
   "bin": {
     "isolated": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

@@ -13,6 +13,7 @@ import { appsCommand } from './commands/apps.js';
 import { ntfyCommand } from './commands/ntfy.js';
 import { screenshotsCommand } from './commands/screenshots.js';
 import { blogCommand } from './commands/blog.js';
+import { keysCommand } from './commands/keys.js';
 
 const program = new Command();
 
@@ -36,6 +37,7 @@ program.addCommand(statusCommand);
 program.addCommand(loginCommand);
 program.addCommand(logoutCommand);
 program.addCommand(whoamiCommand);
+program.addCommand(keysCommand);
 
 // App management
 program.addCommand(initCommand);
