@@ -1,0 +1,61 @@
+name: Manage Cloudflare AI crawler policy
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Disable Cloudflare AI-bot blocking for healthmd.app
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect and optionally update policy
+        env:
+          APPLY: ${{ inputs.apply }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo 'CLOUDFLARE_API_TOKEN is not configured' >&2
+            exit 1
+          fi
+
+          api='https://api.cloudflare.com/client/v4'
+          auth="Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+          zone_response=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -H "$auth" \
+            "${api}/zones?name=healthmd.app")
+          zone_id=$(printf '%s' "$zone_response" | jq -er '.result[0].id')
+
+          config_response=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -H "$auth" \
+            "${api}/zones/${zone_id}/bot_management")
+          current=$(printf '%s' "$config_response" | jq -er '.result.ai_bots_protection')
+          echo "Current ai_bots_protection: ${current}"
+
+          if [ "$APPLY" != 'true' ] || [ "$current" = 'disabled' ]; then
+            exit 0
+          fi
+
+          update_response=$(curl --fail-with-body --silent --show-error --max-time 30 \
+            -X PUT \
+            -H "$auth" \
+            -H 'Content-Type: application/json' \
+            --data '{"ai_bots_protection":"disabled"}' \
+            "${api}/zones/${zone_id}/bot_management")
+          updated=$(printf '%s' "$update_response" | jq -er '.result.ai_bots_protection')
+
+          if [ "$updated" != 'disabled' ]; then
+            echo "Unexpected updated policy: ${updated}" >&2
+            exit 1
+          fi
+
+          echo 'Updated ai_bots_protection: disabled'
