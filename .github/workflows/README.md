@@ -1,5 +1,11 @@
 # GitHub Actions Workflows
 
+## cloudflare-ai-crawler-policy.yml
+
+Manual control for the `healthmd.app` Cloudflare AI-crawler policy. The repository secret `CLOUDFLARE_BOT_MANAGEMENT_TOKEN` must be a narrowly scoped Cloudflare API token with **Bot Management Read** and **Bot Management Write** access to the `healthmd.app` zone.
+
+Run with `apply: false` to inspect the current `ai_bots_protection` value. Run with `apply: true` to set only that field to `disabled`; the workflow verifies the returned value. The normal Workers deployment token intentionally does not have this permission.
+
 ## release-macos.yml
 
 Reusable workflow for building, notarizing, and publishing macOS apps to isolated.tech.

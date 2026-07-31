@@ -19,12 +19,12 @@ jobs:
       - name: Inspect and optionally update policy
         env:
           APPLY: ${{ inputs.apply }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_BOT_MANAGEMENT_TOKEN }}
         run: |
           set -euo pipefail
 
           if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo 'CLOUDFLARE_API_TOKEN is not configured' >&2
+            echo 'CLOUDFLARE_BOT_MANAGEMENT_TOKEN is not configured' >&2
             exit 1
           fi
 
