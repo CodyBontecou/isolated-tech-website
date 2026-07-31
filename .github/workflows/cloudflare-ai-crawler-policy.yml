@@ -30,11 +30,7 @@ jobs:
 
           api='https://api.cloudflare.com/client/v4'
           auth="Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
-          zone_response=$(curl --fail-with-body --silent --show-error --max-time 30 \
-            -H "$auth" \
-            "${api}/zones?name=healthmd.app")
-          zone_id=$(printf '%s' "$zone_response" | jq -er '.result[0].id')
-
+          zone_id='ab25ec989887dbc8e33ea773defc8539'
           config_response=$(curl --fail-with-body --silent --show-error --max-time 30 \
             -H "$auth" \
             "${api}/zones/${zone_id}/bot_management")
