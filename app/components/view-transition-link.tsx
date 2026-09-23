@@ -24,6 +24,11 @@ export function ViewTransitionLink({
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   const handleClick = async (e: MouseEvent<HTMLAnchorElement>) => {
+    const destination = new URL(href, window.location.href);
+    if (destination.origin !== window.location.origin) {
+      return;
+    }
+
     e.preventDefault();
 
     // Check if View Transitions API is supported

@@ -14,6 +14,11 @@ export function HeroAppLink({ href, children, className, heroIconId }: HeroAppLi
   const router = useRouter();
 
   const handleClick = async (e: MouseEvent<HTMLAnchorElement>) => {
+    const destination = new URL(href, window.location.href);
+    if (destination.origin !== window.location.origin) {
+      return;
+    }
+
     e.preventDefault();
 
     // Check if View Transitions API is supported

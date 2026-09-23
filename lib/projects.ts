@@ -25,7 +25,7 @@ export const PROJECTS: Project[] = [
     title: "Apple Health → Markdown",
     description:
       "Export your Apple Health data directly to Markdown files in your iOS file system. On-device. Private. Automated.",
-    url: "https://healthmd.isolated.tech",
+    url: "https://healthmd.app",
     screenshot: "/assets/screenshots/healthmd.jpg",
     platforms: ["web", "ios"],
   },
@@ -35,17 +35,17 @@ export const PROJECTS: Project[] = [
     title: "Git on your iPhone",
     description:
       "Real Git on your iPhone. Clone, pull, commit & push any repo. No terminal, no keys layer, no lock-in.",
-    url: "https://syncmd.isolated.tech",
+    url: "https://gitsyncmd.app",
     screenshot: "/assets/screenshots/syncmd.jpg",
     platforms: ["web", "ios"],
   },
   {
     slug: "voxboard",
-    name: "Voxboard",
+    name: "vox.md",
     title: "Your voice. Your keyboard.",
     description:
       "On-device voice transcription that works in any text field. Private. No cloud. No network required.",
-    url: "https://voxboard.isolated.tech",
+    url: "https://vox.isolated.tech",
     screenshot: "/assets/screenshots/voxboard.jpg",
     platforms: ["web", "ios"],
   },

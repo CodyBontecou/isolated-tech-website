@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { getPlatforms, hasIOS, hasMacOS, isIOSOnly, hasBothPlatforms } from "@/lib/platform";
 import { formatPrice } from "@/lib/formatting";
+import { getAppDisplayName, getAppHref } from "@/lib/app-sites";
 import { PlatformBadge, StarRatingCompact } from "@/components/ui";
 
 interface App {
@@ -35,18 +36,19 @@ interface AppFiltersProps {
 function AppCard({ app, index }: { app: App; index: number }) {
   const platforms = getPlatforms(app.platforms);
   const price = formatPrice(app.min_price_cents, app.suggested_price_cents, platforms);
+  const displayName = getAppDisplayName(app.slug, app.name);
 
   return (
     <Link
-      href={`/apps/${app.slug}`}
+      href={getAppHref(app.slug)}
       className="store-card"
       style={{ animationDelay: `${index * 0.03}s` }}
     >
       <div className="store-card__icon">
         {app.icon_url ? (
-          <img src={app.icon_url} alt={`${app.name} icon`} />
+          <img src={app.icon_url} alt={`${displayName} icon`} />
         ) : (
-          <span>{app.name[0].toUpperCase()}</span>
+          <span>{displayName[0].toUpperCase()}</span>
         )}
       </div>
       <div className="store-card__content">
@@ -55,7 +57,7 @@ function AppCard({ app, index }: { app: App; index: number }) {
             <PlatformBadge key={p} platform={p} />
           ))}
         </div>
-        <h2 className="store-card__name">{app.name}</h2>
+        <h2 className="store-card__name">{displayName}</h2>
         {app.tagline && <p className="store-card__tagline">{app.tagline}</p>}
         {app.avg_rating && app.review_count && app.review_count > 0 && (
           <StarRatingCompact rating={app.avg_rating} count={app.review_count} />

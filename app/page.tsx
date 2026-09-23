@@ -6,6 +6,7 @@ import { HeroAppLink } from "./components/hero-app-link";
 import { queries } from "@/lib/db";
 import { getPlatforms, isIOSOnly } from "@/lib/platform";
 import { formatPrice } from "@/lib/formatting";
+import { getAppDisplayName, getAppHref, getAppSite } from "@/lib/app-sites";
 import { PlatformBadge } from "@/components/ui";
 import { AppFilters } from "./components/app-filters";
 import { SiteFooter } from "@/components/site-footer";
@@ -107,6 +108,8 @@ async function getApps(): Promise<{ featured: App | null; apps: App[] }> {
 function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
   const platforms = getPlatforms(app.platforms);
   const appIsIOSOnly = isIOSOnly(platforms);
+  const appSite = getAppSite(app.slug);
+  const displayName = getAppDisplayName(app.slug, app.name);
 
   return (
     <section className="store-hero">
@@ -116,9 +119,9 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
           <div className="store-hero__app">
             <div className="store-hero__icon" id="hero-featured-icon">
               {app.icon_url ? (
-                <img src={app.icon_url} alt={`${app.name} icon`} />
+                <img src={app.icon_url} alt={`${displayName} icon`} />
               ) : (
-                <span>{app.name[0].toUpperCase()}</span>
+                <span>{displayName[0].toUpperCase()}</span>
               )}
             </div>
             <div className="store-hero__info">
@@ -127,7 +130,7 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
                   <PlatformBadge key={p} platform={p} />
                 ))}
               </div>
-              <h1 className="store-hero__name">{app.name}</h1>
+              <h1 className="store-hero__name">{displayName}</h1>
               {app.tagline && <p className="store-hero__tagline">{app.tagline}</p>}
               {app.description && (
                 <p className="store-hero__desc">
@@ -142,11 +145,15 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
               )}
               <div className="store-hero__actions">
                 <HeroAppLink 
-                  href={`/apps/${app.slug}`} 
+                  href={getAppHref(app.slug)}
                   className="store-hero__btn store-hero__btn--primary"
                   heroIconId="hero-featured-icon"
                 >
-                  {appIsIOSOnly ? "VIEW ON APP STORE" : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents, platforms)}`}
+                  {appSite
+                    ? `VISIT ${displayName.toUpperCase()} SITE`
+                    : appIsIOSOnly
+                      ? "VIEW ON APP STORE"
+                      : `GET — ${formatPrice(app.min_price_cents, app.suggested_price_cents, platforms)}`}
                 </HeroAppLink>
                 <HeroAppLink 
                   href={`/apps/${app.slug}`} 
@@ -166,24 +173,25 @@ function HeroApp({ app, previewApps }: { app: App; previewApps: App[] }) {
             <div className="store-hero__rail-list">
               {previewApps.slice(0, 6).map((preview) => {
                 const previewPlatforms = getPlatforms(preview.platforms);
+                const previewName = getAppDisplayName(preview.slug, preview.name);
 
                 return (
                   <ViewTransitionLink 
                     key={preview.id} 
-                    href={`/apps/${preview.slug}`} 
+                    href={getAppHref(preview.slug)}
                     className="store-hero__rail-item"
                     transitionSelector="[data-transition-icon]"
                   >
                     <div className="store-hero__rail-icon" data-transition-icon>
                       {preview.icon_url ? (
-                        <img src={preview.icon_url} alt={`${preview.name} icon`} />
+                        <img src={preview.icon_url} alt={`${previewName} icon`} />
                       ) : (
-                        <span>{preview.name[0].toUpperCase()}</span>
+                        <span>{previewName[0].toUpperCase()}</span>
                       )}
                     </div>
                     <div className="store-hero__rail-body">
                       <div className="store-hero__rail-header">
-                        <span className="store-hero__rail-name">{preview.name}</span>
+                        <span className="store-hero__rail-name">{previewName}</span>
                         <div className="store-hero__rail-badges">
                           {previewPlatforms.map((p) => (
                             <PlatformBadge key={p} platform={p} />
