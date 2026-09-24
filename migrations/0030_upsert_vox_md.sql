@@ -1,0 +1,56 @@
+-- Add vox.md to the app catalog. The legacy Voxboard slug is preserved so
+-- existing internal URLs and related integrations remain stable.
+
+INSERT INTO apps (
+  id,
+  slug,
+  name,
+  tagline,
+  description,
+  icon_url,
+  platforms,
+  min_price_cents,
+  suggested_price_cents,
+  is_published,
+  is_featured,
+  featured_order,
+  custom_page_config,
+  distribution_type,
+  github_url,
+  min_ios_version,
+  created_at,
+  updated_at
+) VALUES (
+  'app_voxboard_001',
+  'voxboard',
+  'vox.md',
+  'Quick capture for Obsidian and Markdown.',
+  'A local-first iOS capture app for sending text, links, photos, scans, sketches, files, and private on-device voice transcriptions into Obsidian vaults and Markdown folders.',
+  'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ed/9b/6b/ed9b6bb2-ee00-9c63-3a49-e9b2bc73ce97/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg',
+  '["ios"]',
+  0,
+  NULL,
+  1,
+  0,
+  0,
+  '{"ios_app_store_url":"https://apps.apple.com/app/id6758967337","ios_app_store_label":"DOWNLOAD ON APP STORE (iOS)","app_store_id":"6758967337"}',
+  'app_store',
+  'https://github.com/CodyBontecou/vox.md',
+  '17.6',
+  datetime('now'),
+  datetime('now')
+)
+ON CONFLICT(slug) DO UPDATE SET
+  name = excluded.name,
+  tagline = excluded.tagline,
+  description = excluded.description,
+  icon_url = excluded.icon_url,
+  platforms = excluded.platforms,
+  min_price_cents = excluded.min_price_cents,
+  suggested_price_cents = excluded.suggested_price_cents,
+  is_published = excluded.is_published,
+  custom_page_config = excluded.custom_page_config,
+  distribution_type = excluded.distribution_type,
+  github_url = excluded.github_url,
+  min_ios_version = excluded.min_ios_version,
+  updated_at = datetime('now');
