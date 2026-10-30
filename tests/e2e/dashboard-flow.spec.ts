@@ -20,8 +20,8 @@ test.describe("Dashboard", () => {
     test("should show login prompt for unauthenticated users", async ({ page }) => {
       await page.goto("/dashboard");
 
-      await expect(page.locator("text=Sign In Required")).toBeVisible();
-      await expect(page.locator('a[href="/auth/login"]')).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Sign In Required", exact: true })).toBeVisible();
+      await expect(page.getByRole("main").getByRole("link", { name: "SIGN IN", exact: true })).toBeVisible();
     });
 
     test("should have link to browse apps", async ({ page }) => {
@@ -169,7 +169,7 @@ test.describe("Dashboard", () => {
       await page.waitForURL(/^https?:\/\/[^/]+\/?$/);
 
       // Should show sign in link
-      await expect(page.locator('a[href="/auth/login"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "SIGN IN", exact: true })).toBeVisible();
     });
   });
 });

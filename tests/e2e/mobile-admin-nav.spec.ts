@@ -12,6 +12,7 @@ const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 /** Helper: open the admin mobile sidebar menu */
 async function openAdminMenu(page: Page) {
+  await expect(page.locator(".mobile-admin-menu")).toBeAttached();
   const toggle = page.locator(".mobile-admin-toggle");
   await toggle.click();
   await expect(page.locator(".mobile-admin-menu--open")).toBeVisible();
@@ -42,6 +43,12 @@ const EXPECTED_SECTIONS = [
     links: [
       { href: "/admin/feedback", text: "Feedback" },
       { href: "/admin/feature-requests", text: "Feature Requests" },
+    ],
+  },
+  {
+    label: "CONTENT",
+    links: [
+      { href: "/admin/blog-posts", text: "Blog Posts" },
       { href: "/admin/help-articles", text: "Help Articles" },
     ],
   },
@@ -63,6 +70,7 @@ test.describe("Admin Mobile Sidebar Navigation", () => {
     await loginAsAdmin(page);
     await page.setViewportSize(MOBILE_VIEWPORT);
     await page.goto("/admin");
+    await expect(page.locator(".mobile-admin-menu")).toBeAttached();
   });
 
   test.afterEach(async ({ page }) => {
@@ -152,14 +160,15 @@ test.describe("Admin Mobile Sidebar Navigation", () => {
       }
     });
 
-    test("should display icons for each nav link", async ({ page }) => {
+    test("should provide accessible names for each nav link", async ({ page }) => {
       await openAdminMenu(page);
-      const icons = page.locator(".mobile-admin-menu__icon");
+      const links = page.locator(".mobile-admin-menu__nav").getByRole("link");
       const totalLinks = EXPECTED_SECTIONS.reduce(
         (sum, s) => sum + s.links.length,
         0
       );
-      await expect(icons).toHaveCount(totalLinks);
+      await expect(links).toHaveCount(totalLinks);
+      for (const link of await links.all()) await expect(link).toHaveAccessibleName(/\S/);
     });
 
     test("should highlight active link for current page", async ({ page }) => {
@@ -201,15 +210,13 @@ test.describe("Admin Mobile Sidebar Navigation", () => {
   test.describe("Scroll Lock", () => {
     test("should lock body scroll when menu is open", async ({ page }) => {
       await openAdminMenu(page);
-      const overflow = await page.evaluate(() => document.body.style.overflow);
-      expect(overflow).toBe("hidden");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("hidden");
     });
 
     test("should unlock body scroll when menu is closed", async ({ page }) => {
       await openAdminMenu(page);
       await page.locator(".mobile-admin-menu__close").click();
-      const overflow = await page.evaluate(() => document.body.style.overflow);
-      expect(overflow).toBe("");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
     });
   });
 
@@ -283,8 +290,7 @@ test.describe("Admin Mobile Sidebar Navigation", () => {
       await expect(page.locator(".mobile-admin-menu--open")).not.toBeAttached();
 
       // Body scroll should be restored
-      const overflow = await page.evaluate(() => document.body.style.overflow);
-      expect(overflow).toBe("");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
     });
   });
 });

@@ -24,8 +24,9 @@ test.describe("Authentication", () => {
       await page.fill('input[type="email"]', "invalid-email");
       await page.click('button[type="submit"]');
 
-      // Should show error message
-      await expect(page.locator(".auth-message--error")).toBeVisible();
+      // Native email validation prevents submission before the custom handler runs.
+      await expect.poll(() => page.locator('input[type="email"]').evaluate((el: HTMLInputElement) => el.validity.typeMismatch)).toBe(true);
+      await expect(page.locator('input[type="email"]')).toBeFocused();
     });
 
     test("should show success message after requesting magic link", async ({ page }) => {
@@ -59,7 +60,7 @@ test.describe("Authentication", () => {
       await loginAsUser(page);
 
       await page.goto("/");
-      await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).toBeVisible();
     });
 
     test("should show sign out button when logged in", async ({ page }) => {
@@ -75,28 +76,28 @@ test.describe("Authentication", () => {
 
       // Navigate to different pages
       await page.goto("/");
-      await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).toBeVisible();
 
       await page.goto("/feedback");
-      await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).toBeVisible();
 
       await page.goto("/roadmap");
-      await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).toBeVisible();
     });
 
     test("should sign out successfully", async ({ page }) => {
       await loginAsUser(page);
 
       await page.goto("/");
-      await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).toBeVisible();
 
       // Click sign out
       await page.click('text=SIGN OUT');
 
       // Wait for redirect and check login state
       await page.waitForURL(/\//);
-      await expect(page.locator('a[href="/auth/login"]')).toBeVisible();
-      await expect(page.locator('a[href="/dashboard"]')).not.toBeVisible();
+      await expect(page.getByRole("link", { name: "SIGN IN", exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).not.toBeVisible();
     });
   });
 
@@ -105,8 +106,8 @@ test.describe("Authentication", () => {
       await page.goto("/dashboard");
 
       // Should show login prompt
-      await expect(page.locator("text=Sign In Required")).toBeVisible();
-      await expect(page.locator('a[href="/auth/login"]')).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Sign In Required", exact: true })).toBeVisible();
+      await expect(page.getByRole("main").getByRole("link", { name: "SIGN IN", exact: true })).toBeVisible();
     });
 
     test("should allow access to dashboard when authenticated", async ({ page }) => {
@@ -130,7 +131,7 @@ test.describe("Authentication", () => {
       await loginAsAdmin(page);
 
       await page.goto("/admin");
-      await expect(page.locator("text=Dashboard")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();
     });
   });
 

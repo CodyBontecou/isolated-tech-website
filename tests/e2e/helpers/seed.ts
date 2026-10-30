@@ -82,8 +82,7 @@ export async function cleanupTestData(request: APIRequestContext): Promise<void>
   const response = await request.delete(`${BASE_URL}/api/test/seed`);
 
   if (!response.ok()) {
-    // Don't throw on cleanup errors, just log
-    console.warn(`Cleanup warning: ${await response.text()}`);
+    throw new Error(`Failed to clean up test data: ${await response.text()}`);
   }
 }
 

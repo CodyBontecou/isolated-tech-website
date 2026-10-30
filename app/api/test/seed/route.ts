@@ -103,7 +103,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   try {
-    const { type } = await request.json();
+    const { type, userId, appId } = await request.json();
 
     switch (type) {
       case "apps":
@@ -117,7 +117,9 @@ export async function POST(request: NextRequest): Promise<Response> {
         await seedDiscountCodes(env.DB);
         break;
       case "purchase": {
-        const { userId, appId } = await request.json();
+        if (typeof userId !== "string" || typeof appId !== "string") {
+          return NextResponse.json({ error: "userId and appId are required" }, { status: 400 });
+        }
         await seedPurchase(env.DB, userId, appId);
         break;
       }
@@ -139,15 +141,14 @@ export async function POST(request: NextRequest): Promise<Response> {
 }
 
 async function seedApps(db: D1Database): Promise<void> {
-  // Clean up existing test data
-  await db.prepare(`DELETE FROM app_versions WHERE id LIKE 'e2e_%'`).run();
-  await db.prepare(`DELETE FROM apps WHERE id LIKE 'e2e_%'`).run();
+  // Upsert in place so reseeding does not delete purchases or referenced apps.
 
   // Insert apps
   for (const app of TEST_APPS) {
     await db.prepare(`
-      INSERT OR REPLACE INTO apps (id, name, slug, tagline, description, platforms, min_price_cents, suggested_price_cents, is_published, is_featured, featured_order, created_at, updated_at)
+      INSERT INTO apps (id, name, slug, tagline, description, platforms, min_price_cents, suggested_price_cents, is_published, is_featured, featured_order, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      ON CONFLICT(id) DO UPDATE SET name = excluded.name, is_published = excluded.is_published
     `).bind(
       app.id,
       app.name,
@@ -166,8 +167,9 @@ async function seedApps(db: D1Database): Promise<void> {
   // Insert versions
   for (const version of TEST_VERSIONS) {
     await db.prepare(`
-      INSERT OR REPLACE INTO app_versions (id, app_id, version, r2_key, file_size_bytes, release_notes, is_latest, released_at, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      INSERT INTO app_versions (id, app_id, version, r2_key, file_size_bytes, release_notes, is_latest, released_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET version = excluded.version, is_latest = excluded.is_latest
     `).bind(
       version.id,
       version.app_id,
@@ -182,14 +184,12 @@ async function seedApps(db: D1Database): Promise<void> {
 }
 
 async function seedDiscountCodes(db: D1Database): Promise<void> {
-  // Clean up existing test codes
-  await db.prepare(`DELETE FROM discount_codes WHERE id LIKE 'e2e_%'`).run();
-
   // Insert codes
   for (const code of TEST_DISCOUNT_CODES) {
     await db.prepare(`
-      INSERT OR REPLACE INTO discount_codes (id, code, discount_type, discount_value, app_id, max_uses, times_used, expires_at, is_active, created_at)
+      INSERT INTO discount_codes (id, code, discount_type, discount_value, app_id, max_uses, times_used, expires_at, is_active, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(id) DO UPDATE SET times_used = 0, is_active = excluded.is_active
     `).bind(
       code.id,
       code.code,
@@ -210,6 +210,7 @@ async function seedPurchase(db: D1Database, userId: string, appId: string): Prom
   await db.prepare(`
     INSERT INTO purchases (id, user_id, app_id, amount_cents, status, created_at)
     VALUES (?, ?, ?, 0, 'completed', datetime('now'))
+    ON CONFLICT(user_id, app_id) DO UPDATE SET status = 'completed'
   `).bind(purchaseId, userId, appId).run();
 }
 
@@ -227,13 +228,18 @@ export async function DELETE(request: NextRequest): Promise<Response> {
   }
 
   try {
-    // Clean up all E2E test data
-    await env.DB.prepare(`DELETE FROM purchases WHERE id LIKE 'e2e_%'`).run();
-    await env.DB.prepare(`DELETE FROM app_versions WHERE id LIKE 'e2e_%'`).run();
-    await env.DB.prepare(`DELETE FROM apps WHERE id LIKE 'e2e_%'`).run();
-    await env.DB.prepare(`DELETE FROM discount_codes WHERE id LIKE 'e2e_%'`).run();
-    await env.DB.prepare(`DELETE FROM "user" WHERE id LIKE 'test_%'`).run();
-    await env.DB.prepare(`DELETE FROM "session" WHERE userId LIKE 'test_%'`).run();
+    // Delete dependants before their parents; repeated cleanup must also succeed.
+    await env.DB.batch([
+      env.DB.prepare(`DELETE FROM download_tokens WHERE app_id LIKE 'e2e_%'`),
+      env.DB.prepare(`DELETE FROM reviews WHERE app_id LIKE 'e2e_%'`),
+      env.DB.prepare(`DELETE FROM purchases WHERE id LIKE 'e2e_%'`),
+      env.DB.prepare(`DELETE FROM discount_codes WHERE id LIKE 'e2e_%'`),
+      env.DB.prepare(`DELETE FROM app_versions WHERE id LIKE 'e2e_%'`),
+      env.DB.prepare(`DELETE FROM apps WHERE id LIKE 'e2e_%'`),
+      env.DB.prepare(`DELETE FROM email_log WHERE user_id LIKE 'test_%'`),
+      env.DB.prepare(`DELETE FROM "session" WHERE userId LIKE 'test_%'`),
+      env.DB.prepare(`DELETE FROM "user" WHERE id LIKE 'test_%'`),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

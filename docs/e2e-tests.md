@@ -18,7 +18,11 @@ To use a separately managed test deployment, set `TEST_BASE_URL`; Playwright the
 skips local server startup. That deployment must provide the test fixture endpoints
 and disposable data. Do not point the suite at production.
 
-CI uploads the HTML report as `playwright-report`. The existing E2E workflow remains
-nonblocking while older application assertions are repaired; successful workflow
-status alone does not establish that every browser test passed. Read the E2E step
-and report for individual results.
+CI uploads the HTML report as `playwright-report`. Browser failures fail the E2E
+job and the aggregate test check. E2E runs on main and same-repository pull
+requests; the aggregate allows the intentional E2E skip on fork pull requests.
+
+Fixture seeding upserts apps and versions without deleting existing purchases.
+`tests/e2e/test-data.spec.ts` checks repeated seeding, purchase creation, and
+cleanup against the real local D1 database. The migration tests also verify all
+foreign keys point at existing tables and repair migrations preserve data.

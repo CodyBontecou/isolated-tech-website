@@ -81,13 +81,11 @@ jobs:
 
       - name: Build application
         run: npm run build
-        continue-on-error: true
 
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           CI: true
-        continue-on-error: true
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
@@ -102,12 +100,12 @@ jobs:
   tests-passed:
     name: All Tests Passed
     runs-on: ubuntu-latest
-    needs: [unit-and-integration]
+    needs: [unit-and-integration, e2e]
     if: always()
     steps:
       - name: Check test results
         run: |
-          if [[ "${{ needs.unit-and-integration.result }}" == "success" ]]; then
+          if [[ "${{ needs.unit-and-integration.result }}" == "success" && ( "${{ needs.e2e.result }}" == "success" || "${{ needs.e2e.result }}" == "skipped" ) ]]; then
             echo "✅ All tests passed!"
             exit 0
           else

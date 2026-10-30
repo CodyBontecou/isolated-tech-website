@@ -21,13 +21,13 @@ test.describe("Purchase Flow", () => {
       await page.goto("/");
 
       // Check branding
-      await expect(page.locator("text=ISOLATED")).toBeVisible();
-      await expect(page.locator("text=TECH")).toBeVisible();
+      await expect(page.locator(".nav__logo")).toBeVisible();
+      await expect(page.locator(".nav__logo")).toContainText("ISOLATED.TECH");
 
       // Check navigation
-      await expect(page.locator("text=APPS")).toBeVisible();
-      await expect(page.locator("text=FEEDBACK")).toBeVisible();
-      await expect(page.locator("text=ROADMAP")).toBeVisible();
+      await expect(page.locator(".nav__links").getByRole("link", { name: "APPS", exact: true })).toBeVisible();
+      await expect(page.locator(".nav__links").getByRole("link", { name: "WORK", exact: true })).toBeVisible();
+      await expect(page.locator(".nav__links").getByRole("link", { name: "HIRE", exact: true })).toBeVisible();
     });
 
     test("should display apps section", async ({ page }) => {
@@ -70,7 +70,7 @@ test.describe("Purchase Flow", () => {
       await expect(page.locator("h1")).toContainText("E2E Free App");
 
       // Should show purchase/get section
-      await expect(page.locator("text=GET").or(page.locator("text=Name your price"))).toBeVisible();
+      await expect(page.getByRole("button", {name: "↓ GET FOR MAC — FREE", exact: true})).toBeVisible();
     });
 
     test("should show back link to all apps", async ({ page }) => {
@@ -85,15 +85,13 @@ test.describe("Purchase Flow", () => {
     test("should prompt login when trying to purchase while logged out", async ({ page }) => {
       await page.goto(`/apps/${TEST_APPS.FREE}`);
 
-      // Find and click purchase/get button
-      const purchaseButton = page.locator("button, a").filter({ hasText: /GET|DOWNLOAD/i }).first();
-      
-      if (await purchaseButton.isVisible().catch(() => false)) {
-        await purchaseButton.click();
+      const purchaseButton = page.getByRole("button", {name: "↓ GET FOR MAC — FREE", exact: true});
+      await expect(purchaseButton).toBeVisible();
+      await purchaseButton.click();
+      await expect(page).toHaveURL(/\/auth\/login\?redirect=/);
+      await expect(page.getByRole("heading", {name: "Sign In", exact: true})).toBeVisible();
+      await expect(page.locator('input[type="email"]')).toBeVisible();
 
-        // Should redirect to login or show login modal
-        await expect(page.locator("text=Sign In").or(page.locator('input[type="email"]'))).toBeVisible({ timeout: 5000 });
-      }
     });
   });
 
@@ -110,17 +108,17 @@ test.describe("Purchase Flow", () => {
       await page.goto(`/apps/${TEST_APPS.FREE}`);
 
       // Should not see sign in prompt in nav
-      await expect(page.locator('a[href="/auth/login"]')).not.toBeVisible();
+      await expect(page.getByRole("link", { name: "SIGN IN", exact: true })).not.toBeVisible();
 
       // Should see dashboard link
-      await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).toBeVisible();
     });
 
     test("should show purchase button for free app", async ({ page }) => {
       await page.goto(`/apps/${TEST_APPS.FREE}`);
 
       // Should show get/purchase option
-      await expect(page.locator("text=GET").or(page.locator("text=Name your price"))).toBeVisible();
+      await expect(page.getByRole("button", {name: "↓ GET FOR MAC — FREE", exact: true})).toBeVisible();
     });
 
     test("should show price for paid app", async ({ page }) => {
@@ -157,7 +155,7 @@ test.describe("Dashboard", () => {
     await page.goto("/dashboard");
 
     // Should show login prompt
-    await expect(page.locator("text=Sign In Required").or(page.locator("text=sign in"))).toBeVisible();
+    await expect(page.getByRole("heading", {name: "Sign In Required", exact: true})).toBeVisible();
   });
 
   test.describe("Authenticated Dashboard", () => {
@@ -237,6 +235,6 @@ test.describe("Error Handling", () => {
     await page.reload();
 
     // Should work now
-    await expect(page.locator("text=ISOLATED")).toBeVisible();
+    await expect(page.locator(".nav__logo")).toBeVisible();
   });
 });

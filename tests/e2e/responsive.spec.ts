@@ -4,6 +4,10 @@
  */
 
 import { test, expect } from "@playwright/test";
+import { seedAll, cleanupTestData } from "./helpers/seed";
+
+test.beforeAll(async ({ request }) => { await seedAll(request); });
+test.afterAll(async ({ request }) => { await cleanupTestData(request); });
 
 const VIEWPORTS = {
   mobile: { width: 375, height: 667 },   // iPhone SE
@@ -18,30 +22,30 @@ test.describe("Responsive Design", () => {
       await page.goto("/");
 
       // Logo should be visible
-      await expect(page.locator("text=ISOLATED")).toBeVisible();
+      await expect(page.locator(".nav__logo")).toBeVisible();
 
       // Navigation should be accessible (may be in hamburger menu)
-      await expect(page.locator("nav")).toBeVisible();
+      await expect(page.locator("nav.nav")).toBeVisible();
     });
 
     test("should render correctly on tablet", async ({ page }) => {
       await page.setViewportSize(VIEWPORTS.tablet);
       await page.goto("/");
 
-      await expect(page.locator("text=ISOLATED")).toBeVisible();
-      await expect(page.locator("nav")).toBeVisible();
+      await expect(page.locator(".nav__logo")).toBeVisible();
+      await expect(page.locator("nav.nav")).toBeVisible();
     });
 
     test("should render correctly on desktop", async ({ page }) => {
       await page.setViewportSize(VIEWPORTS.desktop);
       await page.goto("/");
 
-      await expect(page.locator("text=ISOLATED")).toBeVisible();
-      await expect(page.locator("nav")).toBeVisible();
+      await expect(page.locator(".nav__logo")).toBeVisible();
+      await expect(page.locator("nav.nav")).toBeVisible();
 
       // Desktop should show full nav links
-      await expect(page.locator("text=APPS")).toBeVisible();
-      await expect(page.locator("text=FEEDBACK")).toBeVisible();
+      await expect(page.locator(".nav__links").getByRole("link", { name: "APPS", exact: true })).toBeVisible();
+      await expect(page.locator(".nav__links").getByRole("link", { name: "WORK", exact: true })).toBeVisible();
     });
   });
 
@@ -51,14 +55,14 @@ test.describe("Responsive Design", () => {
       await page.goto("/apps/e2e-free-app");
 
       // Should show app name
-      await expect(page.locator("h1")).toBeVisible();
+      await expect(page.getByRole("heading", {level: 1})).toHaveText("E2E Free App");
     });
 
     test("should render app page on desktop", async ({ page }) => {
       await page.setViewportSize(VIEWPORTS.desktop);
       await page.goto("/apps/e2e-free-app");
 
-      await expect(page.locator("h1")).toBeVisible();
+      await expect(page.getByRole("heading", {level: 1})).toHaveText("E2E Free App");
     });
   });
 
@@ -105,7 +109,7 @@ test.describe("Visual Consistency", () => {
       await page.goto(pagePath);
       
       // Logo should be consistent
-      await expect(page.locator("text=ISOLATED").first()).toBeVisible();
+      await expect(page.locator(".nav__logo").first()).toBeVisible();
     }
   });
 
@@ -113,14 +117,14 @@ test.describe("Visual Consistency", () => {
     await page.goto("/");
 
     // Should have footer
-    await expect(page.locator("footer").or(page.locator("text=© 2026"))).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toBeVisible();
   });
 
   test("should have proper contrast (text is readable)", async ({ page }) => {
     await page.goto("/");
 
     // Basic check that text elements exist and are visible
-    await expect(page.locator("h1").first().or(page.locator("h2").first())).toBeVisible();
+    await expect(page.getByRole("heading", {level: 1})).toBeVisible();
   });
 });
 

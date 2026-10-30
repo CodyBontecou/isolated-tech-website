@@ -27,8 +27,8 @@ test.describe("Feedback System", () => {
     test("should show navigation links", async ({ page }) => {
       await page.goto("/feedback");
 
-      await expect(page.locator('a[href="/"]')).toBeVisible();
-      await expect(page.locator('a[href="/roadmap"]')).toBeVisible();
+      await expect(page.locator(".nav__logo")).toBeVisible();
+      await expect(page.locator(".nav__links").getByRole("link", { name: "APPS", exact: true })).toBeVisible();
     });
 
     test("should show feedback stats", async ({ page }) => {
@@ -36,7 +36,7 @@ test.describe("Feedback System", () => {
 
       // Should show stats like total, open, planned
       await expect(
-        page.locator("text=TOTAL").or(page.locator("text=OPEN")).or(page.locator("text=PLANNED"))
+        page.locator(".feedback-stats").getByText("TOTAL", {exact: true})
       ).toBeVisible();
     });
 
@@ -69,7 +69,7 @@ test.describe("Feedback System", () => {
     test("should show submit button when logged in", async ({ page }) => {
       await page.goto("/feedback");
 
-      await expect(page.locator("text=SUBMIT IDEA").or(page.locator('a[href="/feedback/submit"]'))).toBeVisible();
+      await expect(page.locator(".feedback-header__actions").getByRole("link", { name: "+ SUBMIT IDEA", exact: true })).toBeVisible();
     });
 
     test("should navigate to submit page", async ({ page }) => {
@@ -84,13 +84,13 @@ test.describe("Feedback System", () => {
       await page.goto("/feedback/submit");
 
       // Should have form fields
-      await expect(page.locator("form").or(page.locator('input[type="text"]').first())).toBeVisible();
+      await expect(page.locator(".submit-card form")).toBeVisible();
     });
 
     test("should show dashboard link in nav", async ({ page }) => {
       await page.goto("/feedback");
 
-      await expect(page.locator('a[href="/dashboard"]')).toBeVisible();
+      await expect(page.getByRole("link", { name: "DASHBOARD", exact: true })).toBeVisible();
     });
   });
 
@@ -115,7 +115,7 @@ test.describe("Roadmap Page", () => {
     await page.goto("/roadmap");
 
     // Should show roadmap content
-    await expect(page.locator("h1").or(page.locator("text=ROADMAP"))).toBeVisible();
+    await expect(page.getByRole("heading", {name: "Public Roadmap", exact: true})).toBeVisible();
   });
 
   test("should have navigation to feedback", async ({ page }) => {
@@ -157,32 +157,34 @@ test.describe("Legal Pages", () => {
   test("should have back to home link", async ({ page }) => {
     await page.goto("/terms");
 
-    await expect(page.locator('a[href="/"]')).toBeVisible();
+    await expect(page.locator(".nav__logo")).toBeVisible();
   });
 });
 
 test.describe("Navigation Integration", () => {
-  test("should navigate from homepage to feedback", async ({ page }) => {
-    await page.goto("/");
+  test.beforeAll(async ({ request }) => { await seedAll(request); });
+  test.afterAll(async ({ request }) => { await cleanupTestData(request); });
+  test("should navigate from app community section to feedback", async ({ page }) => {
+    await page.goto("/apps/e2e-free-app");
 
-    await page.click('a[href="/feedback"]');
+    await page.getByRole("link", {name: /App Feedback/}).click();
 
     await expect(page).toHaveURL(/\/feedback/);
   });
 
-  test("should navigate from homepage to roadmap", async ({ page }) => {
-    await page.goto("/");
+  test("should navigate from app community section to roadmap", async ({ page }) => {
+    await page.goto("/apps/e2e-free-app");
 
-    await page.click('a[href="/roadmap"]');
+    await page.getByRole("link", {name: /App Roadmap/}).click();
 
     await expect(page).toHaveURL(/\/roadmap/);
   });
 
-  test("should navigate from feedback to roadmap", async ({ page }) => {
-    await page.goto("/feedback");
+  test("should navigate from roadmap to feedback", async ({ page }) => {
+    await page.goto("/roadmap");
 
-    await page.click('a[href="/roadmap"]');
+    await page.getByRole("link", {name: /Submit your ideas/}).click();
 
-    await expect(page).toHaveURL(/\/roadmap/);
+    await expect(page).toHaveURL(/\/feedback/);
   });
 });

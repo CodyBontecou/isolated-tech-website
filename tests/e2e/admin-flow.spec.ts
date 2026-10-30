@@ -42,7 +42,7 @@ test.describe("Admin Dashboard", () => {
 
       // Should stay on admin page
       await expect(page).toHaveURL(/\/admin/);
-      await expect(page.locator("text=Dashboard")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();
 
       await logout(page);
     });
@@ -67,8 +67,9 @@ test.describe("Admin Dashboard", () => {
       await page.goto("/admin");
 
       // Should show revenue and user stats
-      await expect(page.locator("text=REVENUE")).toBeVisible();
-      await expect(page.locator("text=TOTAL USERS").or(page.locator("text=USERS"))).toBeVisible();
+      await expect(page.getByText("REVENUE (THIS MONTH)", {exact: true})).toBeVisible();
+      await expect(page.getByText("REVENUE (ALL TIME)", {exact: true})).toBeVisible();
+      await expect(page.getByText("TOTAL USERS", {exact: true})).toBeVisible();
     });
 
     test("should show recent purchases section", async ({ page }) => {
@@ -80,14 +81,14 @@ test.describe("Admin Dashboard", () => {
     test("should show quick actions", async ({ page }) => {
       await page.goto("/admin");
 
-      await expect(page.locator("text=QUICK ACTIONS").or(page.locator("text=NEW APP"))).toBeVisible();
+      await expect(page.getByRole("heading", {name: "QUICK ACTIONS", exact: true})).toBeVisible();
     });
 
     test("should have navigation sidebar", async ({ page }) => {
       await page.goto("/admin");
 
       // Check for admin navigation links
-      await expect(page.locator('a[href="/admin/apps"]')).toBeVisible();
+      await expect(page.locator(".admin-sidebar").getByRole("link", {name: "Apps", exact: true})).toBeVisible();
     });
   });
 
@@ -111,7 +112,7 @@ test.describe("Admin Dashboard", () => {
 
       // Should show table headers or empty state
       await expect(
-        page.locator("text=APP").or(page.locator("text=No apps yet"))
+        page.getByRole("columnheader", {name: "APP", exact: true})
       ).toBeVisible();
     });
 
@@ -134,14 +135,14 @@ test.describe("Admin Dashboard", () => {
       await page.goto("/admin/apps/new");
 
       // Should have form fields
-      await expect(page.locator('input[name="name"]').or(page.locator('input[placeholder*="name" i]'))).toBeVisible();
+      await expect(page.getByPlaceholder("My Awesome App", {exact: true})).toBeVisible();
     });
 
     test("should show test apps in list", async ({ page }) => {
       await page.goto("/admin/apps");
 
       // Check for E2E test apps
-      await expect(page.locator("text=E2E Free App").or(page.locator("text=E2E Paid App"))).toBeVisible();
+      await expect(page.getByText("E2E Free App", {exact: true})).toBeVisible();
     });
 
     test("should navigate to app edit page", async ({ page }) => {
@@ -202,7 +203,7 @@ test.describe("Admin Dashboard", () => {
       await page.goto("/admin/users");
 
       // Should show table or user list
-      await expect(page.locator("table").or(page.locator("text=EMAIL"))).toBeVisible();
+      await expect(page.getByRole("table")).toBeVisible();
     });
   });
 

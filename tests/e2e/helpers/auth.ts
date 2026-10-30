@@ -58,7 +58,8 @@ export async function loginAsAdmin(
  * Logout by clearing the session cookie
  */
 export async function logout(page: Page): Promise<void> {
-  await page.request.delete(`${BASE_URL}/api/test/auth`);
+  const response = await page.request.delete(`${BASE_URL}/api/test/auth`);
+  if (!response.ok()) throw new Error(`Failed to log out: ${await response.text()}`);
 
   // Navigate to clear browser state
   await page.goto("/");
@@ -74,7 +75,7 @@ export async function isLoggedIn(page: Page): Promise<boolean> {
   }
 
   // Check for dashboard link in nav (indicates logged in)
-  const dashboardLink = page.locator('a[href="/dashboard"]');
+  const dashboardLink = page.getByRole("link", {name: "DASHBOARD", exact: true});
   return dashboardLink.isVisible().catch(() => false);
 }
 

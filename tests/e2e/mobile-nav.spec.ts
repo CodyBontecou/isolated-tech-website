@@ -12,6 +12,7 @@ const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 /** Helper: open the mobile sidebar menu */
 async function openMobileMenu(page: Page) {
+  await expect(page.locator(".mobile-site-menu")).toBeAttached();
   const toggle = page.locator(".mobile-site-toggle");
   await toggle.click();
   // Wait for the menu to finish sliding in
@@ -22,6 +23,7 @@ test.describe("Mobile Sidebar Navigation", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await page.goto("/");
+    await expect(page.locator(".mobile-site-menu")).toBeAttached();
   });
 
   test.describe("Hamburger Toggle", () => {
@@ -89,8 +91,8 @@ test.describe("Mobile Sidebar Navigation", () => {
 
       await expect(nav.getByText("Home")).toBeVisible();
       await expect(nav.getByText("Apps")).toBeVisible();
-      await expect(nav.getByText("Feedback")).toBeVisible();
-      await expect(nav.getByText("Roadmap")).toBeVisible();
+      await expect(nav.getByText("Client Work")).toBeVisible();
+      await expect(nav.getByText("Hire")).toBeVisible();
     });
 
     test("should show NAVIGATION section label", async ({ page }) => {
@@ -114,9 +116,9 @@ test.describe("Mobile Sidebar Navigation", () => {
       const nav = page.locator(".mobile-site-menu__nav");
 
       await expect(nav.locator('a[href="/"]')).toBeAttached();
-      await expect(nav.locator('a[href="/#apps"]')).toBeAttached();
-      await expect(nav.locator('a[href="/feedback"]')).toBeAttached();
-      await expect(nav.locator('a[href="/roadmap"]')).toBeAttached();
+      await expect(nav.locator('a[href="/apps"]')).toBeAttached();
+      await expect(nav.locator('a[href="/work"]')).toBeAttached();
+      await expect(nav.locator('a[href="/hire"]')).toBeAttached();
     });
 
     test("should highlight active link for current page", async ({ page }) => {
@@ -127,12 +129,11 @@ test.describe("Mobile Sidebar Navigation", () => {
       await expect(activeLink).toContainText("Home");
     });
 
-    test("should display icons for each nav link", async ({ page }) => {
+    test("should provide accessible names for each nav link", async ({ page }) => {
       await openMobileMenu(page);
-      const icons = page.locator(".mobile-site-menu__icon");
-      const count = await icons.count();
-      // At minimum: Home, Apps, Feedback, Roadmap, Sign In = 5
-      expect(count).toBeGreaterThanOrEqual(5);
+      const links = page.locator(".mobile-site-menu__nav").getByRole("link");
+      await expect(links).toHaveCount(5);
+      for (const link of await links.all()) await expect(link).toHaveAccessibleName(/\S/);
     });
   });
 
@@ -158,8 +159,8 @@ test.describe("Mobile Sidebar Navigation", () => {
 
     test("should close when a nav link is clicked", async ({ page }) => {
       await openMobileMenu(page);
-      const feedbackLink = page.locator(".mobile-site-menu__nav").getByText("Feedback");
-      await feedbackLink.click();
+      const workLink = page.locator(".mobile-site-menu__nav").getByText("Client Work");
+      await workLink.click();
 
       // Menu should close after navigation
       await expect(page.locator(".mobile-site-menu--open")).not.toBeAttached({ timeout: 5000 });
@@ -169,30 +170,26 @@ test.describe("Mobile Sidebar Navigation", () => {
       await openMobileMenu(page);
 
       // Body should have overflow hidden while open
-      const overflowWhileOpen = await page.evaluate(() => document.body.style.overflow);
-      expect(overflowWhileOpen).toBe("hidden");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("hidden");
 
       // Close the menu
       await page.locator(".mobile-site-menu__close").click();
 
       // Body overflow should be restored
-      const overflowAfterClose = await page.evaluate(() => document.body.style.overflow);
-      expect(overflowAfterClose).toBe("");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
     });
   });
 
   test.describe("Scroll Lock", () => {
     test("should lock body scroll when menu is open", async ({ page }) => {
       await openMobileMenu(page);
-      const overflow = await page.evaluate(() => document.body.style.overflow);
-      expect(overflow).toBe("hidden");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("hidden");
     });
 
     test("should unlock body scroll when menu is closed", async ({ page }) => {
       await openMobileMenu(page);
       await page.locator(".mobile-site-menu__close").click();
-      const overflow = await page.evaluate(() => document.body.style.overflow);
-      expect(overflow).toBe("");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
     });
   });
 
@@ -250,17 +247,17 @@ test.describe("Mobile Sidebar Navigation", () => {
     test("menu content should be clickable (not blocked by nav)", async ({ page }) => {
       await openMobileMenu(page);
 
-      // The Feedback link should be clickable - if z-index is wrong, the nav
+      // The Client Work link should be clickable - if z-index is wrong, the nav
       // would intercept clicks
-      const feedbackLink = page.locator(".mobile-site-menu__nav").getByText("Feedback");
-      await expect(feedbackLink).toBeVisible();
+      const workLink = page.locator(".mobile-site-menu__nav").getByText("Client Work");
+      await expect(workLink).toBeVisible();
 
       // Verify the link is actually interactive by checking it receives the click
-      const [response] = await Promise.all([
-        page.waitForNavigation({ url: "**/feedback" }),
-        feedbackLink.click(),
+      await Promise.all([
+        page.waitForNavigation({ url: "**/work" }),
+        workLink.click(),
       ]);
-      expect(page.url()).toContain("/feedback");
+      expect(page.url()).toContain("/work");
     });
   });
 
@@ -285,8 +282,7 @@ test.describe("Mobile Sidebar Navigation", () => {
       await expect(page.locator(".mobile-site-menu--open")).not.toBeAttached();
 
       // Body scroll should be restored
-      const overflow = await page.evaluate(() => document.body.style.overflow);
-      expect(overflow).toBe("");
+      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
     });
   });
 
