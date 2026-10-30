@@ -17,8 +17,8 @@
     "paths": {
       "@/*": ["./*"],
       "next/*": ["./node_modules/vinext/dist/shims/*"],
-      "next/font/google": ["./node_modules/vinext/dist/shims/font-google.d.ts"],
-      "next/font/local": ["./node_modules/vinext/dist/shims/font-local.d.ts"]
+      "next/font/google": ["./node_modules/vinext/dist/shims/font-google"],
+      "next/font/local": ["./node_modules/vinext/dist/shims/font-local"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "env.d.ts"],
