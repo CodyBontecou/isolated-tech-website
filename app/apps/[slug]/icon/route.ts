@@ -21,7 +21,9 @@ export async function GET(
     const slug = params.slug;
     const r2Key = `apps/${slug}/icon.png`;
 
-    const object = await env.APPS_BUCKET.get(r2Key);
+    // Keep stored media working after the public slug rename. New uploads win.
+    const object = await env.APPS_BUCKET.get(r2Key) ||
+      (slug === "whereday" ? await env.APPS_BUCKET.get(r2Key.replace("apps/whereday/", "apps/isome/")) : null);
 
     if (!object) {
       // Return a default placeholder or 404

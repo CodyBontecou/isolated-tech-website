@@ -9,6 +9,7 @@
 import rscHandler from "virtual:vinext-rsc-entry";
 import { runWithCloudflareContext } from "../lib/cloudflare-context";
 import { handleShareRequest } from "../lib/share";
+import { wheredayRedirect } from "../lib/whereday-redirects";
 import type { Env } from "../lib/env";
 
 export default {
@@ -19,16 +20,13 @@ export default {
   ): Promise<Response> {
     const url = new URL(request.url);
 
-    // Canonicalize host: always use apex domain.
-    if (url.hostname === "www.isolated.tech") {
-      url.hostname = "isolated.tech";
-      return Response.redirect(url.toString(), 308);
-    }
-
-    // Block protocol-relative URL open redirect attacks (//evil.com/).
+    // Reject protocol-relative paths before constructing any redirect.
     if (url.pathname.startsWith("//")) {
       return new Response("404 Not Found", { status: 404 });
     }
+
+    const canonicalRedirect = wheredayRedirect(request);
+    if (canonicalRedirect) return canonicalRedirect;
 
     // Handle pi session shares (before RSC handler for performance)
     // Shares are served directly from R2 without going through vinext

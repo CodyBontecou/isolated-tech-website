@@ -20,7 +20,9 @@ export async function GET(
     }
 
     const r2Key = `apps/${slug}/media/${id}`;
-    const object = await env.APPS_BUCKET.get(r2Key);
+    // Keep stored media working after the public slug rename. New uploads win.
+    const object = await env.APPS_BUCKET.get(r2Key) ||
+      (slug === "whereday" ? await env.APPS_BUCKET.get(r2Key.replace("apps/whereday/", "apps/isome/")) : null);
 
     if (!object) {
       return new NextResponse("Media not found", { status: 404 });

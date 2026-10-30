@@ -10,8 +10,9 @@ storage, click logging, or visitor identifiers are added.
 
 | Page | Campaign |
 | --- | --- |
-| `/apps/isome` | `isolated-isome` |
-| `/apps/iso-me` (if used) | `isolated-iso-me` |
+| `/apps/whereday` | `isolated-whereday` |
+| Historical `/apps/isome` links before the rename | `isolated-isome` |
+| Historical `/apps/iso-me` links before the rename | `isolated-iso-me` |
 | Other product/article paths | `isolated-` + first 12 sanitized path characters + `-` + eight-character path hash |
 
 `lib/whereday-campaigns.ts` is the mapping source of truth. The hash uses the
@@ -24,7 +25,7 @@ not directly to the App Store; they will not generate these campaigns as shipped
 To look up an article's token from the repository:
 
 ```sh
-node --input-type=module -e 'import { createServer } from "vite"; const server = await createServer({ configFile: false }); try { const { wheredayCampaign } = await server.ssrLoadModule("/lib/whereday-campaigns.ts"); console.log(wheredayCampaign("/apps/isome/blog/your-article-slug")); } finally { await server.close(); }'
+node --input-type=module -e 'import { createServer } from "vite"; const server = await createServer({ configFile: false }); try { const { wheredayCampaign } = await server.ssrLoadModule("/lib/whereday-campaigns.ts"); console.log(wheredayCampaign("/apps/whereday/blog/your-article-slug")); } finally { await server.close(); }'
 ```
 
 ## Reading results
@@ -42,3 +43,16 @@ zero clicks or zero downloads. Historical untagged referrals cannot be assigned
 retroactively to pages.
 
 Reference: https://developer.apple.com/help/app-store-connect-analytics/acquisition/campaign-links/
+
+## Public listing rename
+
+`/apps/whereday` is canonical. Requests to `/apps/isome` and `/apps/iso-me`,
+including all nested pages and assets, permanently redirect with HTTP 308 while
+preserving the query string. Old social image/appcast URLs and feedback/roadmap
+app filters redirect too. The redirect combines `www` canonicalization in one hop.
+
+Migration `0031_rename_isome_whereday.sql` updates the existing catalog row in
+place, retaining its ID and all relationships. Stored R2 icons/media remain under
+their original prefix; canonical asset routes try the new key first and then the
+legacy key. A new upload therefore takes precedence without requiring old files
+to be moved. Dedicated marketing links now point directly to `https://whereday.com`.

@@ -21,8 +21,18 @@ const APP_SITES: Readonly<Record<string, AppSite>> = {
   imghost: {
     url: "https://imghost.isolated.tech",
   },
+  whereday: {
+    name: "Whereday",
+    url: "https://whereday.com",
+  },
+  // Compatibility for catalog data or callers that still use the old slugs.
+  isome: {
+    name: "Whereday",
+    url: "https://whereday.com",
+  },
   "iso-me": {
-    url: "https://isome.isolated.tech",
+    name: "Whereday",
+    url: "https://whereday.com",
   },
   "instarep-ly": {
     url: "https://instareply.isolated.tech",

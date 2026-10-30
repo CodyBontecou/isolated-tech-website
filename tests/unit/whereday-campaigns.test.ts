@@ -4,6 +4,9 @@ import { wheredayCampaign, wheredayCampaignHtml, wheredayCampaignUrl } from "../
 const appUrl = "https://apps.apple.com/us/app/iso-me/id6761960794";
 
 describe("Whereday page attribution", () => {
+  it("uses the renamed canonical listing campaign", () => {
+    expect(new URL(wheredayCampaignUrl(appUrl, "/apps/whereday")).searchParams.get("ct")).toBe("isolated-whereday");
+  });
   it("uses the source page and genuine provider token, preserving other URL parameters", () => {
     const url = new URL(wheredayCampaignUrl(`${appUrl}?ct=old&pt=old&l=en#details`, "/apps/isome"));
     expect(url.pathname).toBe("/us/app/iso-me/id6761960794");

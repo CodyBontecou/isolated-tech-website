@@ -19,11 +19,14 @@ async function getApp(slug: string): Promise<App | null> {
   
   const app = await env.DB.prepare(
     `SELECT id, slug, name, tagline, description, icon_url, platforms, min_price_cents, suggested_price_cents, custom_page_config, is_published
-     FROM apps WHERE slug = ? AND is_published = 1`
+     FROM apps WHERE (slug = ? OR (? = 'whereday' AND slug = 'isome')) AND is_published = 1
+     ORDER BY CASE WHEN slug = ? THEN 0 ELSE 1 END LIMIT 1`
   )
-    .bind(slug)
+    .bind(slug, slug, slug)
     .first<App>();
   
+  // Keep the new canonical listing available while the in-place migration rolls out.
+  if (app && slug === "whereday") return { ...app, slug: "whereday", name: "Whereday" };
   return app || null;
 }
 

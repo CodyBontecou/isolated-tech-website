@@ -4,6 +4,7 @@ const siteUrl = "https://isolated.tech";
 
 // Static apps for sitemap (in production, fetch from D1)
 const APPS = [
+  { slug: "whereday", updatedAt: "2026-10-30" },
   { slug: "voxboard", updatedAt: "2026-02-20" },
   { slug: "syncmd", updatedAt: "2026-02-10" },
   { slug: "healthmd", updatedAt: "2026-02-01" },

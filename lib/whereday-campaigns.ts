@@ -6,6 +6,7 @@ export function wheredayCampaign(pathname: string): string {
   const path = pathname.split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
   if (path === "/") return "isolated-home";
   if (path === "/apps") return "isolated-apps";
+  if (path === "/apps/whereday") return "isolated-whereday";
   if (path === "/apps/isome") return "isolated-isome";
   if (path === "/apps/iso-me") return "isolated-iso-me";
 

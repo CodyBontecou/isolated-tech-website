@@ -12,6 +12,13 @@ describe("app site links", () => {
     expect(getAppHref("syncmd")).toBe("https://gitsyncmd.app");
   });
 
+  it("uses Whereday branding and domain for current and legacy slugs", () => {
+    for (const slug of ["whereday", "isome", "iso-me"]) {
+      expect(getAppDisplayName(slug, "iso.me")).toBe("Whereday");
+      expect(getAppHref(slug)).toBe("https://whereday.com");
+    }
+  });
+
   it("keeps apps without dedicated sites in the local directory", () => {
     expect(getAppSite("pocket-repl")).toBeNull();
     expect(getAppHref("pocket-repl")).toBe("/apps/pocket-repl");
