@@ -13,11 +13,14 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "types": ["@cloudflare/workers-types"],
+    "types": ["node", "vitest/globals"],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "next/*": ["./node_modules/vinext/dist/shims/*"],
+      "next/font/google": ["./node_modules/vinext/dist/shims/font-google.d.ts"],
+      "next/font/local": ["./node_modules/vinext/dist/shims/font-local.d.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "env.d.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist", "coverage", "playwright-report", "test-results", "cli"]
 }

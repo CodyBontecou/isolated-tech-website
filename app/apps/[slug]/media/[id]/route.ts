@@ -38,7 +38,7 @@ export async function GET(
       object.httpMetadata?.cacheControl || "public, max-age=86400"
     );
 
-    return new NextResponse(object.body, { headers });
+    return new NextResponse(object.body as BodyInit, { headers });
   } catch (error) {
     console.error("Media fetch error:", error);
     return new NextResponse("Internal server error", { status: 500 });

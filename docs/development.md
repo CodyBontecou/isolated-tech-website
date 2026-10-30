@@ -136,7 +136,7 @@ The deploy command runs `vinext build && vinext deploy`.
 # Run tests (when added)
 npm test
 
-# Type check
+# Type check the application, CLI, and both test suites
 npm run typecheck
 ```
 
@@ -199,3 +199,23 @@ wrangler d1 execute isolated-tech-store --remote --command "SELECT * FROM users 
 2. Server returns latest version info
 3. App downloads update from `/api/download/[appId]/[versionId]`
 4. EdDSA signature verified by Sparkle
+
+### TypeScript setup
+
+The runtime remains Vinext. `next/*` types resolve to the installed Vinext shims;
+Next.js is a development-only dependency for root metadata contracts such as
+`Metadata` and `MetadataRoute`. React, React DOM, Node, and TypeScript declarations
+are direct development dependencies instead of incidental transitive installs.
+
+`env.d.ts` imports Cloudflare binding types from the package's module entry and
+exposes only the D1/R2/KV/context names used by the app. Do not restore a global
+`reference types="@cloudflare/workers-types"`: merging its Web API declarations
+with DOM/Node APIs creates incompatible Request/Response and stream types across
+the full-stack app. R2 response bodies use explicit boundary assertions because
+Workers and DOM declare the same runtime WHATWG stream separately.
+
+The root compiler checks the web app, workers, scripts, and application tests.
+The CLI has a separate NodeNext compiler configuration that also checks its tests.
+Generated build/coverage/report artifacts are excluded. Strict checking remains
+enabled in both projects. Both the test and deployment workflows run
+`npm run typecheck` before tests; a compiler failure blocks deployment.

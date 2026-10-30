@@ -34,7 +34,7 @@ export async function GET(
     headers.set("Content-Type", object.httpMetadata?.contentType || "image/png");
     headers.set("Cache-Control", "public, max-age=86400"); // 24 hour cache
 
-    return new NextResponse(object.body, { headers });
+    return new NextResponse(object.body as BodyInit, { headers });
   } catch (error) {
     console.error("Icon fetch error:", error);
     return new NextResponse("Internal server error", { status: 500 });

@@ -85,7 +85,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     response.cookies.set("isolated.session_token", sessionToken, {
       httpOnly: true,
       secure: false, // Allow in development
-      sameSite: "lax",
+      sameSite: "Lax",
       path: "/",
       expires: expiresAt,
     });
@@ -113,7 +113,7 @@ export async function DELETE(request: NextRequest): Promise<Response> {
   response.cookies.set("isolated.session_token", "", {
     httpOnly: true,
     secure: false,
-    sameSite: "lax",
+    sameSite: "Lax",
     path: "/",
     expires: new Date(0),
   });

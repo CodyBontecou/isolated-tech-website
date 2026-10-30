@@ -100,7 +100,7 @@ export function AppFilters({ apps, showFeaturedSort = true }: AppFiltersProps) {
         const platforms = getPlatforms(app.platforms);
 
         // iOS-only apps are handled by App Store, so exclude from price filter
-        if (isIOSOnly(platforms)) return priceFilter === "all";
+        if (isIOSOnly(platforms)) return false;
 
         if (priceFilter === "free") return app.min_price_cents === 0;
         if (priceFilter === "paid") return app.min_price_cents > 0;

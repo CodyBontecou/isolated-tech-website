@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { nanoid } from "@/lib/db";
-import { createMockEnv } from "../mocks/cloudflare";
+import { createMockEnv, d1Meta } from "../mocks/cloudflare";
 import * as fixtures from "../fixtures";
 
 // Mock the cloudflare-context module
@@ -192,8 +192,8 @@ describe("Database Query Functions", () => {
 
       // Set up batch mock
       vi.mocked(mockEnv.DB.batch).mockResolvedValue([
-        { success: true, results: [], meta: { changes: 1 } } as D1Result,
-        { success: true, results: [], meta: { changes: 1 } } as D1Result,
+        { success: true, results: [], meta: d1Meta(1) },
+        { success: true, results: [], meta: d1Meta(1) },
       ]);
 
       const { batch } = await import("@/lib/db");
@@ -216,7 +216,7 @@ describe("Database Query Functions", () => {
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
 
       vi.mocked(mockEnv.DB.batch).mockResolvedValue([
-        { success: true, results: [], meta: { changes: 0 } } as D1Result,
+        { success: true, results: [], meta: d1Meta(0) },
       ]);
 
       const { batch } = await import("@/lib/db");

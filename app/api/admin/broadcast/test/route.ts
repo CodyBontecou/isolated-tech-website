@@ -1,3 +1,4 @@
+import type { Env } from "@/lib/env";
 /**
  * POST /api/admin/broadcast/test
  *

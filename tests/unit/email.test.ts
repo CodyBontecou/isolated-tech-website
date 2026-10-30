@@ -580,7 +580,7 @@ describe("sendEmail", () => {
 
   it("should construct proper SES request with all email parameters", async () => {
     let capturedBody = "";
-    const mockFetch = vi.fn(async (url: string, init?: RequestInit) => {
+    const mockFetch = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
       capturedBody = init?.body as string || "";
       return new Response(
         `<SendEmailResponse><SendEmailResult><MessageId>msg-123</MessageId></SendEmailResult></SendEmailResponse>`,
@@ -615,7 +615,7 @@ describe("sendEmail", () => {
 
   it("should include Authorization header with AWS Signature V4", async () => {
     let capturedHeaders: Headers | undefined;
-    const mockFetch = vi.fn(async (url: string, init?: RequestInit) => {
+    const mockFetch = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
       capturedHeaders = new Headers(init?.headers as HeadersInit);
       return new Response(
         `<SendEmailResponse><SendEmailResult><MessageId>msg-123</MessageId></SendEmailResult></SendEmailResponse>`,
@@ -647,7 +647,7 @@ describe("sendEmail", () => {
 
   it("should include X-Amz-Date header", async () => {
     let capturedHeaders: Headers | undefined;
-    const mockFetch = vi.fn(async (url: string, init?: RequestInit) => {
+    const mockFetch = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
       capturedHeaders = new Headers(init?.headers as HeadersInit);
       return new Response(
         `<SendEmailResponse><SendEmailResult><MessageId>msg-123</MessageId></SendEmailResult></SendEmailResponse>`,
@@ -676,8 +676,8 @@ describe("sendEmail", () => {
 
   it("should call SES endpoint in us-east-1", async () => {
     let calledUrl = "";
-    const mockFetch = vi.fn(async (url: string) => {
-      calledUrl = url;
+    const mockFetch = vi.fn(async (url: RequestInfo | URL) => {
+      calledUrl = url instanceof Request ? url.url : String(url);
       return new Response(
         `<SendEmailResponse><SendEmailResult><MessageId>msg-123</MessageId></SendEmailResult></SendEmailResponse>`,
         { status: 200 }

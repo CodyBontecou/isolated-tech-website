@@ -42,7 +42,7 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({ user: null, session: null });
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({ user: null, session: null }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -70,10 +70,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const userWithoutPurchase = createMockUser({ id: "user_no_purchase" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: userWithoutPurchase,
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -99,10 +99,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const userWithPurchase = { ...fixtures.testUser, isAdmin: false };
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: userWithPurchase,
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -126,10 +126,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const adminUser = { ...fixtures.adminUser, isAdmin: true };
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: adminUser,
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -151,10 +151,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.testUser,
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -177,10 +177,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: true },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -209,10 +209,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(envWithEmptyR2 as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: true },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -237,10 +237,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: false },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -261,10 +261,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: false },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -286,10 +286,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: false },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -311,10 +311,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: false },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -339,10 +339,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: false },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 
@@ -373,10 +373,10 @@ describe("GET /api/download/[appId]/[versionId]", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.testUser, isAdmin: false },
         session: { id: "session_123" },
-      });
+      }));
 
       const { GET } = await import("@/app/api/download/[appId]/[versionId]/route");
 

@@ -1,3 +1,4 @@
+import type { Env } from "@/lib/env";
 /**
  * GET /api/admin/codes - List all discount codes
  * POST /api/admin/codes - Create a new discount code

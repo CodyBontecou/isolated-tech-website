@@ -53,7 +53,7 @@ export async function GET(
       const ogObject = await env.APPS_BUCKET.get(r2Key);
 
       if (ogObject) {
-        return new Response(ogObject.body, {
+        return new Response(ogObject.body as BodyInit, {
           headers: {
             "Content-Type": "image/png",
             "Cache-Control": "public, max-age=86400, s-maxage=86400",

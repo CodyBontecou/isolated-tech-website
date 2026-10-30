@@ -1,18 +1,12 @@
+import type { User } from "@/lib/auth/middleware";
 /**
  * Mock authentication for testing
  */
 
 import { vi } from "vitest";
 
-export interface MockUser {
-  id: string;
-  email: string;
+export interface MockUser extends User {
   name: string;
-  image?: string | null;
-  isAdmin?: boolean;
-  newsletterSubscribed?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export interface MockSession {

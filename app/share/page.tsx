@@ -1,4 +1,4 @@
-import type { Metadata } from "vinext";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Pi Session Share — ISOLATED.TECH",

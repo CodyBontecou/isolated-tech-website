@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createMockEnv, createMockD1 } from "../mocks/cloudflare";
-import { createMockStripe, createFailingStripe } from "../mocks/stripe";
+import { createMockStripe, createFailingStripe, getCheckoutCreateMock } from "../mocks/stripe";
 import { createMockUser } from "../mocks/auth";
 import * as fixtures from "../fixtures";
 
@@ -49,7 +49,7 @@ describe("POST /api/checkout", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({ user: null, session: null });
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({ user: null, session: null }));
 
       const { POST } = await import("@/app/api/checkout/route");
 
@@ -73,10 +73,10 @@ describe("POST /api/checkout", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: createMockUser(),
         session: { id: "session_123" },
-      });
+      }));
 
       const { POST } = await import("@/app/api/checkout/route");
 
@@ -98,10 +98,10 @@ describe("POST /api/checkout", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: createMockUser(),
         session: { id: "session_123" },
-      });
+      }));
 
       const { POST } = await import("@/app/api/checkout/route");
 
@@ -129,10 +129,10 @@ describe("POST /api/checkout", () => {
       const user = { ...fixtures.testUser, isAdmin: false };
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -161,10 +161,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_123" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -194,10 +194,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_456" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -244,10 +244,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_fixed" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -311,10 +311,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_wrong_app" });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -361,10 +361,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_expired" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -411,10 +411,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_maxed" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -485,10 +485,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_free100" });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -526,10 +526,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_789" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -569,10 +569,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_no_stripe" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(null); // Stripe not configured
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -621,10 +621,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_desc" });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -645,10 +645,10 @@ describe("POST /api/checkout", () => {
       expect(data.success).toBe(true);
       
       // Verify Stripe session includes description with tagline
-      const createCall = mockStripe.checkout.sessions.create.mock.calls[0][0];
-      const productData = createCall.line_items[0].price_data.product_data;
+      const createCall = getCheckoutCreateMock(mockStripe).mock.calls[0][0];
+      const productData = createCall.line_items?.[0]?.price_data?.product_data;
       
-      expect(productData.description).toContain("Amazing App");
+      expect(productData?.description).toContain("Amazing App");
     });
 
     it("should strip markdown from description", async () => {
@@ -679,10 +679,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_md" });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -701,20 +701,20 @@ describe("POST /api/checkout", () => {
       expect(response.status).toBe(200);
       
       // Verify markdown was stripped
-      const createCall = mockStripe.checkout.sessions.create.mock.calls[0][0];
-      const productData = createCall.line_items[0].price_data.product_data;
+      const createCall = getCheckoutCreateMock(mockStripe).mock.calls[0][0];
+      const productData = createCall.line_items?.[0]?.price_data?.product_data;
       
       // Should not contain markdown characters
-      expect(productData.description).not.toContain("**");
-      expect(productData.description).not.toContain("*");
-      expect(productData.description).not.toContain("`");
-      expect(productData.description).not.toContain("[link]");
-      expect(productData.description).not.toContain("# ");
+      expect(productData?.description).not.toContain("**");
+      expect(productData?.description).not.toContain("*");
+      expect(productData?.description).not.toContain("`");
+      expect(productData?.description).not.toContain("[link]");
+      expect(productData?.description).not.toContain("# ");
       
       // Should contain plain text
-      expect(productData.description).toContain("Bold text");
-      expect(productData.description).toContain("italic");
-      expect(productData.description).toContain("link");
+      expect(productData?.description).toContain("Bold text");
+      expect(productData?.description).toContain("italic");
+      expect(productData?.description).toContain("link");
     });
 
     it("should truncate description to 500 chars", async () => {
@@ -746,10 +746,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_long" });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/checkout/route");
@@ -768,12 +768,12 @@ describe("POST /api/checkout", () => {
       expect(response.status).toBe(200);
       
       // Verify description was truncated
-      const createCall = mockStripe.checkout.sessions.create.mock.calls[0][0];
-      const productData = createCall.line_items[0].price_data.product_data;
+      const createCall = getCheckoutCreateMock(mockStripe).mock.calls[0][0];
+      const productData = createCall.line_items?.[0]?.price_data?.product_data;
       
       // Should be truncated with ellipsis
-      expect(productData.description.length).toBeLessThanOrEqual(500);
-      expect(productData.description).toContain("...");
+      expect(productData?.description?.length).toBeLessThanOrEqual(500);
+      expect(productData?.description).toContain("...");
     });
   });
 
@@ -789,10 +789,10 @@ describe("POST /api/checkout", () => {
       const newUser = createMockUser({ id: "new_user_stripe_fail" });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: newUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(failingStripe);
 
       const { POST } = await import("@/app/api/checkout/route");

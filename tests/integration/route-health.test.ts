@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 /**
  * Route Health Tests (Integration)
  *
@@ -101,7 +102,7 @@ describe("Route Health - API Endpoints", () => {
       vi.mocked(getCurrentUser).mockResolvedValue(null);
 
       const { GET } = await import("@/app/api/feedback/route");
-      const request = new Request("http://localhost/api/feedback");
+      const request = new NextRequest("http://localhost/api/feedback");
       const response = await GET(request);
 
       expect(response.status).toBeLessThan(500);
@@ -121,7 +122,7 @@ describe("Route Health - API Endpoints", () => {
       vi.mocked(getCurrentUser).mockResolvedValue(null);
 
       const { GET } = await import("@/app/api/feedback/route");
-      const request = new Request("http://localhost/api/feedback?sort=invalid_sort_value");
+      const request = new NextRequest("http://localhost/api/feedback?sort=invalid_sort_value");
       const response = await GET(request);
 
       // Should not 500, may return 400 or default to valid sort
@@ -138,10 +139,10 @@ describe("Route Health - API Endpoints", () => {
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
 
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({ session: null, user: null });
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({ session: null, user: null }));
 
       const { GET } = await import("@/app/api/admin/apps/route");
-      const request = new Request("http://localhost/api/admin/apps");
+      const request = new NextRequest("http://localhost/api/admin/apps");
       const response = await GET(request);
 
       // Should return 401 or 403, not 500
@@ -157,13 +158,13 @@ describe("Route Health - API Endpoints", () => {
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
 
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         session: { id: "session_123", userId: fixtures.adminUser.id, expiresAt: new Date(Date.now() + 86400000) },
         user: fixtures.adminUser as any,
-      });
+      }));
 
       const { GET } = await import("@/app/api/admin/apps/route");
-      const request = new Request("http://localhost/api/admin/apps");
+      const request = new NextRequest("http://localhost/api/admin/apps");
       const response = await GET(request);
 
       expect(response.status).toBeLessThan(500);
@@ -179,10 +180,10 @@ describe("Route Health - API Endpoints", () => {
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
 
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({ session: null, user: null });
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({ session: null, user: null }));
 
       const { POST } = await import("@/app/api/admin/codes/route");
-      const request = new Request("http://localhost/api/admin/codes", {
+      const request = new NextRequest("http://localhost/api/admin/codes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: "TEST50", discount_type: "percent", discount_value: 50 }),
@@ -217,7 +218,7 @@ describe("Route Health - Graceful Degradation", () => {
 
     // The route should catch this and return a proper error response
     const { GET } = await import("@/app/api/feedback/route");
-    const request = new Request("http://localhost/api/feedback");
+    const request = new NextRequest("http://localhost/api/feedback");
 
     try {
       const response = await GET(request);
@@ -253,7 +254,7 @@ describe("Route Health - Input Validation", () => {
       vi.mocked(getCurrentUser).mockResolvedValue(fixtures.testUser as any);
 
       const { POST } = await import("@/app/api/feedback/submit/route");
-      const request = new Request("http://localhost/api/feedback/submit", {
+      const request = new NextRequest("http://localhost/api/feedback/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -275,7 +276,7 @@ describe("Route Health - Input Validation", () => {
       vi.mocked(getCurrentUser).mockResolvedValue(fixtures.testUser as any);
 
       const { POST } = await import("@/app/api/feedback/submit/route");
-      const request = new Request("http://localhost/api/feedback/submit", {
+      const request = new NextRequest("http://localhost/api/feedback/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -301,7 +302,7 @@ describe("Route Health - Input Validation", () => {
       vi.mocked(getCurrentUser).mockResolvedValue(fixtures.testUser as any);
 
       const { POST } = await import("@/app/api/feedback/submit/route");
-      const request = new Request("http://localhost/api/feedback/submit", {
+      const request = new NextRequest("http://localhost/api/feedback/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -330,7 +331,7 @@ describe("Route Health - Input Validation", () => {
       vi.mocked(getCurrentUser).mockResolvedValue(fixtures.testUser as any);
 
       const { POST } = await import("@/app/api/feedback/vote/route");
-      const request = new Request("http://localhost/api/feedback/vote", {
+      const request = new NextRequest("http://localhost/api/feedback/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -350,13 +351,13 @@ describe("Route Health - Input Validation", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         session: { id: "session_123", userId: fixtures.testUser.id, expiresAt: new Date(Date.now() + 86400000) },
         user: fixtures.testUser as any,
-      });
+      }));
 
       const { POST } = await import("@/app/api/checkout/route");
-      const request = new Request("http://localhost/api/checkout", {
+      const request = new NextRequest("http://localhost/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -375,10 +376,10 @@ describe("Route Health - Input Validation", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({ session: null, user: null });
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({ session: null, user: null }));
 
       const { POST } = await import("@/app/api/checkout/route");
-      const request = new Request("http://localhost/api/checkout", {
+      const request = new NextRequest("http://localhost/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ appId: fixtures.testApp.id }),
@@ -415,7 +416,7 @@ describe("Route Health - Edge Cases", () => {
     const { GET } = await import("@/app/api/feedback/route");
     
     // Test with URL-encoded special characters
-    const request = new Request("http://localhost/api/feedback?sort=%27OR%201=1--");
+    const request = new NextRequest("http://localhost/api/feedback?sort=%27OR%201=1--");
     const response = await GET(request);
 
     // Should handle gracefully, not 500
@@ -436,7 +437,7 @@ describe("Route Health - Edge Cases", () => {
 
     // Fire multiple concurrent requests
     const requests = Array.from({ length: 5 }, () =>
-      GET(new Request("http://localhost/api/feedback"))
+      GET(new NextRequest("http://localhost/api/feedback"))
     );
 
     const responses = await Promise.all(requests);

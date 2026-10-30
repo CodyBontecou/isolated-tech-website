@@ -230,10 +230,10 @@ describe("Admin Auth - API Key Validation", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
       
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...fixtures.adminUser, isAdmin: true },
         session: { id: "session_123" },
-      });
+      }));
 
       const { requireAdmin } = await import("@/lib/admin-auth");
 
@@ -256,10 +256,10 @@ describe("Admin Auth - API Key Validation", () => {
       const adminUser = { ...fixtures.adminUser, isAdmin: true };
       
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: adminUser,
         session: { id: "session_123", userId: adminUser.id, expiresAt: new Date() },
-      });
+      }));
 
       const { requireAdmin } = await import("@/lib/admin-auth");
 
@@ -279,10 +279,10 @@ describe("Admin Auth - API Key Validation", () => {
       const regularUser = { ...fixtures.testUser, isAdmin: false };
       
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser,
         session: { id: "session_123", userId: regularUser.id, expiresAt: new Date() },
-      });
+      }));
 
       const { requireAdmin } = await import("@/lib/admin-auth");
 
@@ -298,10 +298,10 @@ describe("Admin Auth - API Key Validation", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
       
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: null,
         session: null,
-      });
+      }));
 
       const { requireAdmin } = await import("@/lib/admin-auth");
 

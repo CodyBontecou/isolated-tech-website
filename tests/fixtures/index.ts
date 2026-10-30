@@ -1,3 +1,6 @@
+import type { Session, SessionResult, User } from "@/lib/auth/middleware";
+import type { MockD1State } from "../mocks/cloudflare";
+
 /**
  * Test fixtures - sample data for tests
  */
@@ -12,8 +15,10 @@ export const testUser = {
   name: "Test User",
   image: null,
   emailVerified: true,
-  createdAt: new Date("2024-01-01").toISOString(),
-  updatedAt: new Date("2024-01-01").toISOString(),
+  isAdmin: false,
+  newsletterSubscribed: true,
+  createdAt: new Date("2024-01-01"),
+  updatedAt: new Date("2024-01-01"),
 };
 
 export const adminUser = {
@@ -225,10 +230,14 @@ export const expiredDownloadToken = {
 // Helper to create D1 state from fixtures
 // ============================================================================
 
-export function createTestD1State() {
+export function createTestD1State(): MockD1State {
   return {
-    tables: new Map([
-      ["user", [testUser, adminUser]],
+    tables: new Map<string, Record<string, unknown>[]>([
+      ["user", [testUser, adminUser].map(user => ({
+        ...user,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      }))],
       ["apps", [testApp, freeApp]],
       ["app_versions", [testVersion]],
       ["purchases", [testPurchase, refundedPurchase, freePurchase]],
@@ -270,5 +279,18 @@ export function createTestR2State() {
         },
       ],
     ]),
+  };
+}
+
+/** Fill required session metadata while keeping each test's user and overrides. */
+export function createSessionResult(input: { user: User | null; session: Partial<Session> | null }): SessionResult {
+  return {
+    user: input.user,
+    session: input.session === null ? null : {
+      id: "session_123",
+      userId: input.user?.id ?? testUser.id,
+      expiresAt: new Date("2030-01-01"),
+      ...input.session,
+    },
   };
 }

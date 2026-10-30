@@ -47,10 +47,10 @@ describe("POST /api/admin/broadcast", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: null,
       session: null,
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -75,10 +75,10 @@ describe("POST /api/admin/broadcast", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.testUser, isAdmin: false },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -101,10 +101,10 @@ describe("POST /api/admin/broadcast", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -129,10 +129,10 @@ describe("POST /api/admin/broadcast", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -157,10 +157,10 @@ describe("POST /api/admin/broadcast", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -185,10 +185,10 @@ describe("POST /api/admin/broadcast", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -224,10 +224,10 @@ describe("POST /api/admin/broadcast", () => {
     });
 
     vi.mocked(getEnv).mockReturnValue(emptyMockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -279,10 +279,10 @@ describe("POST /api/admin/broadcast", () => {
     });
 
     vi.mocked(getEnv).mockReturnValue(subscriberMockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/route");
 
@@ -330,10 +330,10 @@ describe("POST /api/admin/broadcast", () => {
     });
 
     vi.mocked(getEnv).mockReturnValue(subscriberMockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     // Mock email failure
     mockSendEmail.mockResolvedValue({ error: "SMTP error" });
@@ -380,10 +380,10 @@ describe("POST /api/admin/broadcast/test", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: null,
       session: null,
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/test/route");
 
@@ -407,10 +407,10 @@ describe("POST /api/admin/broadcast/test", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/test/route");
 
@@ -434,10 +434,10 @@ describe("POST /api/admin/broadcast/test", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/test/route");
 
@@ -461,10 +461,10 @@ describe("POST /api/admin/broadcast/test", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/broadcast/test/route");
 
@@ -499,10 +499,10 @@ describe("POST /api/admin/broadcast/test", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     mockSendEmail.mockResolvedValue({ error: "SES configuration error" });
 

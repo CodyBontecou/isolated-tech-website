@@ -7,6 +7,7 @@
  * Users can download purchased apps from their dashboard.
  */
 
+import type Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
@@ -269,7 +270,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Build checkout session config
-    const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       mode: "payment",
       customer_email: user.email,
       line_items: [

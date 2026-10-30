@@ -174,7 +174,7 @@ export async function GET(
       `Token download: token=${token.slice(0, 8)}... app=${app.slug} version=${version.version}`
     );
 
-    return new NextResponse(object.body, {
+    return new NextResponse(object.body as BodyInit, {
       status: 200,
       headers,
     });

@@ -11,6 +11,10 @@ import { vi } from "vitest";
 
 type D1Row = Record<string, unknown>;
 
+export function d1Meta(changes = 0): D1Result["meta"] {
+  return { duration: 0, changes, size_after: 0, rows_read: 0, rows_written: changes, last_row_id: 0, changed_db: changes > 0 };
+}
+
 export interface MockD1State {
   tables: Map<string, D1Row[]>;
 }
@@ -127,37 +131,39 @@ export function createMockD1(initialState?: MockD1State): D1Database {
     prepare: vi.fn((sql: string) => {
       let boundParams: unknown[] = [];
 
-      const stmt = {
+      const stmt: D1PreparedStatement = {
         bind: vi.fn((...params: unknown[]) => {
           boundParams = params;
           return stmt;
         }),
-        first: vi.fn(async <T>(): Promise<T | null> => {
+        first: async <T>(columnName?: string): Promise<T | null> => {
           const result = executeQuery(sql, boundParams);
-          return (result.rows[0] as T) || null;
-        }),
-        all: vi.fn(async <T>(): Promise<D1Result<T>> => {
+          const row = result.rows[0];
+          return (columnName ? row?.[columnName] as T : row as T) ?? null;
+        },
+        all: async <T>(): Promise<D1Result<T>> => {
           const result = executeQuery(sql, boundParams);
           return {
             results: result.rows as T[],
             success: true,
-            meta: { duration: 0, changes: result.changes },
-          } as D1Result<T>;
-        }),
-        run: vi.fn(async (): Promise<D1Result> => {
+            meta: d1Meta(result.changes),
+          };
+        },
+        run: async <T>(): Promise<D1Result<T>> => {
           const result = executeQuery(sql, boundParams);
           return {
             results: [],
             success: true,
-            meta: { duration: 0, changes: result.changes },
+            meta: d1Meta(result.changes),
           };
-        }),
+        },
         raw: vi.fn(),
       };
 
       return stmt;
     }),
     batch: vi.fn(),
+    withSession: vi.fn(() => ({ prepare: mockDb.prepare, batch: mockDb.batch, getBookmark: () => null })),
     dump: vi.fn(),
     exec: vi.fn(),
   };

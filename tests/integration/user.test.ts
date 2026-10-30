@@ -83,10 +83,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: null,
         session: null,
-      });
+      }));
 
       const { DELETE } = await import("@/app/api/user/route");
       const request = createRequest("DELETE", "http://localhost/api/user");
@@ -102,10 +102,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: adminUserData as any,
         session: { id: "session_admin" },
-      });
+      }));
 
       const { DELETE } = await import("@/app/api/user/route");
       const request = createRequest("DELETE", "http://localhost/api/user");
@@ -121,10 +121,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { DELETE } = await import("@/app/api/user/route");
       const request = createRequest("DELETE", "http://localhost/api/user");
@@ -154,10 +154,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { DELETE } = await import("@/app/api/user/route");
       const request = createRequest("DELETE", "http://localhost/api/user");
@@ -176,10 +176,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { DELETE } = await import("@/app/api/user/route");
       const request = createRequest("DELETE", "http://localhost/api/user");
@@ -224,10 +224,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: null,
         session: null,
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/profile/route");
       const request = createRequest("PUT", "http://localhost/api/user/profile", {
@@ -245,10 +245,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/profile/route");
       const request = createRequest("PUT", "http://localhost/api/user/profile", {
@@ -267,10 +267,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/profile/route");
       const request = createRequest("PUT", "http://localhost/api/user/profile", {
@@ -294,10 +294,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/profile/route");
       const request = createRequest("PUT", "http://localhost/api/user/profile", {
@@ -315,10 +315,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/profile/route");
       const longName = "  " + "A".repeat(150) + "  "; // 154 chars with spaces
@@ -337,10 +337,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/profile/route");
       const request = createRequest("PUT", "http://localhost/api/user/profile", {
@@ -387,10 +387,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: null,
         session: null,
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/preferences/route");
       const request = createRequest("PUT", "http://localhost/api/user/preferences", {
@@ -408,10 +408,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: { ...regularUser, newsletterSubscribed: false } as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/preferences/route");
       const request = createRequest("PUT", "http://localhost/api/user/preferences", {
@@ -430,10 +430,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/preferences/route");
       const request = createRequest("PUT", "http://localhost/api/user/preferences", {
@@ -452,10 +452,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/preferences/route");
       const request = createRequest("PUT", "http://localhost/api/user/preferences", {
@@ -479,10 +479,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/preferences/route");
       const request = createRequest("PUT", "http://localhost/api/user/preferences", {
@@ -500,10 +500,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/preferences/route");
       const request = createRequest("PUT", "http://localhost/api/user/preferences", {
@@ -537,10 +537,10 @@ describe("User API Routes", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser as any,
         session: { id: "session_1" },
-      });
+      }));
 
       const { PUT } = await import("@/app/api/user/preferences/route");
       

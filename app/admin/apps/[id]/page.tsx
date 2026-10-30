@@ -107,14 +107,14 @@ export default async function EditAppPage({ params }: { params: Promise<{ id: st
               VIEW PAGE
             </a>
             <a
-              href={`/admin/apps/${params.id}/media`}
+              href={`/admin/apps/${id}/media`}
               className="auth-btn auth-btn--outline"
               style={{ width: "auto" }}
             >
               MEDIA
             </a>
             <a
-              href={`/admin/apps/${params.id}/edit`}
+              href={`/admin/apps/${id}/edit`}
               className="auth-btn"
               style={{ width: "auto" }}
             >
@@ -153,7 +153,7 @@ export default async function EditAppPage({ params }: { params: Promise<{ id: st
         <div className="admin-section__header">
           <h2 className="admin-section__title">VERSIONS</h2>
           <a
-            href={`/admin/apps/${params.id}/versions/new`}
+            href={`/admin/apps/${id}/versions/new`}
             className="auth-btn"
             style={{ width: "auto" }}
           >
@@ -174,7 +174,7 @@ export default async function EditAppPage({ params }: { params: Promise<{ id: st
               No versions uploaded yet.
             </p>
             <a
-              href={`/admin/apps/${params.id}/versions/new`}
+              href={`/admin/apps/${id}/versions/new`}
               className="auth-btn"
               style={{ width: "auto", display: "inline-block" }}
             >

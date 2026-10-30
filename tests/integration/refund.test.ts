@@ -49,7 +49,7 @@ describe("POST /api/admin/refund", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({ user: null, session: null });
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({ user: null, session: null }));
 
       const { POST } = await import("@/app/api/admin/refund/route");
 
@@ -73,10 +73,10 @@ describe("POST /api/admin/refund", () => {
       const regularUser = createMockUser({ isAdmin: false });
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: regularUser,
         session: { id: "session_123" },
-      });
+      }));
 
       const { POST } = await import("@/app/api/admin/refund/route");
 
@@ -100,10 +100,10 @@ describe("POST /api/admin/refund", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
 
       const { POST } = await import("@/app/api/admin/refund/route");
 
@@ -125,10 +125,10 @@ describe("POST /api/admin/refund", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
 
       const { POST } = await import("@/app/api/admin/refund/route");
 
@@ -150,10 +150,10 @@ describe("POST /api/admin/refund", () => {
       const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
 
       const { POST } = await import("@/app/api/admin/refund/route");
 
@@ -178,10 +178,10 @@ describe("POST /api/admin/refund", () => {
       const { createStripeClient } = await import("@/lib/stripe");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -230,10 +230,10 @@ describe("POST /api/admin/refund", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(null);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -283,10 +283,10 @@ describe("POST /api/admin/refund", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(failingStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -311,10 +311,10 @@ describe("POST /api/admin/refund", () => {
       const { createStripeClient } = await import("@/lib/stripe");
 
       vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -364,10 +364,10 @@ describe("POST /api/admin/refund", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -415,10 +415,10 @@ describe("POST /api/admin/refund", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -465,10 +465,10 @@ describe("POST /api/admin/refund", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -517,10 +517,10 @@ describe("POST /api/admin/refund", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");
@@ -569,10 +569,10 @@ describe("POST /api/admin/refund", () => {
       });
 
       vi.mocked(getEnv).mockReturnValue(freshEnv as any);
-      vi.mocked(getSessionFromHeaders).mockResolvedValue({
+      vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
         user: fixtures.adminUser,
         session: { id: "session_123" },
-      });
+      }));
       vi.mocked(createStripeClient).mockReturnValue(mockStripe);
 
       const { POST } = await import("@/app/api/admin/refund/route");

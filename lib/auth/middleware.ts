@@ -63,7 +63,7 @@ export async function getSessionFromHeaders(
         id: session.user.id,
         email: session.user.email,
         name: session.user.name,
-        image: session.user.image,
+        image: session.user.image ?? null,
         isAdmin: (session.user as Record<string, unknown>).isAdmin === true,
         newsletterSubscribed:
           (session.user as Record<string, unknown>).newsletterSubscribed !== false,

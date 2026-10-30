@@ -36,10 +36,10 @@ describe("GET /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: null,
       session: null,
-    });
+    }));
 
     const { GET } = await import("@/app/api/admin/api-keys/route");
 
@@ -56,10 +56,10 @@ describe("GET /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.testUser, isAdmin: false },
       session: { id: "session_123" },
-    });
+    }));
 
     const { GET } = await import("@/app/api/admin/api-keys/route");
 
@@ -74,10 +74,10 @@ describe("GET /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { GET } = await import("@/app/api/admin/api-keys/route");
 
@@ -130,10 +130,10 @@ describe("POST /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: null,
       session: null,
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/api-keys/route");
 
@@ -152,10 +152,10 @@ describe("POST /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/api-keys/route");
 
@@ -181,10 +181,10 @@ describe("POST /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { POST } = await import("@/app/api/admin/api-keys/route");
 
@@ -243,10 +243,10 @@ describe("DELETE /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: null,
       session: null,
-    });
+    }));
 
     const { DELETE } = await import("@/app/api/admin/api-keys/route");
 
@@ -265,10 +265,10 @@ describe("DELETE /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { DELETE } = await import("@/app/api/admin/api-keys/route");
 
@@ -289,10 +289,10 @@ describe("DELETE /api/admin/api-keys", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { DELETE } = await import("@/app/api/admin/api-keys/route");
 
@@ -318,10 +318,10 @@ describe("DELETE /api/admin/api-keys", () => {
     (envWithState as any).ADMIN_API_KEY = "test_admin_api_key";
 
     vi.mocked(getEnv).mockReturnValue(envWithState as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { DELETE } = await import("@/app/api/admin/api-keys/route");
 
@@ -358,10 +358,10 @@ describe("Admin routes require authentication", () => {
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
     // Even if session is valid admin, invalid API key should reject
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { GET } = await import("@/app/api/admin/api-keys/route");
 
@@ -381,10 +381,10 @@ describe("Admin routes require authentication", () => {
     const { getSessionFromHeaders } = await import("@/lib/auth/middleware");
 
     vi.mocked(getEnv).mockReturnValue(mockEnv as any);
-    vi.mocked(getSessionFromHeaders).mockResolvedValue({
+    vi.mocked(getSessionFromHeaders).mockResolvedValue(fixtures.createSessionResult({
       user: { ...fixtures.adminUser, isAdmin: true },
       session: { id: "session_123" },
-    });
+    }));
 
     const { DELETE } = await import("@/app/api/admin/api-keys/route");
 

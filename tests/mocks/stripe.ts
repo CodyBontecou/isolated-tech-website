@@ -213,7 +213,7 @@ export function createFailingStripe(error: Error | string): Stripe {
  */
 export function createWebhookPayload(
   type: string,
-  data: Record<string, unknown>
+  data: object
 ): string {
   return JSON.stringify({ type, data });
 }
@@ -261,4 +261,11 @@ export function simulateRefund(paymentIntentId: string): {
     payload: createWebhookPayload("charge.refunded", charge),
     event: createMockStripeEvent("charge.refunded", charge),
   };
+}
+
+/** Select the params overload; Stripe also overloads create() for request options. */
+export function getCheckoutCreateMock(stripe: Stripe) {
+  return vi.mocked<(params: Stripe.Checkout.SessionCreateParams) => Promise<Stripe.Checkout.Session>>(
+    stripe.checkout.sessions.create
+  );
 }

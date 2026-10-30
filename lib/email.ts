@@ -22,7 +22,7 @@ const SES_REGION = "us-east-1";
 async function hmacSha256(key: ArrayBuffer | Uint8Array, message: string): Promise<ArrayBuffer> {
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
-    key,
+    new Uint8Array(key),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]

@@ -127,7 +127,7 @@ export async function GET(
       `Download: user=${user.id} app=${app.slug} version=${version.version}`
     );
 
-    return new NextResponse(object.body, {
+    return new NextResponse(object.body as BodyInit, {
       status: 200,
       headers,
     });

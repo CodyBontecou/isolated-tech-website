@@ -117,7 +117,7 @@ function parseMarkdown(text: string): string {
       const headerCells = parseRow(lines[0]);
       const thead = `<thead><tr>${headerCells.map(cell => `<th>${cell}</th>`).join('')}</tr></thead>`;
       
-      const bodyRows = lines.slice(2).map(row => {
+      const bodyRows = lines.slice(2).map((row: string) => {
         const cells = parseRow(row);
         return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
       }).join('');

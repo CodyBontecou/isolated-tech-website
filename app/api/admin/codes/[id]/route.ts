@@ -1,3 +1,4 @@
+import type { Env } from "@/lib/env";
 /**
  * PUT /api/admin/codes/[id] - Update a discount code
  * DELETE /api/admin/codes/[id] - Delete a discount code

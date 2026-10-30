@@ -75,9 +75,10 @@ export function createMockSESFetch(options: {
     errorMessage = "InvalidParameterValue",
   } = options;
 
-  return vi.fn(async (url: string, init?: RequestInit) => {
+  return vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
     // Validate it's an SES request
-    if (!url.includes("email.") || !url.includes(".amazonaws.com")) {
+    const address = url instanceof Request ? url.url : String(url);
+    if (!address.includes("email.") || !address.includes(".amazonaws.com")) {
       return new Response("Not Found", { status: 404 });
     }
 

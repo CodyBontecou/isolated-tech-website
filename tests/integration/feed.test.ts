@@ -95,7 +95,7 @@ describe("RSS Feed", () => {
 
     it("should return 500 when database is unavailable", async () => {
       const { getEnv } = await import("@/lib/cloudflare-context");
-      vi.mocked(getEnv).mockReturnValue(null);
+      vi.mocked(getEnv, { partial: true }).mockReturnValue({});
 
       const { GET } = await import("@/app/feed.xml/route");
       const response = await GET();

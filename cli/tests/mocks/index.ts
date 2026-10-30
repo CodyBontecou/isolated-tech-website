@@ -7,7 +7,8 @@ export function createMockFetch() {
   const calls: Array<{ url: string; options: RequestInit }> = [];
   const responses: Array<{ status: number; body: unknown }> = [];
   
-  const mockFetch = vi.fn(async (url: string, options: RequestInit = {}) => {
+  const mockFetch = vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
+    const url = input instanceof Request ? input.url : String(input);
     calls.push({ url, options });
     
     const response = responses.shift() || { status: 404, body: { error: 'Not configured' } };
@@ -61,7 +62,7 @@ export function createMockFS() {
     
     existsSync: vi.fn((path: string) => files.has(path) || dirs.has(path)),
     
-    readFileSync: vi.fn((path: string, encoding?: string) => {
+    readFileSync: vi.fn((path: string, encoding?: string): string | Buffer => {
       if (!files.has(path)) {
         const error = new Error(`ENOENT: no such file or directory, open '${path}'`);
         (error as any).code = 'ENOENT';
