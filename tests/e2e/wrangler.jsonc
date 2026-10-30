@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "isolated-tech-e2e",
+  "main": "../../worker/entry.ts",
+  "compatibility_date": "2026-02-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "binding": "ASSETS" },
+  "vars": {
+    "APP_URL": "http://localhost:3000",
+    "BETTER_AUTH_SECRET": "isolated-e2e-local-only-synthetic-secret-2026"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "isolated-tech-e2e",
+    "database_id": "00000000-0000-0000-0000-000000000001",
+    "migrations_dir": "../../migrations"
+  }],
+  "r2_buckets": [
+    { "binding": "APPS_BUCKET", "bucket_name": "isolated-tech-e2e-apps" },
+    { "binding": "PI_SHARES", "bucket_name": "isolated-tech-e2e-shares" }
+  ],
+  "kv_namespaces": [{ "binding": "AUTH_KV", "id": "00000000000000000000000000000001" }]
+}

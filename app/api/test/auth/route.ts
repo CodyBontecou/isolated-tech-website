@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/cloudflare-context";
 import { createAuth } from "@/lib/auth";
+import { makeSignature } from "better-auth/crypto";
 
 // Only allow in development/test mode
 const IS_TEST_ENV = process.env.NODE_ENV !== "production";
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     // Create a session directly using Better Auth
-    const auth = createAuth(env);
+    const authContext = await createAuth(env).$context;
     const sessionToken = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
@@ -81,10 +82,11 @@ export async function POST(request: NextRequest): Promise<Response> {
       },
     });
 
-    // Set the session cookie (Better Auth uses "isolated.session_token")
-    response.cookies.set("isolated.session_token", sessionToken, {
+    // Use Better Auth's signed value and secure-cookie name, including on localhost.
+    const signedToken = `${sessionToken}.${await makeSignature(sessionToken, authContext.secret)}`;
+    response.cookies.set(authContext.authCookies.sessionToken.name, signedToken, {
       httpOnly: true,
-      secure: false, // Allow in development
+      secure: true,
       sameSite: "Lax",
       path: "/",
       expires: expiresAt,
@@ -108,15 +110,17 @@ export async function DELETE(request: NextRequest): Promise<Response> {
     );
   }
 
-  // Clear the session cookie
+  const authContext = await createAuth(getEnv()).$context;
   const response = NextResponse.json({ success: true });
-  response.cookies.set("isolated.session_token", "", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "Lax",
-    path: "/",
-    expires: new Date(0),
-  });
+  for (const cookie of [authContext.authCookies.sessionToken, authContext.authCookies.sessionData]) {
+    response.cookies.set(cookie.name, "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      path: "/",
+      expires: new Date(0),
+    });
+  }
 
   return response;
 }

@@ -3,6 +3,8 @@ import vinext from "vinext";
 import rsc from "@vitejs/plugin-rsc";
 import { cloudflare } from "@cloudflare/vite-plugin";
 
+const isE2E = process.env.ISOLATED_E2E === "1";
+
 export default defineConfig({
   plugins: [
     vinext({ rsc: false }),
@@ -15,7 +17,9 @@ export default defineConfig({
     }),
     cloudflare({
       viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
-      remoteBindings: true,
+      configPath: isE2E ? "tests/e2e/wrangler.jsonc" : undefined,
+      remoteBindings: !isE2E,
+      ...(isE2E ? { persistState: { path: ".wrangler/e2e" } } : {}),
     }),
   ],
   optimizeDeps: {

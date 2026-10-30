@@ -22,7 +22,8 @@
     "test:visual:update": "playwright test --project=visual-desktop --project=visual-mobile tests/e2e/visual/ --update-snapshots",
     "screenshots:client-work": "node scripts/capture-client-work-screenshots.mjs",
     "test:all": "npm run test:run && npm run test:e2e",
-    "typecheck": "tsc --noEmit && tsc --project cli/tsconfig.typecheck.json"
+    "typecheck": "tsc --noEmit && tsc --project cli/tsconfig.typecheck.json",
+    "test:e2e:server": "node scripts/start-e2e-server.mjs"
   },
   "dependencies": {
     "@cf-wasm/resvg": "^0.3.3",

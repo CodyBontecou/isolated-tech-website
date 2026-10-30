@@ -1,19 +1,25 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const externalBaseURL = process.env.TEST_BASE_URL;
+const baseURL = externalBaseURL || "http://localhost:3000";
+// Keep API helpers and the browser on the same origin.
+process.env.TEST_BASE_URL = baseURL;
+
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: true,
+  // The suite shares one local database; reseeding must not run concurrently.
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  workers: 1,
+  reporter: process.env.CI ? [["line"], ["html", { open: "never" }]] : "html",
   
   // Snapshot settings for visual regression
   // Include project name to separate desktop/mobile screenshots
   snapshotPathTemplate: "{testDir}/{testFileDir}/__snapshots__/{projectName}/{testFilePath}/{arg}{ext}",
   
   use: {
-    baseURL: process.env.TEST_BASE_URL || "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -64,12 +70,12 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.CI
+  webServer: externalBaseURL
     ? undefined
     : {
-        command: "npm run dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: !process.env.CI,
+        command: "npm run test:e2e:server",
+        url: baseURL,
+        reuseExistingServer: false,
         timeout: 120 * 1000,
       },
 });

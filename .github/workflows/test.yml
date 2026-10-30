@@ -57,7 +57,9 @@ jobs:
 
   e2e:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    # Playwright 1.58.2 supports Ubuntu 24.04, not the rolling ubuntu-latest image.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     # Only run E2E on main branch pushes to save CI minutes
     if: github.ref == 'refs/heads/main' || github.event.pull_request.head.repo.full_name == github.repository
 
