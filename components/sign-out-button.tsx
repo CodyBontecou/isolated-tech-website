@@ -1,5 +1,6 @@
 "use client";
 
+import { useHydrated } from "@/lib/use-hydrated";
 import { signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
@@ -10,6 +11,7 @@ interface SignOutButtonProps {
 
 export function SignOutButton({ className, children }: SignOutButtonProps) {
   const router = useRouter();
+  const hydrated = useHydrated();
 
   const handleSignOut = async () => {
     await signOut({
@@ -25,6 +27,7 @@ export function SignOutButton({ className, children }: SignOutButtonProps) {
   return (
     <button
       onClick={handleSignOut}
+      disabled={!hydrated}
       className={`nav__sign-out ${className || ""}`}
       onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.5")}
       onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}

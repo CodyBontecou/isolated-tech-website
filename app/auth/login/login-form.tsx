@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 import { authClient } from "@/lib/auth-client";
 
 interface LoginFormProps {
@@ -8,6 +9,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ redirect }: LoginFormProps) {
+  const hydrated = useHydrated();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -78,12 +80,12 @@ export function LoginForm({ redirect }: LoginFormProps) {
         placeholder="you@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        disabled={isLoading}
+        disabled={!hydrated || isLoading}
         autoComplete="email"
         autoFocus
       />
 
-      <button type="submit" className="auth-btn" disabled={isLoading}>
+      <button type="submit" className="auth-btn" disabled={!hydrated || isLoading}>
         {isLoading ? "SENDING..." : "SEND MAGIC LINK"}
       </button>
     </form>

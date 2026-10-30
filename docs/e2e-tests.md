@@ -26,3 +26,8 @@ Fixture seeding upserts apps and versions without deleting existing purchases.
 `tests/e2e/test-data.spec.ts` checks repeated seeding, purchase creation, and
 cleanup against the real local D1 database. The migration tests also verify all
 foreign keys point at existing tables and repair migrations preserve data.
+
+The login form, sign-out control, and primary purchase action remain disabled
+until hydration attaches their handlers. The login E2E regression delays browser
+scripts to verify that server-rendered input cannot be edited and then lost
+during hydration. Browser tests rely on actionability rather than fixed sleeps.

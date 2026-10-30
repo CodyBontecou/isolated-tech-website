@@ -1,5 +1,7 @@
 "use client";
 
+import { useHydrated } from "@/lib/use-hydrated";
+
 import { useState, useCallback, useEffect, useRef } from "react";
 
 interface PurchaseCardProps {
@@ -43,6 +45,7 @@ export function PurchaseCard({
   hasMacOS = false,
   hasIOS = false,
 }: PurchaseCardProps) {
+  const hydrated = useHydrated();
   const [price, setPrice] = useState(
     suggestedPriceCents ? (suggestedPriceCents / 100).toFixed(2) : "0.00"
   );
@@ -407,7 +410,7 @@ export function PurchaseCard({
         <button
           className="purchase-card__btn"
           onClick={handlePurchase}
-          disabled={isLoading || !isValidPrice}
+          disabled={!hydrated || isLoading || !isValidPrice}
         >
           {isLoading
             ? "LOADING..."

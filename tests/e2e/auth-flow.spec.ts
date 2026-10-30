@@ -7,6 +7,27 @@ import { loginAsUser, loginAsAdmin, logout } from "./helpers";
 
 test.describe("Authentication", () => {
   test.describe("Login Page", () => {
+    test("should wait for hydration before accepting email input", async ({ page }) => {
+      let releaseScripts!: () => void;
+      const scriptsReady = new Promise<void>((resolve) => { releaseScripts = resolve; });
+      await page.route("**/*", async (route) => {
+        if (route.request().resourceType() === "script") await scriptsReady;
+        await route.continue();
+      });
+      try {
+        await page.goto("/auth/login", { waitUntil: "commit" });
+        await expect(page.locator('input[type="email"]')).toBeVisible();
+        await expect(page.locator('input[type="email"]')).toBeDisabled();
+        await expect(page.getByRole("button", { name: "SEND MAGIC LINK", exact: true })).toBeDisabled();
+      } finally {
+        releaseScripts();
+      }
+      const input = page.locator('input[type="email"]');
+      await input.fill("hydration-regression@example.test");
+      await expect(input).toHaveValue("hydration-regression@example.test");
+      await expect(page.getByRole("button", { name: "SEND MAGIC LINK", exact: true })).toBeEnabled();
+    });
+
     test("should display login form", async ({ page }) => {
       await page.goto("/auth/login");
 
