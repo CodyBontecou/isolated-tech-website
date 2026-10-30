@@ -1,3 +1,4 @@
+import { wheredayCampaignHtml } from "@/lib/whereday-campaigns";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -220,7 +221,7 @@ export default async function DocArticlePage({ params }: Props) {
 
           <div
             className="docs-content__body"
-            dangerouslySetInnerHTML={{ __html: parseMarkdown(article.body) }}
+            dangerouslySetInnerHTML={{ __html: wheredayCampaignHtml(parseMarkdown(article.body), `/apps/${slug}/docs/${articleSlug}`) }}
           />
 
           {/* Prev/Next navigation */}

@@ -1,3 +1,4 @@
+import { wheredayCampaignUrl } from "@/lib/whereday-campaigns";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -417,7 +418,8 @@ export default async function AppPage({ params }: { params: Promise<{ slug: stri
   const platforms = getPlatforms(app.platforms);
   const pageConfig = getPageConfig(app.custom_page_config);
   const isFree = app.min_price_cents === 0 && (!app.suggested_price_cents || app.suggested_price_cents === 0);
-  const iosAppStoreUrl = pageConfig?.ios_app_store_url?.trim() || null;
+  const storeUrl = pageConfig?.ios_app_store_url?.trim();
+  const iosAppStoreUrl = storeUrl ? wheredayCampaignUrl(storeUrl, `/apps/${slug}`) : null;
   const iosAppStoreLabel = pageConfig?.ios_app_store_label?.trim() || "DOWNLOAD ON APP STORE (iOS)";
   const subscriptionNote = pageConfig?.subscription_note?.trim() || null;
   const hasMacOS = platforms.includes("macos");

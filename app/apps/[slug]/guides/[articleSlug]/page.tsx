@@ -1,3 +1,4 @@
+import { wheredayCampaignHtml } from "@/lib/whereday-campaigns";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -166,7 +167,7 @@ export default async function GuideArticlePage({ params }: Props) {
 
             <div
               className="guide-article__body"
-              dangerouslySetInnerHTML={{ __html: parseMarkdown(article.body) }}
+              dangerouslySetInnerHTML={{ __html: wheredayCampaignHtml(parseMarkdown(article.body), `/apps/${slug}/guides/${articleSlug}`) }}
             />
           </article>
 

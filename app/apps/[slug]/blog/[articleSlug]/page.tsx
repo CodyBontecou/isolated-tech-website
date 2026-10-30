@@ -1,3 +1,4 @@
+import { wheredayCampaignHtml } from "@/lib/whereday-campaigns";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -213,7 +214,7 @@ export default async function BlogArticlePage({ params }: Props) {
 
           <div
             className="blog-article__body"
-            dangerouslySetInnerHTML={{ __html: parseMarkdown(post.body) }}
+            dangerouslySetInnerHTML={{ __html: wheredayCampaignHtml(parseMarkdown(post.body), `/apps/${slug}/blog/${articleSlug}`) }}
           />
 
           <footer className="blog-article__footer">
