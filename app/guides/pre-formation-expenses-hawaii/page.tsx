@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./guide.css";
 
@@ -13,6 +13,29 @@ export const metadata: Metadata = {
   openGraph: { title, description, url: "/guides/pre-formation-expenses-hawaii" },
   twitter: { title, description },
 };
+
+// Match the browser chrome and iOS status bar strip to the page header.
+// vinext replaces the default viewport instead of merging, so the width
+// and scale must be restated here.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+  ],
+};
+
+// The site theme toggle can differ from the OS setting, so set the
+// theme-color from the theme class the root layout applied.
+const themeColorScript = `
+  (function() {
+    var color = document.documentElement.classList.contains('light') ? '#ffffff' : '#000000';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m) {
+      m.setAttribute('content', color);
+    });
+  })();
+`;
 
 type Link = { href: string; label: string; note?: string };
 
@@ -90,6 +113,7 @@ export default function PreFormationExpensesHawaiiPage() {
         href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
         precedence="default"
       />
+      <script dangerouslySetInnerHTML={{ __html: themeColorScript }} />
 
       <header className="pfx-bar">
         <div className="pfx-wrap">
