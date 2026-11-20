@@ -34,7 +34,7 @@ test.describe("Purchase Flow", () => {
       await page.goto("/");
 
       // Should show apps section
-      await expect(page.locator("text=ALL APPS").first()).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Every app" })).toBeVisible();
     });
 
     test("should display app cards with name and price info", async ({ page }) => {
