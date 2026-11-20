@@ -35,7 +35,10 @@ html.light .pfx {
   --pfx-btn-bg: #171717;
   --pfx-btn-fg: #ffffff;
 }
-body:has(.pfx) { background: var(--pfx-bg, #000); }
+/* iOS paints the status bar strip and the overscroll area with the page
+   canvas color, so html and body take the header's color too. */
+html:has(.pfx), html:has(.pfx) body { background: #000000; }
+html.light:has(.pfx), html.light:has(.pfx) body { background: #ffffff; }
 body:has(.pfx) .noise { display: none; }
 
 .pfx .pfx-wrap {
