@@ -5,11 +5,15 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
 import { query, execute } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
+  if (!isFeatureEnabled("sellerProgram")) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const env = getEnv();
 
@@ -80,6 +84,9 @@ export async function GET(request: NextRequest) {
  * Mark notifications as read
  */
 export async function POST(request: NextRequest) {
+  if (!isFeatureEnabled("sellerProgram")) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const env = getEnv();
 

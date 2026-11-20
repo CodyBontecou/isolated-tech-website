@@ -5,12 +5,16 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
 import { createStripeClient, checkAccountStatus, PLATFORM_FEE_PERCENT } from "@/lib/stripe";
 import { queryOne, query } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
+  if (!isFeatureEnabled("sellerProgram")) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const env = getEnv();
 

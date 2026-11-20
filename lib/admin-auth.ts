@@ -13,6 +13,7 @@ import { NextRequest } from "next/server";
 import type { Env } from "@/lib/env";
 import { getSessionFromHeaders, type User } from "@/lib/auth/middleware";
 import { queryOne, execute, nanoid } from "@/lib/db";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 // Default superuser email (fallback if env var not set)
 const DEFAULT_SUPERUSER_EMAIL = "codybontecou@gmail.com";
@@ -214,7 +215,8 @@ async function getUserFromDatabaseApiKey(
   }
 
   const userIsSuperuser = isSuperuser(dbUser.email, env);
-  const userIsSeller = dbUser.is_seller === 1;
+  // Seller access only counts while the seller program is enabled.
+  const userIsSeller = dbUser.is_seller === 1 && isFeatureEnabled("sellerProgram");
   const userIsAdmin = dbUser.is_admin === 1;
 
   // Must be admin, superuser, or seller
@@ -287,7 +289,8 @@ export async function requireAdmin(
   );
 
   const userIsSuperuser = isSuperuser(user.email, env);
-  const userIsSeller = sellerInfo?.is_seller === 1;
+  // Seller access only counts while the seller program is enabled.
+  const userIsSeller = sellerInfo?.is_seller === 1 && isFeatureEnabled("sellerProgram");
 
   // Must be either admin, superuser, or seller to access admin routes
   if (!user.isAdmin && !userIsSuperuser && !userIsSeller) {

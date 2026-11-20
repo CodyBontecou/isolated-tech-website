@@ -104,14 +104,14 @@ export default async function WorkPage() {
       </section>
 
       <section className="work-cta">
-        <p className="work-cta__label">HIRING</p>
-        <h2 className="work-cta__title">Need a website like this for your business?</h2>
+        <p className="work-cta__label">WHAT&apos;S NEXT</p>
+        <h2 className="work-cta__title">Want something built?</h2>
         <p className="work-cta__text">
-          I take on a limited number of client projects at a time. If you want modern design,
-          fast execution, and a reliable build partner — with a free build and $200/month unlimited edits — let&apos;s talk.
+          I now take on a few founding customers at a time. You subscribe at a locked-in price, I build the
+          product you need, and the code is open source.
         </p>
         <div className="work-cta__actions">
-          <Link href="/hire" className="work-btn work-btn--primary">START A PROJECT</Link>
+          <Link href="/hire" className="work-btn work-btn--primary">BECOME CUSTOMER #1</Link>
           <a href="mailto:cody@isolated.tech" className="work-btn work-btn--ghost">cody@isolated.tech</a>
         </div>
       </section>

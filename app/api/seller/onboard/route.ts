@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { getEnv } from "@/lib/cloudflare-context";
 import { getSessionFromHeaders } from "@/lib/auth/middleware";
 import {
@@ -18,6 +19,9 @@ import {
 import { execute, queryOne } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
+  if (!isFeatureEnabled("sellerProgram")) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   try {
     const env = getEnv();
 

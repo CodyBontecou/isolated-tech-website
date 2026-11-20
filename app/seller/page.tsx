@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queryOne, query } from "@/lib/db";
@@ -79,6 +80,8 @@ isolated publish`}
 }
 
 export default async function SellerPage() {
+  if (!isFeatureEnabled("sellerProgram")) notFound();
+
   const env = getEnv();
   const user = env ? await getCurrentUser(env) : null;
 
