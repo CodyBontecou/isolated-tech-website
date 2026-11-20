@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 interface NavLink {
   href: string;
@@ -30,7 +31,7 @@ export function MobileSiteNav({ isLoggedIn, isAdmin, isSeller }: MobileSiteNavPr
   const userLinks: NavLink[] = isLoggedIn
     ? [
         ...(isAdmin ? [{ href: "/admin", text: "Admin" }] : []),
-        ...(isSeller && !isAdmin ? [{ href: "/seller", text: "Seller" }] : []),
+        ...(isFeatureEnabled("sellerProgram") && isSeller && !isAdmin ? [{ href: "/seller", text: "Seller" }] : []),
         { href: "/dashboard", text: "Dashboard" },
       ]
     : [{ href: "/auth/login", text: "Sign In" }];

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./styles/base.css";
 import "./styles/components.css";
 import "./styles/pages.css";
+import "./styles/grid.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const siteUrl = "https://isolated.tech";
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s — ISOLATED.TECH",
   },
   description:
-    "Isolated Tech is a product studio and client web partner building polished apps and high-converting websites.",
+    "Isolated Tech is a one-person product studio: privacy-first apps for iOS, Android, Mac and the web, and open-source products built with founding customers.",
   keywords: [
     "macOS apps",
     "iOS apps",
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
     siteName: "ISOLATED.TECH",
     title: "ISOLATED.TECH — We build software.",
     description:
-      "Product studio and client web partner. iOS/macOS apps plus conversion-focused websites.",
+      "Privacy-first apps for iOS, Android, Mac and the web, and open-source products built with founding customers.",
     images: [
       {
         url: "/og-image.png",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ISOLATED.TECH — We build software.",
     description:
-      "Product studio and client web partner. iOS/macOS apps plus conversion-focused websites.",
+      "Privacy-first apps for iOS, Android, Mac and the web, and open-source products built with founding customers.",
     images: ["/og-image.png"],
     creator: "@codybontecou",
   },
@@ -100,7 +101,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
         <link
@@ -124,8 +125,6 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          {/* Noise overlay */}
-          <div className="noise" />
           {children}
         </ThemeProvider>
       </body>

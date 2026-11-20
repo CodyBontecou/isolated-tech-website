@@ -6,28 +6,30 @@ import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
-  title: "Hire — ISOLATED.TECH",
+  title: "Customer #1",
   description:
-    "Hire ISOLATED.TECH for client websites and product-style web experiences. Discovery, design, build, and launch.",
+    "Subscribe as customer #1, lock in a founding price, and get the app you need built with you. Open source under AGPL-3.0.",
 };
+
+const INQUIRY_HREF = "mailto:cody@isolated.tech?subject=Customer%20%231%20Inquiry";
 
 const PROCESS = [
   {
-    title: "Discovery",
-    body: "We align on goals, customer profile, offer structure, and what the website needs to do for your business."
+    title: "Scope",
+    body: "Tell me about the app you wish existed. We agree on a first version and a rough timeline.",
   },
   {
-    title: "Direction",
-    body: "I design a clear visual and messaging direction so the site feels premium and instantly understandable."
+    title: "Subscribe",
+    body: "Start a small monthly subscription. That locks in your founding price.",
   },
   {
     title: "Build",
-    body: "You get a fast, responsive implementation with thoughtful details and conversion-focused structure."
+    body: "I build what you need in short loops with you, shipping early and often. AI keeps the timeline short.",
   },
   {
-    title: "Launch",
-    body: "Deployment, QA, and handoff — including clear next steps for edits, updates, and growth."
-  }
+    title: "Grow",
+    body: "The product opens up to customers #2, #3 and beyond. You keep your founding price.",
+  },
 ];
 
 export default async function HirePage() {
@@ -39,53 +41,53 @@ export default async function HirePage() {
       <SiteNav user={user} activePage="hire" />
 
       <section className="hire-hero">
-        <p className="hire-hero__label">CLIENT SERVICES</p>
-        <h1 className="hire-hero__title">Design and development for modern business websites.</h1>
+        <p className="hire-hero__label">CUSTOMER #1</p>
+        <h1 className="hire-hero__title">Fund the app you want. Lock in the price.</h1>
         <p className="hire-hero__subtitle">
-          Best fit for local businesses, personal brands, and product teams who want
-          premium design quality without slow agency timelines.
-          <br />
-          Pricing is simple: your site is free, then it&apos;s $200/month with unlimited edits.
+          Subscribe as customer #1 for a small monthly amount, from $200/month, and I&apos;ll build the
+          product you need. Your founding price stays locked. I keep ownership, so the product can grow to
+          serve the customers who come after you. Everything is open source under AGPL-3.0.
         </p>
         <div className="hire-hero__actions">
-          <a href="mailto:cody@isolated.tech?subject=Website%20Project%20Inquiry" className="work-btn work-btn--primary">
-            BOOK INTRO CALL
+          <a href={INQUIRY_HREF} className="work-btn work-btn--primary">
+            BECOME CUSTOMER #1
           </a>
-          <Link href="/work" className="work-btn work-btn--ghost">
-            VIEW CLIENT WORK
+          <Link href="/apps" className="work-btn work-btn--ghost">
+            SEE WHAT I&apos;VE SHIPPED
           </Link>
         </div>
       </section>
 
       <section className="hire-section">
         <div className="hire-section__panel">
-          <p className="hire-section__label">ENGAGEMENTS</p>
-          <h2>What I build</h2>
+          <p className="hire-section__label">WHAT YOU GET</p>
+          <h2>Your product, built with you</h2>
           <ul>
-            <li>Marketing websites for local service businesses</li>
-            <li>Landing pages for SaaS and app launches</li>
-            <li>Personal brand sites and creator portfolios</li>
-            <li>Conversion-focused redesigns of existing websites</li>
+            <li>An app shaped around what you need, with you setting the priorities</li>
+            <li>Close collaboration and fast iterations</li>
+            <li>A founding price, locked in for as long as you use the product</li>
+            <li>Stop subscribing whenever you like. No long contract</li>
           </ul>
         </div>
 
         <div className="hire-section__panel">
-          <p className="hire-section__label">PRICING</p>
-          <h2>Simple monthly model</h2>
+          <p className="hire-section__label">THE TERMS</p>
+          <h2>Plain and simple</h2>
           <ul>
-            <li><strong>Website build:</strong> $0 upfront</li>
-            <li><strong>Ongoing plan:</strong> $200/month</li>
-            <li><strong>Edits:</strong> unlimited requests included</li>
-            <li><strong>Best for:</strong> businesses that want a site that keeps improving</li>
+            <li><strong>Price:</strong> from $200/month, agreed up front and locked in</li>
+            <li><strong>Ownership:</strong> I own the product, its brand and its direction</li>
+            <li><strong>Code:</strong> open source under AGPL-3.0, public from day one</li>
+            <li><strong>If I stop:</strong> the code is yours to take and run</li>
           </ul>
           <p className="hire-section__note">
-            One flat model: launch free, then stay on the monthly plan for continuous updates.
+            The locked price holds while the product stays sustainable to run. Others can use the code
+            too, under the same AGPL terms.
           </p>
         </div>
       </section>
 
-      <section className="hire-process" aria-label="Project process">
-        <p className="hire-process__label">PROCESS</p>
+      <section className="hire-process" aria-label="How it works">
+        <p className="hire-process__label">HOW IT WORKS</p>
         <div className="hire-process__grid">
           {PROCESS.map((step, index) => (
             <article key={step.title} className="hire-process__card">
@@ -99,13 +101,13 @@ export default async function HirePage() {
 
       <section className="work-cta">
         <p className="work-cta__label">START</p>
-        <h2 className="work-cta__title">Tell me what you&apos;re building.</h2>
+        <h2 className="work-cta__title">Have an app you wish existed?</h2>
         <p className="work-cta__text">
-          Send your current site (if you have one), goals, and rough timeline.
-          I&apos;ll reply with next steps and availability.
+          Tell me what it should do, who it&apos;s for and when you need it. I&apos;ll reply with whether
+          it&apos;s a fit and a first plan.
         </p>
         <div className="work-cta__actions">
-          <a href="mailto:cody@isolated.tech?subject=Website%20Project%20Inquiry" className="work-btn work-btn--primary">
+          <a href={INQUIRY_HREF} className="work-btn work-btn--primary">
             CONTACT CODY
           </a>
         </div>

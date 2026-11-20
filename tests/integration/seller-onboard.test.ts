@@ -14,6 +14,11 @@ vi.mock("@/lib/auth/middleware", () => ({
   getSessionFromHeaders: vi.fn(),
 }));
 
+// The seller program is flagged off by default; these tests exercise it switched on.
+vi.mock("@/lib/feature-flags", () => ({
+  isFeatureEnabled: vi.fn(() => true),
+}));
+
 vi.mock("@/lib/stripe", () => ({
   createStripeClient: vi.fn(),
   createConnectAccount: vi.fn(),
@@ -29,6 +34,18 @@ describe("POST /api/seller/onboard", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("returns 404 when the seller program flag is off", async () => {
+    const { isFeatureEnabled } = await import("@/lib/feature-flags");
+    vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
+
+    const { POST } = await import("@/app/api/seller/onboard/route");
+    const response = await POST(
+      new Request("https://isolated.tech/api/seller/onboard", { method: "POST" }) as any,
+    );
+
+    expect(response.status).toBe(404);
   });
 
   it("should create onboarding link for a new seller", async () => {

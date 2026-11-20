@@ -1,5 +1,6 @@
 import { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { getCurrentUser } from "@/lib/auth/middleware";
 import { getEnv } from "@/lib/cloudflare-context";
 import { queryOne } from "@/lib/db";
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
 };
 
 export default async function OnboardCompletePage() {
+  if (!isFeatureEnabled("sellerProgram")) notFound();
+
   const env = getEnv();
   const user = env ? await getCurrentUser(env) : null;
 
